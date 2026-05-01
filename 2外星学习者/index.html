@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外星学习实验室</title>
+    <link rel="stylesheet" href="../shared/game-portal.css">
+    <style>
+        /* --- 赛博朋克风格定义 --- */
+        :root {
+            --bg-color: #050505;
+            --neon-green: #39ff14;
+            --neon-dim: rgba(57, 255, 20, 0.15);
+            --text-color: #39ff14;
+            --card-bg: #111;
+            --white: #fff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            /* 限制整个网页高度 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            /* 防止背景滚动 */
+        }
+
+        /* 主容器优化：固定最大高度，内部滚动 */
+        .container {
+            width: 95%;
+            max-width: 600px;
+            /* 稍微变窄一点更精致 */
+            max-height: 95vh;
+            /* 窗口高度不超过屏幕的95% */
+            background: var(--card-bg);
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-dim);
+            border-radius: 15px;
+            padding: 20px;
+            /* 减小内边距 */
+            position: relative;
+            overflow-y: auto;
+            /* 内容多了显示滚动条 */
+            display: flex;
+            flex-direction: column;
+
+            /* 隐藏滚动条但保留功能 (兼容写法) */
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-green) #111;
+        }
+
+        /* Webkit滚动条样式 */
+        .container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #111;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: var(--neon-green);
+            border-radius: 3px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            margin: 5px 0;
+            text-align: center;
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        h2 {
+            font-size: 1.4em;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            background: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            border-radius: 50px;
+            box-shadow: 0 0 5px var(--neon-dim);
+            flex-shrink: 0;
+        }
+
+        .btn:hover {
+            background: var(--neon-green);
+            color: black;
+            box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        .btn.secondary {
+            border-color: #7efc61;
+            color: #c9ffc0;
+        }
+
+        .btn.secondary:hover {
+            background: #7efc61;
+            color: #000;
+            box-shadow: 0 0 15px rgba(126, 252, 97, 0.8);
+        }
+
+        /* 进度条 */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #222;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--neon-green);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        /* 结果页 */
+        .result-box {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .auth-panel {
+            margin: 16px 0 18px;
+            padding: 14px;
+            border: 1px solid rgba(57, 255, 20, 0.35);
+            border-radius: 12px;
+            background: rgba(57, 255, 20, 0.04);
+        }
+
+        .auth-panel h3 {
+            margin: 0 0 10px;
+            font-size: 1em;
+            color: #d8ffd0;
+        }
+
+        .auth-panel p {
+            margin: 6px 0;
+            color: #c5c5c5;
+            font-size: 0.92em;
+            line-height: 1.5;
+        }
+
+        .auth-input {
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 10px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(57, 255, 20, 0.35);
+            background: #0d0d0d;
+            color: #fff;
+            font-size: 0.95em;
+        }
+
+        .auth-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .auth-actions .btn {
+            margin-top: 0;
+        }
+
+        .auth-status {
+            min-height: 1.4em;
+            margin-top: 10px;
+            color: #a6a6a6;
+            font-size: 0.9em;
+        }
+
+        .auth-user {
+            color: #fff;
+            word-break: break-all;
+        }
+
+        .history-panel {
+            margin-top: 16px;
+            padding: 14px;
+            border: 1px solid rgba(57, 255, 20, 0.25);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .history-panel h3 {
+            margin: 0 0 10px;
+            font-size: 1em;
+            color: #d8ffd0;
+        }
+
+        .history-status {
+            min-height: 1.4em;
+            color: #a6a6a6;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .history-filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .history-select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            background: #0d0d0d;
+            color: #fff;
+            font-size: 0.92em;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-card {
+            background: #181818;
+            border: 1px solid rgba(57, 255, 20, 0.18);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .history-card h4 {
+            margin: 0 0 8px;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .history-meta {
+            color: #a6a6a6;
+            font-size: 0.86em;
+            margin-bottom: 8px;
+        }
+
+        .history-preview {
+            color: #d7d7d7;
+            font-size: 0.92em;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .history-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .history-btn {
+            width: auto;
+            margin-top: 0;
+            padding: 8px 14px;
+            font-size: 0.92em;
+            border-radius: 999px;
+        }
+
+        .history-detail {
+            margin-top: 10px;
+            padding: 10px;
+            background: #101010;
+            border-radius: 8px;
+            color: #e6e6e6;
+            font-size: 0.9em;
+            line-height: 1.55;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* 音频按钮样式 */
+        .audio-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+            z-index: 100;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            opacity: 1;
+        }
+
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sound-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        .sound-waves {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-btn.playing .sound-waves {
+            opacity: 1;
+        }
+
+        .sound-wave {
+            width: 3px;
+            height: 8px;
+            background: white;
+            border-radius: 2px;
+            animation: soundWave 0.5s ease-in-out infinite;
+        }
+
+        .sound-wave:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .sound-wave:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 12px;
+        }
+
+        .sound-wave:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 16px;
+        }
+
+        @keyframes soundWave {
+
+            0%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(0.5);
+            }
+        }
+
+        .audio-btn.playing .sound-icon {
+            animation: speakerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes speakerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* 选项卡片新布局：图片在上，文字在下 */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-card {
+            border: 2px solid #333;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s;
+            text-align: center;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .option-card:hover {
+            border-color: var(--neon-green);
+            background: var(--neon-dim);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(57, 255, 20, 0.3);
+        }
+
+        .option-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-bottom: 2px solid #333;
+            transition: transform 0.3s;
+        }
+
+        .option-card:hover .option-img {
+            transform: scale(1.05);
+        }
+
+        .option-content {
+            padding: 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .opt-title {
+            font-size: 1em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--white);
+        }
+
+        .opt-desc {
+            font-size: 0.8em;
+            color: #aaa;
+            line-height: 1.3;
+        }
+
+        /* 响应式：小屏幕改为单列 */
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .option-img {
+                height: 180px;
+            }
+        }
+
+        /* 录音控制区域 */
+        .recording-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(57, 255, 20, 0.05);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .record-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid var(--neon-green);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .record-btn:hover {
+            background: rgba(57, 255, 20, 0.1);
+            transform: scale(1.05);
+        }
+
+        .record-btn.recording {
+            background: #ff3333;
+            border-color: #ff3333;
+            animation: recordPulse 1s infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(255, 51, 51, 0);
+            }
+        }
+
+        .record-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--neon-green);
+        }
+
+        .record-btn.recording .record-icon {
+            background: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .recording-status {
+            flex-grow: 1;
+            color: #aaa;
+            font-size: 0.95em;
+        }
+
+        .recording-status.active {
+            color: #ff3333;
+            font-weight: bold;
+        }
+
+        .recording-timer {
+            color: var(--neon-green);
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+
+        .play-recording-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-green);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .play-recording-btn:hover {
+            background: rgba(57, 255, 20, 0.2);
+        }
+
+        .play-recording-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-left: 12px solid var(--neon-green);
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            margin-left: 3px;
+        }
+
+        .play-recording-btn.playing .play-icon {
+            border-left: none;
+            width: 12px;
+            height: 12px;
+            border-left: 4px solid var(--neon-green);
+            border-right: 4px solid var(--neon-green);
+            margin-left: 0;
+        }
+
+        .portal-game-status {
+            border: 1px solid rgba(57, 255, 20, 0.45);
+            background: rgba(8, 20, 8, 0.88);
+            color: #dfffd7;
+            box-shadow: 0 0 22px rgba(57, 255, 20, 0.18);
+        }
+
+        .portal-home-link {
+            color: var(--neon-green);
+            text-shadow: 0 0 8px rgba(57, 255, 20, 0.35);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div id="screen-intro" style="position: relative;">
+            <button class="audio-btn" id="intro-audio-btn" onclick="toggleAudio('intro')" title="播放/暂停音频">
+                <svg class="sound-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </button>
+            <h1>🌌 外星学习实验室</h1>
+            <p style="text-align: center; color:#aaa; font-size: 0.9em; margin-bottom: 20px;">Alien Learning Lab</p>
+            <div
+                style="line-height: 1.6; color: #ccc; background: #1a1a1a; padding: 15px; border-radius: 10px; font-size: 0.95em;">
+                <p>你好，地球上的<b>"小小学习教练"</b>！👋</p>
+                <p>今天有 3 位外星朋友需要学新技能。</p>
+                <p>每一关，请选出你觉得<b>最有效</b>的教学方式。</p>
+            </div>
+            <button class="btn" onclick="startGame()">🚀 开启传送门</button>
+        </div>
+
+        <div id="screen-game" class="hidden" style="position: relative;">
+            <button class="audio-btn" id="mission-audio-btn" onclick="toggleAudio('mission')" title="播放/暂停音频">
+                <svg class="sound-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </button>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress"></div>
+            </div>
+
+            <h2 id="mission-title" style="margin-top:0;">Mission 1</h2>
+
+            <p id="mission-desc" style="color: #ddd; font-size: 0.95em; line-height: 1.5; margin-bottom: 15px;">...</p>
+
+            <div class="options-grid" id="options-container">
+            </div>
+        </div>
+
+        <div id="screen-reflection" class="hidden" style="position: relative;">
+            <button class="audio-btn" id="reflection-audio-btn" onclick="toggleAudio('reflection')" title="播放/暂停音频">
+                <svg class="sound-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </button>
+            <h2 style="text-align: center; color: var(--neon-green); margin-bottom: 20px;">🤔 思考时刻</h2>
+            <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <p style="color: #fff; font-size: 1.1em; text-align: center; line-height: 1.6; margin-bottom: 15px;">
+                    你为什么会选择用这个方式教外星人呢？
+                </p>
+                <textarea id="reflection-input" placeholder="请输入你的想法..."
+                    style="width: 100%; min-height: 120px; padding: 15px; background: #0a0a0a; border: 2px solid #333; border-radius: 8px; color: #fff; font-size: 1em; resize: vertical; font-family: inherit; line-height: 1.5;box-sizing: border-box; margin-bottom: 10px;"
+                    onfocus="this.style.borderColor='var(--neon-green)'"
+                    onblur="this.style.borderColor='#333'"></textarea>
+                <div class="recording-controls">
+                    <button class="record-btn" id="record-btn" onclick="toggleRecording()" title="录音回答">
+                        <div class="record-icon"></div>
+                    </button>
+                    <div class="recording-status" id="recording-status">点击录音按钮开始录音回答</div>
+                    <div class="recording-timer" id="recording-timer">0:00</div>
+                    <button class="play-recording-btn" id="play-recording-btn" onclick="togglePlayRecording()" disabled
+                        title="播放录音">
+                        <div class="play-icon"></div>
+                    </button>
+                </div>
+            </div>
+            <button class="btn" onclick="continueGame()">💭 继续下一关</button>
+        </div>
+
+        <div id="screen-result" class="hidden">
+            <h1>📊 教练风格报告</h1>
+            <div class="result-box">
+                <p style="color:#aaa; font-size: 0.9em;">系统分析显示，你最擅长的教学风格是：</p>
+                <h2 style="font-size: 2em; margin: 20px 0; color: #fff;" id="result-type">...</h2>
+                <div id="result-details"
+                    style="text-align: left; color: #ccc; line-height: 1.5; font-size: 0.95em; background: #1a1a1a; padding: 15px; border-radius: 10px;">
+                </div>
+            </div>
+            <p id="cloud-save-hint" style="color:#aaa; font-size:0.92em; line-height:1.5;">完成测试后会自动上传到云端；你也可以手动点击按钮再次上传。</p>
+            <button class="btn" onclick="saveSessionRecordDocument(true)">☁️ 上传云端</button>
+            <button class="btn secondary" onclick="goToNextGame()">➡️ 前往下一个游戏</button>
+            <p id="save-status" style="color:#aaa; font-size:0.9em; min-height:1.3em; margin-top:8px;"></p>
+        </div>
+
+    </div>
+
+    <div id="portal-game-status"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/game-portal.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://sxtqkgtbalcwzewqfovp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4dHFrZ3RiYWxjd3pld3Fmb3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDQzNzAsImV4cCI6MjA5MDQyMDM3MH0.hS67yc5El6RaVb4nHb607H8SWge30GOS_grXVSQbXO4';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 音频配置
+        const AUDIO_BASE = 'music/';
+        const audioFiles = {
+            intro: AUDIO_BASE + '外星学习1.m4a',
+            mission1: AUDIO_BASE + '外星学习2.m4a',
+            mission2: AUDIO_BASE + '外星学习3.m4a',
+            mission3: AUDIO_BASE + '外星学习4.m4a'
+        };
+
+        // 音频控制
+        let currentAudio = null;
+        let currentAudioType = null;
+
+        function toggleAudio(type) {
+            const audioFile = type === 'intro' ? audioFiles.intro : audioFiles[`mission${currentStep + 1}`];
+            const btnId = type === 'intro' ? 'intro-audio-btn' : 'mission-audio-btn';
+            const btn = document.getElementById(btnId);
+
+            if (!btn) return;
+
+            // 如果切换了不同的音频源，停止当前播放
+            if (currentAudioType !== type && currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtn = document.getElementById(currentAudioType === 'intro' ? 'intro-audio-btn' : 'mission-audio-btn');
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+
+            // 如果是同一个音频
+            if (currentAudioType === type && currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                    btn.classList.add('playing');
+                } else {
+                    currentAudio.pause();
+                    btn.classList.remove('playing');
+                }
+                return;
+            }
+
+            // 创建新的音频
+            currentAudio = new Audio(audioFile);
+            currentAudioType = type;
+
+            currentAudio.addEventListener('ended', function () {
+                btn.classList.remove('playing');
+            });
+
+            currentAudio.play();
+            btn.classList.add('playing');
+        }
+
+        // 游戏数据
+        const missions = [
+            {
+                id: 1,
+                title: "任务 1：教外星人玩桌游",
+                desc: "一位外星朋友第一次来地球，完全不懂桌游。你会怎么教他最快学会？",
+                options: [
+                    { type: "Visual", title: "🧩 边演示边摆棋子", desc: "拖动棋子、画箭头演示「轮到谁」「该怎么走」。", img: "img/rw1/a.png" },
+                    { type: "ReadWrite", title: "📜 写规则顺序卡", desc: "写简短步骤：①抽牌 ②对数字 ③出牌...", img: "img/rw1/b.png" },
+                    { type: "Auditory", title: "🎙️ 像解说员一样讲", desc: "对着麦克风，用口头方式一步步解释怎么玩。", img: "img/rw1/c.png" },
+                    { type: "Kinesthetic", title: "🖐 直接带他玩一局", desc: "操作卡牌，带着他完整玩一轮，边玩边学。", img: "img/rw1/d.png" }
+                ]
+            },
+            {
+                id: 2,
+                title: "任务 2：三明治教学",
+                desc: "外星人想学做三明治。你会用哪种方式教他？",
+                options: [
+                    { type: "Visual", title: "🎨 画出步骤图", desc: "画出来：面包 → 抹酱 → 放菜 → 盖面包。", img: "img/rw2/a.png" },
+                    { type: "ReadWrite", title: "📋 写步骤清单", desc: "列出文字：1.拿面包 2.抹酱 3.夹菜...", img: "img/rw2/b.png" },
+                    { type: "Auditory", title: "🔊 语音说明", desc: "像打电话一样，用说的方式告诉他步骤。", img: "img/rw2/c.png" },
+                    { type: "Kinesthetic", title: "🎥 无声动作示范", desc: "不说话，只做动作：拿、抹、放、合，让他跟做。", img: "img/rw2/d.png" }
+                ]
+            },
+            {
+                id: 3,
+                title: "任务 3：迷宫救援",
+                desc: "机器人困在迷宫里不会走。你怎么帮它到出口？",
+                options: [
+                    { type: "Visual", title: "🧭 地面画路线", desc: "在地上画出箭头路线，让它沿着线走。", img: "img/rw3/a.png" },
+                    { type: "ReadWrite", title: "🪧 写指令卡片", desc: "写卡片：「前三步」「左转」，排好给它。", img: "img/rw3/b.png" },
+                    { type: "Auditory", title: "📣 声音导航", desc: "站在旁边喊：「直走两格！左转！继续！」", img: "img/rw3/c.png" },
+                    { type: "Kinesthetic", title: "🤖 拖拽带路", desc: "直接拉着机器人，一步步把它拖向出口。", img: "img/rw3/d.png" }
+                ]
+            }
+        ];
+
+        let currentStep = 0;
+        let scores = { Visual: 0, Auditory: 0, ReadWrite: 0, Kinesthetic: 0 };
+        let pendingChoiceRecord = null;
+        let sessionRecordEntries = [];
+        let finalResultLabel = '';
+        let selectedRootDirHandle = null;
+        let currentUser = null;
+        const RECORD_SUBFOLDER = 'learning_records';
+        const RECORD_FILENAME_PREFIX = 'alien_learning_record';
+        let hasAutoUploadedRecord = false;
+        let hasScheduledNextGame = false;
+
+        function goToNextGame() {
+            if (window.GamePortal) {
+                window.GamePortal.goToNextGame('alien-learning');
+            }
+        }
+
+        function getAuthElements() {
+            return {
+                summary: document.getElementById('auth-summary'),
+                status: document.getElementById('auth-status'),
+                form: document.getElementById('auth-form'),
+                userPanel: document.getElementById('auth-user-panel'),
+                userEmail: document.getElementById('auth-user-email'),
+                emailInput: document.getElementById('auth-email'),
+                passwordInput: document.getElementById('auth-password'),
+                cloudSaveHint: document.getElementById('cloud-save-hint'),
+                historyStatus: document.getElementById('history-status'),
+                historyList: document.getElementById('history-list'),
+                historyRefreshBtn: document.getElementById('history-refresh-btn'),
+                historyResultFilter: document.getElementById('history-result-filter'),
+                historyTimeFilter: document.getElementById('history-time-filter')
+            };
+        }
+
+        function setAuthStatus(message, isError = false) {
+            const { status } = getAuthElements();
+            if (!status) return;
+            status.textContent = message || '';
+            status.style.color = isError ? '#ff8c8c' : '#a6a6a6';
+        }
+
+        function updateAuthUI() {
+            const { summary, form, userPanel, userEmail, cloudSaveHint, historyStatus, historyList, historyRefreshBtn, historyResultFilter, historyTimeFilter } = getAuthElements();
+            if (!summary || !form || !userPanel || !userEmail) return;
+
+            if (currentUser) {
+                summary.textContent = '已连接到 Supabase，你的学习记录可以保存到云端。';
+                userEmail.textContent = currentUser.email || '已登录用户';
+                form.classList.add('hidden');
+                userPanel.classList.remove('hidden');
+                if (cloudSaveHint) {
+                    cloudSaveHint.textContent = '完成测试后会自动上传到云端；你也可以手动点击按钮再次上传。';
+                }
+                if (historyStatus) {
+                    historyStatus.textContent = '点击下方按钮即可查看你之前保存的测试结果。';
+                }
+                if (historyRefreshBtn) {
+                    historyRefreshBtn.classList.remove('hidden');
+                }
+            } else {
+                summary.textContent = '注册或登录后，可把学习记录保存到云端；不登录也可以先本地保存。';
+                form.classList.remove('hidden');
+                userPanel.classList.add('hidden');
+                if (cloudSaveHint) {
+                    cloudSaveHint.textContent = '完成测试后会自动上传到云端；如果未登录，自动上传会失败，请先从起始页登录。';
+                }
+                if (historyStatus) {
+                    historyStatus.textContent = '登录后可以查看你之前保存的测试结果。';
+                }
+                if (historyList) {
+                    historyList.innerHTML = '';
+                    historyList.classList.add('hidden');
+                }
+                if (historyRefreshBtn) {
+                    historyRefreshBtn.classList.add('hidden');
+                }
+                if (historyResultFilter) {
+                    historyResultFilter.value = 'all';
+                }
+                if (historyTimeFilter) {
+                    historyTimeFilter.value = 'all';
+                }
+            }
+        }
+
+        function getHistoryPreview(markdown) {
+            if (!markdown) return '暂无记录内容';
+            const lines = markdown
+                .split('\n')
+                .map((line) => line.trim())
+                .filter((line) => line && !line.startsWith('#'));
+            return (lines.slice(0, 4).join('\n') || markdown).slice(0, 220);
+        }
+
+        function renderSessionHistory(records) {
+            const { historyList, historyStatus } = getAuthElements();
+            if (!historyList || !historyStatus) return;
+
+            if (!records.length) {
+                historyList.innerHTML = '';
+                historyList.classList.add('hidden');
+                historyStatus.textContent = '还没有历史记录，先完成一次测试并保存吧。';
+                return;
+            }
+
+            historyList.innerHTML = records.map((record) => `
+                <div class="history-card">
+                    <h4>${record.result_type || '未命名结果'}</h4>
+                    <div class="history-meta">${new Date(record.created_at).toLocaleString('zh-CN')}</div>
+                    <div class="history-preview">${getHistoryPreview(record.record_markdown)}</div>
+                    <div class="history-actions">
+                        <button class="btn secondary history-btn" onclick="toggleHistoryDetail('${record.id}')">展开详情</button>
+                        <button class="btn secondary history-btn" onclick="exportSessionRecord('${record.id}')">导出记录</button>
+                        <button class="btn history-btn" onclick="deleteSessionRecord('${record.id}')">删除记录</button>
+                    </div>
+                    <div id="history-detail-${record.id}" class="history-detail hidden">${record.record_markdown || '暂无完整记录内容'}</div>
+                </div>
+            `).join('');
+            historyList.classList.remove('hidden');
+            historyStatus.textContent = `共找到 ${records.length} 条历史记录。`;
+        }
+
+        function toggleHistoryDetail(recordId) {
+            const detailEl = document.getElementById(`history-detail-${recordId}`);
+            if (!detailEl) return;
+            detailEl.classList.toggle('hidden');
+        }
+
+        async function deleteSessionRecord(recordId) {
+            const { historyStatus } = getAuthElements();
+            if (!currentUser) {
+                if (historyStatus) historyStatus.textContent = '请先登录，再删除历史记录。';
+                return;
+            }
+
+            const confirmed = window.confirm('确定要删除这条历史记录吗？删除后无法恢复。');
+            if (!confirmed) return;
+
+            if (historyStatus) historyStatus.textContent = '正在删除历史记录...';
+
+            try {
+                const { error } = await supabaseClient
+                    .from('session_records')
+                    .delete()
+                    .eq('id', recordId);
+
+                if (error) throw error;
+                if (historyStatus) historyStatus.textContent = '历史记录已删除。';
+                await loadSessionHistory();
+            } catch (error) {
+                console.error('删除历史记录失败:', error);
+                if (historyStatus) historyStatus.textContent = `删除失败：${error.message || '请稍后重试'}`;
+            }
+        }
+
+        function exportSessionRecord(recordId) {
+            const detailEl = document.getElementById(`history-detail-${recordId}`);
+            const card = detailEl ? detailEl.closest('.history-card') : null;
+            if (!detailEl || !card) return;
+
+            const titleEl = card.querySelector('h4');
+            const safeTitle = (titleEl ? titleEl.textContent : 'record')
+                .replace(/[^\w\u4e00-\u9fa5-]+/g, '_')
+                .slice(0, 40);
+            const fileName = `${safeTitle || 'record'}_${recordId}.md`;
+            downloadRecordFile(detailEl.textContent || '', fileName);
+        }
+
+        async function loadSessionHistory() {
+            const { historyStatus, historyList, historyResultFilter, historyTimeFilter } = getAuthElements();
+            if (!currentUser) {
+                if (historyStatus) historyStatus.textContent = '请先登录，再查看历史记录。';
+                if (historyList) {
+                    historyList.innerHTML = '';
+                    historyList.classList.add('hidden');
+                }
+                return;
+            }
+
+            if (historyStatus) historyStatus.textContent = '正在加载历史记录...';
+
+            try {
+                let query = supabaseClient
+                    .from('session_records')
+                    .select('id, result_type, record_markdown, created_at')
+                    .order('created_at', { ascending: false });
+
+                if (historyResultFilter && historyResultFilter.value !== 'all') {
+                    query = query.eq('result_type', historyResultFilter.value);
+                }
+
+                if (historyTimeFilter && historyTimeFilter.value !== 'all') {
+                    const days = Number(historyTimeFilter.value);
+                    const sinceDate = new Date();
+                    sinceDate.setDate(sinceDate.getDate() - days);
+                    query = query.gte('created_at', sinceDate.toISOString());
+                }
+
+                const { data, error } = await query.limit(20);
+
+                if (error) throw error;
+                renderSessionHistory(data || []);
+            } catch (error) {
+                console.error('加载历史记录失败:', error);
+                if (historyStatus) historyStatus.textContent = `加载失败：${error.message || '请稍后重试'}`;
+            }
+        }
+
+        function getEmailRedirectTo() {
+            if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+                return window.location.href;
+            }
+            return undefined;
+        }
+
+        async function initializeAuth() {
+            try {
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) throw error;
+                currentUser = data.session ? data.session.user : null;
+                updateAuthUI();
+            } catch (error) {
+                console.error('初始化登录状态失败:', error);
+                setAuthStatus('云端连接失败，请稍后刷新重试', true);
+            }
+
+            supabaseClient.auth.onAuthStateChange((_event, session) => {
+                currentUser = session ? session.user : null;
+                updateAuthUI();
+                if (currentUser) {
+                    loadSessionHistory();
+                }
+            });
+        }
+
+        async function signUpWithEmail() {
+            const { emailInput, passwordInput } = getAuthElements();
+            const email = emailInput ? emailInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value : '';
+            if (!email || !password) {
+                setAuthStatus('请先输入邮箱和密码', true);
+                return;
+            }
+
+            setAuthStatus('正在注册...');
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        emailRedirectTo: getEmailRedirectTo()
+                    }
+                });
+                if (error) throw error;
+
+                currentUser = data.session ? data.session.user : null;
+                updateAuthUI();
+                if (emailInput) emailInput.value = '';
+                if (passwordInput) passwordInput.value = '';
+                setAuthStatus(data.session ? '注册并登录成功' : '注册成功，请去邮箱完成验证后再登录');
+                if (data.session) {
+                    loadSessionHistory();
+                }
+            } catch (error) {
+                console.error('注册失败:', error);
+                setAuthStatus(`注册失败：${error.message}`, true);
+            }
+        }
+
+        async function signInWithEmail() {
+            const { emailInput, passwordInput } = getAuthElements();
+            const email = emailInput ? emailInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value : '';
+            if (!email || !password) {
+                setAuthStatus('请先输入邮箱和密码', true);
+                return;
+            }
+
+            setAuthStatus('正在登录...');
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+
+                currentUser = data.session ? data.session.user : null;
+                updateAuthUI();
+                if (passwordInput) passwordInput.value = '';
+                setAuthStatus('登录成功');
+                await loadSessionHistory();
+            } catch (error) {
+                console.error('登录失败:', error);
+                setAuthStatus(`登录失败：${error.message}`, true);
+            }
+        }
+
+        async function signOutUser() {
+            setAuthStatus('正在退出...');
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
+                currentUser = null;
+                updateAuthUI();
+                setAuthStatus('已退出登录');
+            } catch (error) {
+                console.error('退出失败:', error);
+                setAuthStatus(`退出失败：${error.message}`, true);
+            }
+        }
+
+        function formatFileTimestamp(dateObj = new Date()) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const hour = String(dateObj.getHours()).padStart(2, '0');
+            const minute = String(dateObj.getMinutes()).padStart(2, '0');
+            const second = String(dateObj.getSeconds()).padStart(2, '0');
+            return `${year}${month}${day}-${hour}${minute}${second}`;
+        }
+
+        function buildSessionRecordMarkdown() {
+            const lines = [];
+            lines.push('# 外星学习实验室记录');
+            lines.push('');
+            lines.push(`- 生成时间: ${new Date().toLocaleString('zh-CN')}`);
+            lines.push(`- 教练风格结果: ${finalResultLabel || '未生成'}`);
+            lines.push('');
+            lines.push('## 作答详情');
+            lines.push('');
+
+            sessionRecordEntries.forEach((entry, index) => {
+                lines.push(`### 第 ${index + 1} 关`);
+                lines.push(`- 任务: ${entry.missionTitle}`);
+                lines.push(`- 选择的选项: ${entry.choiceTitle}（${entry.choiceType}）`);
+                lines.push(`- 输入文字: ${entry.reflectionText || '（无）'}`);
+                lines.push(`- 语音转文字: ${entry.transcriptText || '（无）'}`);
+                lines.push(`- 回答时间: ${new Date(entry.answeredAt).toLocaleString('zh-CN')}`);
+                lines.push('');
+            });
+
+            return lines.join('\n');
+        }
+
+        function buildAlienLearningDetailJson() {
+            return {
+                scores,
+                finalResultLabel: finalResultLabel || '未生成',
+                entries: sessionRecordEntries.map((entry) => ({
+                    missionTitle: entry.missionTitle,
+                    choiceTitle: entry.choiceTitle,
+                    choiceType: entry.choiceType,
+                    reflectionText: entry.reflectionText || '',
+                    transcriptText: entry.transcriptText || '',
+                    answeredAt: entry.answeredAt
+                }))
+            };
+        }
+
+        function downloadRecordFile(content, fileName) {
+            const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        async function saveRecordToSupabase(content) {
+            if (!currentUser) {
+                return { savedToCloud: false, message: '当前未登录' };
+            }
+
+            const { error } = await supabaseClient.from('session_records').insert({
+                user_id: currentUser.id,
+                result_type: finalResultLabel || '未生成',
+                record_markdown: content
+            });
+
+            if (error) throw error;
+            return { savedToCloud: true, message: '学习记录已保存到云端' };
+        }
+
+        async function saveSessionRecordDocument(isManual = false) {
+            const statusEl = document.getElementById('save-status');
+            if (!sessionRecordEntries.length) {
+                if (statusEl) statusEl.textContent = '暂无可保存的记录';
+                return;
+            }
+
+            const content = buildSessionRecordMarkdown();
+
+            try {
+                let cloudResult = { savedToCloud: false };
+                if (window.GamePortal && typeof window.GamePortal.saveRecord === 'function') {
+                    cloudResult = await window.GamePortal.saveRecord({
+                        gameKey: 'alien-learning',
+                        gameTitle: '外星学习实验室',
+                        recordType: 'assessment',
+                        resultType: finalResultLabel || '未生成',
+                        summary: `教练风格结果：${finalResultLabel || '未生成'}`,
+                        recordMarkdown: content,
+                        detailJson: buildAlienLearningDetailJson()
+                    });
+                } else {
+                    cloudResult = await saveRecordToSupabase(content);
+                }
+
+                if (cloudResult.savedToCloud) {
+                    if (statusEl) statusEl.textContent = cloudResult.message;
+                } else {
+                    if (statusEl) statusEl.textContent = cloudResult.message || '上传失败，请先登录后重试';
+                }
+                if (cloudResult.savedToCloud) {
+                    hasAutoUploadedRecord = true;
+                } else if (!isManual && statusEl) {
+                    statusEl.textContent = '自动上传失败，请先从起始页登录后，再点击上传云端';
+                }
+            } catch (error) {
+                console.error('保存记录失败:', error);
+                if (statusEl) statusEl.textContent = `保存失败：${error.message || '请重试或检查浏览器权限'}`;
+            }
+        }
+
+        if (window.GamePortal) {
+            window.GamePortal.renderGameStatus('#portal-game-status', { homeHref: '../home.html' });
+        }
+
+        window.addEventListener('load', function () {
+            setTimeout(() => {
+                toggleAudio('intro');
+            }, 250);
+        });
+
+        function startGame() {
+            document.getElementById('screen-intro').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            loadMission(0);
+        }
+
+        function loadMission(index) {
+            if (index >= missions.length) {
+                showResult();
+                return;
+            }
+
+            const data = missions[index];
+            currentStep = index;
+
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtn = document.getElementById(currentAudioType === 'intro' ? 'intro-audio-btn' : 'mission-audio-btn');
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+
+            // 更新进度条
+            const progress = ((index) / missions.length) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+
+            // 更新内容
+            document.getElementById('mission-title').innerHTML = data.title;
+            document.getElementById('mission-desc').innerHTML = data.desc;
+
+            // 生成选项卡片（图片在上，文字在下）
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            data.options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.onclick = () => handleChoice(opt.type);
+                card.innerHTML = `
+                <img src="${opt.img}" alt="${opt.title}" class="option-img" onerror="this.style.display='none';">
+                <div class="option-content">
+                    <div class="opt-title">${opt.title}</div>
+                    <div class="opt-desc">${opt.desc}</div>
+                </div>
+            `;
+                container.appendChild(card);
+            });
+
+            // 自动播放当前任务的音频
+            setTimeout(() => {
+                playMissionAudio();
+            }, 300);
+        }
+
+        // 播放任务音频的辅助函数
+        function playMissionAudio() {
+            const audioFile = audioFiles[`mission${currentStep + 1}`];
+            const btn = document.getElementById('mission-audio-btn');
+
+            if (!audioFile || !btn) return;
+
+            // 创建并播放新音频
+            currentAudio = new Audio(audioFile);
+            currentAudioType = 'mission';
+
+            currentAudio.addEventListener('ended', function () {
+                btn.classList.remove('playing');
+            });
+
+            currentAudio.play();
+            btn.classList.add('playing');
+        }
+
+        function handleChoice(type) {
+            scores[type]++;
+            const mission = missions[currentStep];
+            const selectedOption = mission.options.find(opt => opt.type === type);
+            pendingChoiceRecord = {
+                missionId: mission.id,
+                missionTitle: mission.title,
+                choiceType: type,
+                choiceTitle: selectedOption ? selectedOption.title : type
+            };
+            showReflection();
+        }
+
+        function showReflection() {
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-reflection').classList.remove('hidden');
+
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // 播放反思音频
+            currentAudio = new Audio('music/外星学习为什么选择.m4a');
+            currentAudio.play();
+            currentAudioType = 'reflection';
+
+            const btn = document.getElementById('reflection-audio-btn');
+            if (btn) btn.classList.add('playing');
+
+            // 重置录音状态
+            resetRecordingState();
+        }
+
+        function continueGame() {
+            // 获取用户输入的反思内容
+            const reflection = document.getElementById('reflection-input').value.trim();
+            const transcript = speechTranscript.trim();
+
+            // 可选：验证用户是否输入了内容（录音或文字至少有一个）
+            if (!reflection && !currentRecordingAudio) {
+                alert('请先输入你的想法或录音回答再继续哦 😊');
+                return;
+            }
+
+            const reflectionText = reflection || (currentRecordingAudio ? '（仅录音，未转成可用文字）' : '');
+            const mergedRecord = {
+                missionId: pendingChoiceRecord ? pendingChoiceRecord.missionId : currentStep + 1,
+                missionTitle: pendingChoiceRecord ? pendingChoiceRecord.missionTitle : missions[currentStep].title,
+                choiceType: pendingChoiceRecord ? pendingChoiceRecord.choiceType : '',
+                choiceTitle: pendingChoiceRecord ? pendingChoiceRecord.choiceTitle : '',
+                reflectionText,
+                transcriptText: transcript,
+                answeredAt: new Date().toISOString()
+            };
+            sessionRecordEntries.push(mergedRecord);
+            pendingChoiceRecord = null;
+
+            // 停止反思音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // 清空输入框
+            document.getElementById('reflection-input').value = '';
+
+            document.getElementById('screen-reflection').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+
+            loadMission(currentStep + 1);
+        }
+
+        function showResult() {
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            // 停止音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // 计算最高分
+            let maxScore = 0;
+            let bestType = '';
+            for (const [type, score] of Object.entries(scores)) {
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestType = type;
+                }
+            }
+
+            const resultTitles = {
+                "Visual": "👀 视觉型教练",
+                "Auditory": "👂 听觉型教练",
+                "ReadWrite": "📝 读写型教练",
+                "Kinesthetic": "👐 动觉型教练"
+            };
+
+            const resultDescs = {
+                "Visual": "你喜欢用<b>图像、图表和箭头</b>来解释问题。<br>你的学生觉得你的教学非常直观，一眼就能看懂！",
+                "Auditory": "你擅长用<b>语言和声音</b>来传达信息。<br>你的学生觉得听你讲故事、做解说是最棒的学习享受！",
+                "ReadWrite": "你喜欢<b>清晰的列表、文字和规则</b>。<br>你的学生觉得你的教学非常有条理，逻辑清晰！",
+                "Kinesthetic": "你坚信<b>「做中学」</b>，喜欢动手演示和操作。<br>你的学生觉得跟着你一起动起来，学得最快！"
+            };
+
+            if (maxScore < 2) {
+                document.getElementById('result-type').innerText = "🌟 全能型大师";
+                document.getElementById('result-details').innerHTML = "哇！你没有固定的套路，你会根据不同的任务灵活切换教学方法。<br>你是外星人眼中最完美的「全能教练」！";
+                finalResultLabel = "🌟 全能型大师";
+            } else {
+                document.getElementById('result-type').innerText = resultTitles[bestType];
+                document.getElementById('result-details').innerHTML = resultDescs[bestType];
+                finalResultLabel = resultTitles[bestType];
+            }
+
+            if (!hasAutoUploadedRecord) {
+                saveSessionRecordDocument(false);
+            }
+            if (window.GamePortal && !hasScheduledNextGame) {
+                hasScheduledNextGame = true;
+                window.GamePortal.scheduleNextGame('alien-learning', { statusTarget: '#save-status', delayMs: 5000 });
+            }
+        }
+
+        // --- 录音功能 ---
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingStartTime = null;
+        let recordingInterval = null;
+        let currentRecordingAudio = null;
+        let speechRecognition = null;
+        let speechTranscript = '';
+        let speechTranscriptRaw = '';
+        let microphoneStream = null;
+        let isStartingRecording = false;
+        let pendingSpeechRecognitionStopResolver = null;
+        let pendingMediaRecorderStopResolver = null;
+        let mediaRecorderStopPromise = Promise.resolve();
+        let speechInputPrefix = '';
+        let speechInterimTranscript = '';
+        let speechInterimTranscriptRaw = '';
+
+        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const supportsSpeechRecognition = !!SpeechRecognitionAPI;
+
+        function normalizeSpeechPunctuation(text) {
+            return text
+                .replace(/,/g, '，')
+                .replace(/\./g, '。')
+                .replace(/\?/g, '？')
+                .replace(/!/g, '！')
+                .replace(/:/g, '：')
+                .replace(/;/g, '；')
+                .replace(/\(/g, '（')
+                .replace(/\)/g, '）')
+                .replace(/\[/g, '【')
+                .replace(/\]/g, '】')
+                .replace(/"/g, '“')
+                .replace(/'/g, '’')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function formatSpeechText(text, options = {}) {
+            const { finalize = false } = options;
+            if (!text) return '';
+
+            let formatted = normalizeSpeechPunctuation(text)
+                .replace(/\s*([，。！？；：])\s*/g, '$1')
+                .replace(/\s+/g, '');
+
+            formatted = insertCommasByHeuristics(formatted);
+            formatted = formatted.replace(/([，；：]){2,}/g, '$1');
+
+            if (finalize) {
+                formatted = addSentenceBreaks(formatted);
+                formatted = splitLongClauses(formatted);
+                formatted = ensureSentenceEnding(formatted);
+            }
+
+            return formatted;
+        }
+
+        function insertCommasByHeuristics(text) {
+            if (!text) return '';
+
+            let formatted = text;
+            const commaBeforeMarkers = [
+                '但是', '不过', '然后', '所以', '因此', '而且', '并且', '另外', '后来', '结果', '比如', '其实',
+                '可是', '而且', '反而', '否则', '同时', '而是', '于是', '况且'
+            ];
+            const commaAfterMarkers = [
+                '但是', '不过', '然后', '所以', '因此', '另外', '后来', '最后', '总之', '比如', '其实',
+                '首先', '其次', '再次', '然后', '同时', '而且', '不过', '如果', '因为', '虽然'
+            ];
+            const pauseEndings = [
+                '的时候', '之后', '的话', '的话呢', '以后', '以前', '之前', '之后', '同时', '其实', '比如',
+                '来说', '来看', '的话', '情况下', '原因是', '重点是', '问题是'
+            ];
+
+            const markerGroupBefore = commaBeforeMarkers.join('|');
+            const markerGroupAfter = commaAfterMarkers.join('|');
+            const pauseEndingGroup = pauseEndings.join('|');
+
+            formatted = formatted.replace(new RegExp(`([^，。！？；：\\n])(${markerGroupBefore})`, 'g'), '$1，$2');
+            formatted = formatted.replace(new RegExp(`(^|[。！？\\n])(${markerGroupAfter})(?![，。！？；：])`, 'g'), '$1$2，');
+
+            const pairRules = [
+                [/(因为[^，。！？]{2,24})(所以)/g, '$1，$2'],
+                [/(如果[^，。！？]{2,24})(就)/g, '$1，$2'],
+                [/(虽然[^，。！？]{2,24})(但是)/g, '$1，$2'],
+                [/(不但[^，。！？]{2,24})(而且)/g, '$1，$2'],
+                [/(不是[^，。！？]{2,24})(而是)/g, '$1，$2'],
+                [/(除非[^，。！？]{2,24})(否则)/g, '$1，$2'],
+                [/(既然[^，。！？]{2,24})(就)/g, '$1，$2'],
+                [/(哪怕[^，。！？]{2,24})(也)/g, '$1，$2'],
+                [/(即使[^，。！？]{2,24})(也)/g, '$1，$2'],
+                [/(只有[^，。！？]{2,24})(才)/g, '$1，$2'],
+                [/(只要[^，。！？]{2,24})(就)/g, '$1，$2']
+            ];
+
+            pairRules.forEach(([pattern, replacement]) => {
+                formatted = formatted.replace(pattern, replacement);
+            });
+
+            formatted = formatted.replace(new RegExp(`(${pauseEndingGroup})(?![，。！？；：])`, 'g'), '$1，');
+
+            formatted = formatted.replace(/(我觉得|我发现|我认为|我知道|我想|我担心|我希望|我喜欢|我不喜欢)(?![，。！？；：])/g, '$1，');
+            formatted = formatted.replace(/(比如说|也就是说|换句话说|说实话|一般来说|正常来说|相对来说)(?![，。！？；：])/g, '$1，');
+            formatted = formatted.replace(/(先|再|然后|最后)([^，。！？]{3,12})(先|再|然后|最后)/g, '$1$2，$3');
+
+            return splitLongClauses(formatted, true);
+        }
+
+        function splitLongClauses(text, preferComma = false) {
+            if (!text) return '';
+
+            let result = '';
+            let clause = '';
+            const softBreakChars = new Set(['的', '了', '是', '会', '就', '又', '也', '还', '都', '才', '呢', '啊', '吧', '吗']);
+            const hardBreakFollowers = ['因为', '所以', '但是', '不过', '然后', '如果', '虽然', '而且', '并且', '另外', '后来', '最后'];
+
+            for (let i = 0; i < text.length; i++) {
+                const currentChar = text[i];
+                clause += currentChar;
+
+                if (/[。！？；，\n]/.test(currentChar)) {
+                    result += clause;
+                    clause = '';
+                    continue;
+                }
+
+                const nextSlice = text.slice(i + 1);
+                const plainClauseLength = clause.replace(/[，。！？；：\n]/g, '').length;
+                const nearNaturalBoundary = softBreakChars.has(currentChar) || hardBreakFollowers.some((marker) => nextSlice.startsWith(marker));
+
+                if (plainClauseLength >= 18 && nearNaturalBoundary) {
+                    result += `${clause}${preferComma ? '，' : '。'}`;
+                    clause = '';
+                } else if (plainClauseLength >= 28) {
+                    result += `${clause}${preferComma ? '，' : '。'}`;
+                    clause = '';
+                }
+            }
+
+            return `${result}${clause}`.replace(/([，。！？；：]){2,}/g, '$1');
+        }
+
+        function addSentenceBreaks(text) {
+            if (!text) return '';
+
+            const breakMarkers = ['然后', '后来', '最后', '另外', '总之', '不过', '但是'];
+            let result = '';
+            let lastSentenceIndex = 0;
+
+            for (let i = 0; i < text.length; i++) {
+                const currentChar = text[i];
+                result += currentChar;
+
+                if (/[。！？\n]/.test(currentChar)) {
+                    lastSentenceIndex = result.length;
+                    continue;
+                }
+
+                if (currentChar !== '，') continue;
+
+                const remaining = text.slice(i + 1);
+                const shouldBreak = breakMarkers.some((marker) => remaining.startsWith(marker));
+                const clauseLength = result.slice(lastSentenceIndex).replace(/[，；：]/g, '').length;
+
+                if (shouldBreak && clauseLength >= 10) {
+                    result = `${result.slice(0, -1)}。`;
+                    lastSentenceIndex = result.length;
+                }
+            }
+
+            return result;
+        }
+
+        function ensureSentenceEnding(text) {
+            const trimmed = text.trim();
+            if (!trimmed) return '';
+            return /[。！？……]$/.test(trimmed) ? trimmed : `${trimmed}。`;
+        }
+
+        function composeReflectionText(baseText, finalText, interimText = '') {
+            const sections = [];
+            const base = baseText.trim();
+            const finalPart = finalText.trim();
+            const interimPart = interimText.trim();
+
+            if (base) sections.push(base);
+            if (finalPart || interimPart) {
+                const speechPart = `${finalPart}${interimPart}`.trim();
+                if (speechPart) sections.push(speechPart);
+            }
+
+            return sections.join('\n');
+        }
+
+        function renderSpeechTranscript(options = {}) {
+            const { finalize = false, statusEl = null } = options;
+            const reflectionInput = document.getElementById('reflection-input');
+            if (!reflectionInput) return;
+
+            const finalText = formatSpeechText(speechTranscriptRaw, { finalize });
+            const interimText = finalize ? '' : formatSpeechText(speechInterimTranscriptRaw);
+            const nextValue = composeReflectionText(speechInputPrefix, finalText, interimText);
+
+            reflectionInput.value = nextValue;
+            reflectionInput.focus();
+            reflectionInput.setSelectionRange(reflectionInput.value.length, reflectionInput.value.length);
+
+            speechTranscript = finalText;
+            speechInterimTranscript = interimText;
+
+            if (finalize) {
+                speechInterimTranscript = '';
+                speechInterimTranscriptRaw = '';
+                if (statusEl) {
+                    statusEl.textContent = speechTranscript
+                        ? '录音完成，文字已填入输入框，可继续编辑'
+                        : '录音完成，未识别到清晰语音，可手动输入';
+                }
+            }
+        }
+
+        function startSpeechRecognition(statusEl) {
+            speechTranscript = '';
+            speechTranscriptRaw = '';
+            speechInterimTranscript = '';
+            speechInterimTranscriptRaw = '';
+            if (!supportsSpeechRecognition) return Promise.resolve(false);
+
+            return new Promise((resolve) => {
+                let settled = false;
+                const settle = (isReady) => {
+                    if (settled) return;
+                    settled = true;
+                    resolve(isReady);
+                };
+
+                speechRecognition = new SpeechRecognitionAPI();
+                speechRecognition.lang = 'zh-CN';
+                speechRecognition.continuous = true;
+                speechRecognition.interimResults = true;
+                speechRecognition.maxAlternatives = 1;
+
+                speechRecognition.onstart = () => {
+                    settle(true);
+                };
+
+                speechRecognition.onresult = (event) => {
+                    let finalText = '';
+                    let interimText = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const resultText = event.results[i][0].transcript || '';
+                        if (!resultText) continue;
+                        if (event.results[i].isFinal) {
+                            finalText += resultText;
+                        } else {
+                            interimText += resultText;
+                        }
+                    }
+                    if (finalText) {
+                        speechTranscriptRaw = `${speechTranscriptRaw}${finalText}`.trim();
+                    }
+                    speechInterimTranscriptRaw = interimText.trim();
+                    renderSpeechTranscript();
+                };
+
+                speechRecognition.onerror = (event) => {
+                    console.error('语音识别失败:', event.error);
+                    settle(false);
+                };
+
+                speechRecognition.onend = () => {
+                    if (pendingSpeechRecognitionStopResolver) {
+                        pendingSpeechRecognitionStopResolver();
+                        pendingSpeechRecognitionStopResolver = null;
+                    }
+                    speechRecognition = null;
+                };
+
+                try {
+                    speechRecognition.start();
+                    window.setTimeout(() => {
+                        if (!settled) {
+                            console.warn('语音识别启动超时，回退到仅录音模式');
+                            settle(false);
+                        }
+                    }, 3000);
+                } catch (error) {
+                    console.error('语音识别启动失败:', error);
+                    speechRecognition = null;
+                    if (statusEl) statusEl.textContent = '录音中（语音转文字未成功启动）';
+                    settle(false);
+                }
+            });
+        }
+
+        function stopSpeechRecognition() {
+            if (!speechRecognition) return Promise.resolve();
+
+            return new Promise((resolve) => {
+                pendingSpeechRecognitionStopResolver = resolve;
+                try {
+                    speechRecognition.stop();
+                    window.setTimeout(() => {
+                        if (pendingSpeechRecognitionStopResolver === resolve) {
+                            pendingSpeechRecognitionStopResolver = null;
+                            resolve();
+                        }
+                    }, 1500);
+                } catch (error) {
+                    console.error('停止语音识别失败:', error);
+                    pendingSpeechRecognitionStopResolver = null;
+                    resolve();
+                }
+            });
+        }
+
+        function fillReflectionWithTranscript(statusEl) {
+            if (!supportsSpeechRecognition) {
+                if (statusEl) statusEl.textContent = '录音完成（当前浏览器不支持自动语音转文字）';
+                return;
+            }
+
+            renderSpeechTranscript({ finalize: true, statusEl });
+        }
+
+        function resetRecordingState() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            setMicrophoneTracksEnabled(false);
+            if (recordingInterval) {
+                clearInterval(recordingInterval);
+            }
+            mediaRecorder = null;
+            recordedChunks = [];
+            recordingStartTime = null;
+            recordingInterval = null;
+            speechTranscript = '';
+            speechTranscriptRaw = '';
+            speechInterimTranscript = '';
+            speechInterimTranscriptRaw = '';
+            speechInputPrefix = '';
+            stopSpeechRecognition();
+            speechRecognition = null;
+            pendingSpeechRecognitionStopResolver = null;
+            pendingMediaRecorderStopResolver = null;
+            mediaRecorderStopPromise = Promise.resolve();
+            isStartingRecording = false;
+            if (currentRecordingAudio) {
+                currentRecordingAudio.pause();
+                currentRecordingAudio = null;
+            }
+
+            // 重置UI
+            const recordBtn = document.getElementById('record-btn');
+            const statusEl = document.getElementById('recording-status');
+            const timerEl = document.getElementById('recording-timer');
+            const playBtn = document.getElementById('play-recording-btn');
+
+            if (recordBtn) {
+                recordBtn.classList.remove('recording');
+                recordBtn.disabled = false;
+            }
+            if (statusEl) {
+                statusEl.classList.remove('active');
+                statusEl.textContent = '点击录音按钮开始录音回答';
+            }
+            if (timerEl) timerEl.textContent = '0:00';
+            if (playBtn) {
+                playBtn.disabled = true;
+                playBtn.classList.remove('playing');
+            }
+        }
+
+        async function getMicrophoneStream() {
+            if (microphoneStream) {
+                const hasActiveTrack = microphoneStream.getAudioTracks().some(track => track.readyState === 'live');
+                if (hasActiveTrack) return microphoneStream;
+            }
+            microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            microphoneStream.getAudioTracks().forEach(track => {
+                track.enabled = false;
+            });
+            return microphoneStream;
+        }
+
+        function setMicrophoneTracksEnabled(enabled) {
+            if (!microphoneStream) return;
+            microphoneStream.getAudioTracks().forEach(track => {
+                if (track.readyState === 'live') track.enabled = enabled;
+            });
+        }
+
+        async function toggleRecording() {
+            const recordBtn = document.getElementById('record-btn');
+            const statusEl = document.getElementById('recording-status');
+            const playBtn = document.getElementById('play-recording-btn');
+
+            if (isStartingRecording) return;
+
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                // 开始录音
+                try {
+                    isStartingRecording = true;
+                    recordBtn.disabled = true;
+                    statusEl.classList.add('active');
+                    statusEl.textContent = supportsSpeechRecognition
+                        ? '正在准备录音，请在提示后开始说话...'
+                        : '正在准备录音...';
+
+                    const reflectionInput = document.getElementById('reflection-input');
+                    speechInputPrefix = reflectionInput ? reflectionInput.value.trim() : '';
+
+                    const stream = await getMicrophoneStream();
+                    const speechReady = await startSpeechRecognition(statusEl);
+                    recordedChunks = [];
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorderStopPromise = new Promise((resolve) => {
+                        pendingMediaRecorderStopResolver = resolve;
+                    });
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(blob);
+                        currentRecordingAudio = new Audio(audioUrl);
+                        playBtn.disabled = false;
+                        if (pendingMediaRecorderStopResolver) {
+                            pendingMediaRecorderStopResolver();
+                            pendingMediaRecorderStopResolver = null;
+                        }
+                    };
+
+                    setMicrophoneTracksEnabled(true);
+                    mediaRecorder.start();
+                    recordBtn.classList.add('recording');
+                    statusEl.textContent = speechReady
+                        ? '已开始收音，请开始说话...'
+                        : '正在录音中（语音转文字启动较慢，可结束后手动补充）...';
+                    playBtn.disabled = true;
+
+                    // 开始计时
+                    recordingStartTime = Date.now();
+                    updateRecordingTimer();
+                    recordingInterval = setInterval(updateRecordingTimer, 1000);
+
+                } catch (error) {
+                    console.error('录音失败:', error);
+                    statusEl.textContent = '无法访问麦克风，请检查权限';
+                } finally {
+                    isStartingRecording = false;
+                    recordBtn.disabled = false;
+                }
+            } else {
+                // 停止录音
+                mediaRecorder.stop();
+                setMicrophoneTracksEnabled(false);
+                recordBtn.classList.remove('recording');
+                statusEl.classList.remove('active');
+                statusEl.textContent = supportsSpeechRecognition
+                    ? '录音完成，正在转文字...'
+                    : '录音完成，可以播放或重新录音';
+                clearInterval(recordingInterval);
+                recordingInterval = null;
+                await Promise.all([mediaRecorderStopPromise, stopSpeechRecognition()]);
+                fillReflectionWithTranscript(statusEl);
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (!microphoneStream) return;
+            microphoneStream.getTracks().forEach(track => track.stop());
+            microphoneStream = null;
+        });
+
+        initializeAuth();
+
+        function updateRecordingTimer() {
+            const timerEl = document.getElementById('recording-timer');
+            if (recordingStartTime && timerEl) {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function togglePlayRecording() {
+            const playBtn = document.getElementById('play-recording-btn');
+
+            if (!currentRecordingAudio) return;
+
+            if (currentRecordingAudio.paused) {
+                currentRecordingAudio.play();
+                playBtn.classList.add('playing');
+
+                currentRecordingAudio.onended = () => {
+                    playBtn.classList.remove('playing');
+                };
+            } else {
+                currentRecordingAudio.pause();
+                currentRecordingAudio.currentTime = 0;
+                playBtn.classList.remove('playing');
+            }
+        }
+    </script>
+
+</body>
+
+</html>

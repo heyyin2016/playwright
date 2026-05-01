@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Family Exploration</title>
+    <style>
+        /* --- Core Style (Black + Neon Green) --- */
+        :root {
+            --bg-color: #000000;
+            --neon-green: #39ff14;
+            --neon-dim: rgba(57, 255, 20, 0.15);
+            --text-glow: 0 0 5px rgba(57, 255, 20, 0.8);
+            --box-glow: 0 0 15px rgba(57, 255, 20, 0.4);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--neon-green);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-transform: uppercase;
+            text-shadow: var(--text-glow);
+            margin: 20px 0;
+            flex-shrink: 0;
+        }
+
+        /* General Layout Container */
+        .stage {
+            display: none;
+            flex-grow: 1;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            height: 100%;
+            overflow-y: auto;
+            align-items: center;
+        }
+
+        .stage.active {
+            display: flex;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Story Prompt Box (Story Mode) */
+        .story-container {
+            max-width: 800px;
+            width: 90%;
+            text-align: left;
+            font-size: 1.8em;
+            line-height: 1.8;
+            margin-top: 50px;
+        }
+
+        .story-line {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .story-line.visible {
+            opacity: 1;
+            transform: translateY(0);
+            display: block;
+        }
+
+        /* Button */
+        .btn {
+            background: var(--neon-green);
+            color: black;
+            font-weight: bold;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px auto;
+            box-shadow: var(--box-glow);
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--neon-green);
+        }
+
+        .btn:disabled {
+            background: #333;
+            color: #555;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Space Key Hint */
+        .space-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            font-size: 1.2em;
+            color: #666;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.4;
+            }
+        }
+
+        .key-icon {
+            border: 1px solid #666;
+            padding: 5px 20px;
+            border-radius: 5px;
+            margin: 0 10px;
+            font-family: monospace;
+        }
+
+        /* --- Animal Grid --- */
+        .zoo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .animal-card {
+            border: 1px solid #444;
+            background: #050505;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .animal-card:hover {
+            border-color: var(--neon-green);
+            transform: translateY(-3px);
+            background: #111;
+        }
+
+        /* Selected/Marked Style */
+        .animal-card.selected {
+            background: rgba(57, 255, 20, 0.2);
+            border: 2px solid var(--neon-green);
+            box-shadow: var(--box-glow);
+        }
+
+        .icon {
+            font-size: 2.5em;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .name {
+            font-size: 0.9em;
+            color: #fff;
+        }
+
+        /* Selection Status Bar */
+        .selection-status {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: var(--neon-green);
+            border-bottom: 2px solid var(--neon-green);
+            padding-bottom: 10px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* Interview Interface */
+        .interview-box {
+            background: #111;
+            border: 1px solid var(--neon-green);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .interview-q {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #fff;
+        }
+
+        .highlight {
+            color: var(--neon-green);
+            font-weight: bold;
+            padding: 0 5px;
+            border-bottom: 1px dashed var(--neon-green);
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #000;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--neon-green);
+        }
+
+        /* Recording Control Area */
+        .recording-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(57, 255, 20, 0.05);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .record-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid var(--neon-green);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .record-btn:hover {
+            background: rgba(57, 255, 20, 0.1);
+            transform: scale(1.05);
+        }
+
+        .record-btn.recording {
+            background: #ff3333;
+            border-color: #ff3333;
+            animation: recordPulse 1s infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(255, 51, 51, 0);
+            }
+        }
+
+        .record-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--neon-green);
+        }
+
+        .record-btn.recording .record-icon {
+            background: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .recording-status {
+            flex-grow: 1;
+            color: #aaa;
+            font-size: 0.95em;
+        }
+
+        .recording-status.active {
+            color: #ff3333;
+            font-weight: bold;
+        }
+
+        .recording-timer {
+            color: var(--neon-green);
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+
+        .speech-error {
+            color: #ff4d4f;
+            font-size: 0.9em;
+            min-height: 1.2em;
+            max-width: 230px;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .play-recording-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-green);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .play-recording-btn:hover {
+            background: rgba(57, 255, 20, 0.2);
+        }
+
+        .play-recording-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-left: 12px solid var(--neon-green);
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            margin-left: 3px;
+        }
+
+        .play-recording-btn.playing .play-icon {
+            border-left: none;
+            width: 12px;
+            height: 12px;
+            border-left: 4px solid var(--neon-green);
+            border-right: 4px solid var(--neon-green);
+            margin-left: 0;
+        }
+
+        /* Audio Button Style (Top Right) */
+        .audio-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+            z-index: 100;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            opacity: 1;
+        }
+
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sound-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        .sound-waves {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-btn.playing .sound-waves {
+            opacity: 1;
+        }
+
+        .sound-wave {
+            width: 3px;
+            height: 8px;
+            background: white;
+            border-radius: 2px;
+            animation: soundWave 0.5s ease-in-out infinite;
+        }
+
+        .sound-wave:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .sound-wave:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 12px;
+        }
+
+        .sound-wave:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 16px;
+        }
+
+        @keyframes soundWave {
+            0%, 100% {
+                transform: scaleY(1);
+            }
+            50% {
+                transform: scaleY(0.5);
+            }
+        }
+
+        .audio-btn.playing .sound-icon {
+            animation: speakerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes speakerPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Question Audio Button (Small Inline Version) */
+        .question-audio-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+            z-index: 100;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            opacity: 1;
+        }
+
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sound-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        .sound-waves {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-btn.playing .sound-waves {
+            opacity: 1;
+        }
+
+        .sound-wave {
+            width: 3px;
+            height: 8px;
+            background: white;
+            border-radius: 2px;
+            animation: soundWave 0.5s ease-in-out infinite;
+        }
+
+        .sound-wave:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .sound-wave:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 12px;
+        }
+
+        .sound-wave:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 16px;
+        }
+
+        @keyframes soundWave {
+
+            0%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(0.5);
+            }
+        }
+
+        .audio-btn.playing .sound-icon {
+            animation: speakerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes speakerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="stage1" class="stage active" style="position: relative;">
+        <button class="audio-btn" id="stage1-audio-btn" onclick="toggleAudio('stage1')" title="Play/Pause Audio">
+            <svg class="sound-icon" viewBox="0 0 24 24">
+                <path
+                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+            <div class="sound-waves">
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+            </div>
+        </button>
+        <h1>🔭 Animal Observation Room</h1>
+        <div
+            style="background: #111; padding: 15px; border-radius: 10px; border: 1px dashed #444; margin-bottom: 10px;">
+            <p style="font-size: 1.2em; margin: 0; color: #fff;">
+                Please look below:<br>
+                1. Which animals are <b>very slow</b>?<br>
+                2. Which animals look <b>very kind</b>?<br>
+                <span style="font-size:0.8em; color:#888;">(You can click cards to mark them, or just take a look)</span>
+            </p>
+        </div>
+        <div class="zoo-grid" id="previewGrid"></div>
+        <button class="btn" onclick="nextStage(2)">I've seen enough, Next >></button>
+    </div>
+
+    <div id="stage2" class="stage">
+        <h1>📐 Family Building</h1>
+        <button class="audio-btn" id="stage2-audio-btn" onclick="toggleAudio('stage2')" title="Play/Pause Audio">
+            <svg class="sound-icon" viewBox="0 0 24 24">
+                <path
+                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+            <div class="sound-waves">
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+            </div>
+        </button>
+        <div class="story-container" id="storyBox">
+        </div>
+        <div class="space-hint" id="storyHint">Press <span class="key-icon">Space</span> to continue</div>
+        <button class="btn" id="startSelectBtn" style="display:none;" onclick="nextStage(3)">Start Selecting Animals >></button>
+    </div>
+
+    <div id="stage3" class="stage">
+        <h1>✨ Build Family Profile</h1>
+        <button class="audio-btn" id="stage3-audio-btn" onclick="toggleAudio('stage3')" title="Play/Pause Audio">
+            <svg class="sound-icon" viewBox="0 0 24 24">
+                <path
+                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+            <div class="sound-waves">
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+            </div>
+        </button>
+
+        <div class="selection-status" id="selectionPrompt">
+            Please select an animal father
+        </div>
+
+        <div class="zoo-grid" id="selectGrid"></div>
+    </div>
+
+    <div id="stage4" class="stage">
+        <h1>🎤 Family Interview</h1>
+        <button class="audio-btn" id="stage4-audio-btn" onclick="toggleAudio('stage4')" title="Play/Pause Audio">
+            <svg class="sound-icon" viewBox="0 0 24 24">
+                <path
+                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+            <div class="sound-waves">
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+            </div>
+        </button>
+        <div class="interview-box" id="interviewContainer">
+        </div>
+        <button class="btn" id="nextQuestionBtn" onclick="nextQuestion()">Next Question >></button>
+    </div>
+
+    <div id="stage5" class="stage" style="justify-content: center;">
+        <h1>🎉 Mission Complete</h1>
+        <p style="font-size: 1.5em; line-height: 1.6;">
+            Thank you for sharing this animal family's story.<br>
+            What a special family!
+        </p>
+        <div style="font-size: 4em; margin: 30px;">👪</div>
+        <button class="btn" id="save-result-btn" onclick="saveResultFile()">💾 Save Result File</button>
+        <button class="btn" onclick="location.reload()">Start Over</button>
+    </div>
+
+    <script>
+        // Audio Configuration
+        const AUDIO_BASE = 'music/';
+        const audioFiles = {
+            stage1: AUDIO_BASE + 'Animal1.m4a',
+            stage2: AUDIO_BASE + 'Animal2.m4a',
+            dad: AUDIO_BASE + 'AnimalDad.m4a',
+            mom: AUDIO_BASE + 'AnimalMom.m4a',
+            child: AUDIO_BASE + 'AnimalBaby.m4a',
+            q0: AUDIO_BASE + 'WhatKindOfMom.m4a',
+            q1: AUDIO_BASE + 'WhatAreHerCharacteristics.m4a',
+            q2: AUDIO_BASE + 'WhatKindOfDad.m4a',
+            q3: AUDIO_BASE + 'WhatAreHisCharacteristics.m4a',
+            q4: AUDIO_BASE + 'WhatDoTheyLikeToDo.m4a',
+            q5: AUDIO_BASE + 'HowDoTheyDoIt.m4a',
+            q6: AUDIO_BASE + 'WhatMadeBabyUnhappy.m4a'
+        };
+
+        // Audio Control
+        let currentAudio = null;
+        let currentAudioType = null;
+
+        function toggleAudio(type) {
+            // If on interview page (stage4), play current question audio
+            if (type === 'stage4') {
+                const audioKey = `q${questionIndex}`;
+                const audioFile = audioFiles[audioKey];
+                const btnId = `${type}-audio-btn`;
+                const btn = document.getElementById(btnId);
+
+                if (!btn || !audioFile) return;
+
+                // If it's the same audio
+                if (currentAudioType === type && currentAudio) {
+                    if (currentAudio.paused) {
+                        currentAudio.play();
+                        btn.classList.add('playing');
+                    } else {
+                        currentAudio.pause();
+                        btn.classList.remove('playing');
+                    }
+                    return;
+                }
+
+                // Stop other audio
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+
+                // Create new audio
+                currentAudio = new Audio(audioFile);
+                currentAudioType = type;
+
+                currentAudio.addEventListener('ended', function () {
+                    btn.classList.remove('playing');
+                });
+
+                currentAudio.play();
+                btn.classList.add('playing');
+                return;
+            }
+
+            // Other pages audio handling
+            const audioFile = audioFiles[type];
+            const btnId = `${type}-audio-btn`;
+            const btn = document.getElementById(btnId);
+
+            if (!btn || !audioFile) return;
+
+            // If switched to different audio source, stop current playback
+            if (currentAudioType !== type && currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtn = document.getElementById(`${currentAudioType}-audio-btn`);
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+
+            // If it's the same audio
+            if (currentAudioType === type && currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                    btn.classList.add('playing');
+                } else {
+                    currentAudio.pause();
+                    btn.classList.remove('playing');
+                }
+                return;
+            }
+
+            // Create new audio
+            currentAudio = new Audio(audioFile);
+            currentAudioType = type;
+
+            currentAudio.addEventListener('ended', function () {
+                btn.classList.remove('playing');
+            });
+
+            currentAudio.play();
+            btn.classList.add('playing');
+        }
+
+        // --- 1. 20 Common Animal Data ---
+        const animals = [
+            { icon: '🦁', name: 'Lion' }, { icon: '🐯', name: 'Tiger' },
+            { icon: '🐘', name: 'Elephant' }, { icon: '🦒', name: 'Giraffe' },
+            { icon: '🦓', name: 'Zebra' }, { icon: '🐼', name: 'Panda' },
+            { icon: '🐻', name: 'Bear' }, { icon: '🐵', name: 'Monkey' },
+            { icon: '🐺', name: 'Wolf' }, { icon: '🦊', name: 'Fox' },
+            { icon: '🐶', name: 'Dog' }, { icon: '🐱', name: 'Cat' },
+            { icon: '🐰', name: 'Rabbit' }, { icon: '🐢', name: 'Turtle' },
+            { icon: '🦅', name: 'Eagle' }, { icon: '🦉', name: 'Owl' },
+            { icon: '🐬', name: 'Dolphin' }, { icon: '🦈', name: 'Shark' },
+            { icon: '🐊', name: 'Crocodile' }, { icon: '🐍', name: 'Snake' }
+        ];
+
+        // --- 2. Story Script ---
+        const storyLines = [
+            { text: "In this game, we are going to create an animal family.", action: null },
+            { text: "I will choose one animal as dad and one animal as mom.", action: null },
+            { text: "After mom and dad fall in love, they have an animal baby - just like in your family, there's dad, mom, and you.", action: null },
+            { text: "Now please choose an animal as dad.", action: "prepare_select_dad" },
+        ];
+
+        // --- State Variables ---
+        let currentStoryIndex = -1;
+        let currentStageId = 1;
+        let selections = { dad: null, mom: null, child: null };
+        let selectionStep = 0; // 0=dad, 1=mom, 2=child
+        let questionIndex = 0;
+        let questions = [];
+        let interviewAnswers = [];
+        const MIC_PERMISSION_KEY = 'MIC_PERMISSION_KEY';
+        let sharedMicStream = null;
+        let speechRecognition = null;
+
+        // --- Initialization ---
+        window.onload = function () {
+            renderZoo('previewGrid', true); // Allow click marking
+            renderZoo('selectGrid', false); // Selection mode handled separately
+            document.addEventListener('keyup', handleKeyPress);
+        };
+
+        function renderZoo(elementId, isToggleMode) {
+            const grid = document.getElementById(elementId);
+            grid.innerHTML = "";
+            animals.forEach(ani => {
+                let div = document.createElement('div');
+                div.className = 'animal-card';
+                div.innerHTML = `
+                    <span class="icon">${ani.icon}</span>
+                    <div class="name">${ani.name}</div>
+                `;
+                if (isToggleMode) {
+                    // Page 1: Click to toggle selected state (visual marker)
+                    div.onclick = () => div.classList.toggle('selected');
+                } else {
+                    // Page 3: Click to confirm selection
+                    div.onclick = () => confirmSelection(ani);
+                }
+                grid.appendChild(div);
+            });
+        }
+
+        function nextStage(n) {
+            // Stop current audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtn = document.getElementById(`${currentAudioType}-audio-btn`);
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+            currentAudioType = null;
+
+            document.querySelectorAll('.stage').forEach(el => el.classList.remove('active'));
+            document.getElementById('stage' + n).classList.add('active');
+            currentStageId = n;
+
+            if (n === 2) {
+                // Enter story mode
+                currentStoryIndex = -1;
+                document.getElementById('storyBox').innerHTML = "";
+                advanceStory();
+            } else if (n === 3) {
+                // Auto play selection audio
+                updateSelectionAudio();
+            } else if (n === 4) {
+                // Enter interview mode, initialize questions
+                initQuestions();
+                showQuestion();
+            }
+        }
+
+        // --- Story Progression Logic ---
+        function handleKeyPress(e) {
+            if (currentStageId === 2 && e.code === 'Space') {
+                e.preventDefault();
+                advanceStory();
+            }
+        }
+
+        function advanceStory() {
+            currentStoryIndex++;
+
+            if (currentStoryIndex < storyLines.length) {
+                const lineData = storyLines[currentStoryIndex];
+
+                if (lineData.action === "prepare_select_dad") {
+                    const p = document.createElement('p');
+                    p.className = 'story-line visible';
+                    p.innerHTML = lineData.text;
+                    document.getElementById('storyBox').appendChild(p);
+                    document.getElementById('storyHint').style.display = 'none';
+                    document.getElementById('startSelectBtn').style.display = 'inline-block';
+                } else {
+                    const p = document.createElement('p');
+                    p.className = 'story-line visible';
+                    p.innerHTML = lineData.text;
+                    document.getElementById('storyBox').appendChild(p);
+                    const container = document.getElementById('stage2');
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+        }
+
+        // --- Selection Logic ---
+        function confirmSelection(animal) {
+            if (selectionStep === 0) {
+                // Select dad
+                selections.dad = animal;
+                selectionStep++;
+                updateSelectionPrompt("Please select an animal mother");
+                updateSelectionAudio();
+            } else if (selectionStep === 1) {
+                // Select mom
+                selections.mom = animal;
+                selectionStep++;
+                updateSelectionPrompt("Please select an animal with characteristics like a baby");
+                updateSelectionAudio();
+            } else if (selectionStep === 2) {
+                // Select baby
+                selections.child = animal;
+                nextStage(4); // Go directly to interview
+            }
+        }
+
+        function updateSelectionPrompt(text) {
+            const prompt = document.getElementById('selectionPrompt');
+            prompt.style.opacity = 0;
+            setTimeout(() => {
+                prompt.innerHTML = text;
+                prompt.style.opacity = 1;
+            }, 300);
+        }
+
+        function updateSelectionAudio() {
+            // Stop current audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // Play corresponding audio based on selection step
+            let audioType = selectionStep === 0 ? 'dad' : (selectionStep === 1 ? 'mom' : 'child');
+
+            // Update button ID mapping
+            currentAudioType = 'stage3';
+
+            const audioFile = audioFiles[audioType];
+            if (!audioFile) return;
+
+            currentAudio = new Audio(audioFile);
+            const btn = document.getElementById('stage3-audio-btn');
+
+            currentAudio.addEventListener('ended', function () {
+                if (btn) btn.classList.remove('playing');
+            });
+
+            // Auto play
+            currentAudio.play();
+            if (btn) btn.classList.add('playing');
+        }
+
+        // --- Interview Logic ---
+        function initQuestions() {
+            const d = selections.dad;
+            const m = selections.mom;
+            const c = selections.child;
+
+            questions = [
+                // 1. Mom's characteristics
+                {
+                    q: `You chose <span class="highlight">${m.icon} ${m.name}</span>.<br>What kind of mother is she?`,
+                    placeholder: "She is..."
+                },
+                {
+                    q: `What are her characteristics? What else?`,
+                    placeholder: "Her characteristics are..."
+                },
+                // 2. Dad's characteristics
+                {
+                    q: `You chose <span class="highlight">${d.icon} ${d.name}</span>.<br>What kind of father is he?`,
+                    placeholder: "He is..."
+                },
+                {
+                    q: `What are his characteristics? What else?`,
+                    placeholder: "His characteristics are..."
+                },
+                // 3. Interaction and preferences
+                {
+                    q: `What does <span class="highlight">${c.name} baby</span> like to do with mom and dad?<br>Do they do it often?`,
+                    placeholder: "Likes to do..."
+                },
+                {
+                    q: `How are they when they do it?`,
+                    placeholder: "At that time..."
+                },
+                // 4. Conflict/unhappiness
+                {
+                    q: `Is there anything that mom and dad did that made <span class="highlight">${c.name} baby</span> unhappy?`,
+                    placeholder: "Once..."
+                }
+            ];
+            questionIndex = 0;
+            interviewAnswers = new Array(questions.length).fill('');
+        }
+
+        function showQuestion() {
+            if (questionIndex >= questions.length) {
+                nextStage(5); // End
+                return;
+            }
+
+            const data = questions[questionIndex];
+            const container = document.getElementById('interviewContainer');
+
+            container.innerHTML = `
+                <div class="interview-q">${data.q}</div>
+                <textarea id="answer-textarea" placeholder="${data.placeholder}"></textarea>
+                <div class="recording-controls">
+                    <button class="record-btn" id="record-btn" onclick="toggleRecording()" title="Start Voice Input">
+                        <div class="record-icon"></div>
+                    </button>
+                    <div class="speech-error" id="speech-error"></div>
+                    <div class="recording-status" id="recording-status">Click record button to start voice input</div>
+                    <div class="recording-timer" id="recording-timer">0:00</div>
+                    <button class="play-recording-btn" id="play-recording-btn" onclick="togglePlayRecording()" disabled title="Play Recording">
+                        <div class="play-icon"></div>
+                    </button>
+                </div>
+            `;
+
+            // Update button text
+            const btn = document.getElementById('nextQuestionBtn');
+            if (questionIndex === questions.length - 1) {
+                btn.innerText = "Complete Interview";
+            } else {
+                btn.innerText = "Next Question >>";
+            }
+
+            // Reset recording state
+            resetRecordingState();
+
+            // Play current question audio
+            playQuestionAudio();
+        }
+
+        function playQuestionAudio() {
+            // Stop current audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            const audioKey = `q${questionIndex}`;
+            const audioFile = audioFiles[audioKey];
+
+            if (!audioFile) return;
+
+            currentAudioType = 'stage4';
+            currentAudio = new Audio(audioFile);
+
+            const btn = document.getElementById('stage4-audio-btn');
+
+            currentAudio.addEventListener('ended', function () {
+                if (btn) btn.classList.remove('playing');
+            });
+
+            // Auto play
+            currentAudio.play();
+            if (btn) btn.classList.add('playing');
+        }
+
+        function nextQuestion() {
+            saveCurrentAnswer();
+            questionIndex++;
+            showQuestion();
+        }
+
+        function saveCurrentAnswer() {
+            const answerEl = document.getElementById('answer-textarea');
+            if (!answerEl || questionIndex >= questions.length) return;
+            interviewAnswers[questionIndex] = answerEl.value.trim();
+        }
+
+        // --- Recording Function ---
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingStartTime = null;
+        let recordingInterval = null;
+        let currentRecordingAudio = null;
+        let speechSessionBaseText = '';
+        let speechSessionFinalText = '';
+        let speechSessionInterimText = '';
+
+        function resetRecordingState() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            if (recordingInterval) {
+                clearInterval(recordingInterval);
+            }
+            mediaRecorder = null;
+            recordedChunks = [];
+            recordingStartTime = null;
+            recordingInterval = null;
+            speechSessionBaseText = '';
+            speechSessionFinalText = '';
+            speechSessionInterimText = '';
+            if (currentRecordingAudio) {
+                currentRecordingAudio.pause();
+                currentRecordingAudio = null;
+            }
+            stopSpeechRecognition();
+        }
+
+        function clearSpeechError() {
+            const errorEl = document.getElementById('speech-error');
+            if (errorEl) errorEl.textContent = '';
+        }
+
+        function setSpeechError(message) {
+            const errorEl = document.getElementById('speech-error');
+            if (errorEl) errorEl.textContent = message;
+        }
+
+        function getSpeechCombinedText() {
+            const speechText = [speechSessionFinalText, speechSessionInterimText]
+                .filter(Boolean)
+                .join('');
+            if (!speechText) return speechSessionBaseText;
+
+            const separator = speechSessionBaseText && !speechSessionBaseText.endsWith('\n') ? '\n' : '';
+            return `${speechSessionBaseText}${separator}${speechText}`;
+        }
+
+        function renderSpeechText() {
+            const answerEl = document.getElementById('answer-textarea');
+            if (!answerEl) return;
+            answerEl.value = getSpeechCombinedText();
+            answerEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        function beginSpeechSession() {
+            const answerEl = document.getElementById('answer-textarea');
+            speechSessionBaseText = answerEl ? answerEl.value || '' : '';
+            speechSessionFinalText = '';
+            speechSessionInterimText = '';
+        }
+
+        function finalizeSpeechSession() {
+            if (speechSessionInterimText) {
+                speechSessionFinalText += speechSessionInterimText;
+                speechSessionInterimText = '';
+            }
+            renderSpeechText();
+        }
+
+        function stopSpeechRecognition() {
+            if (!speechRecognition) return;
+            try {
+                speechRecognition.onresult = null;
+                speechRecognition.onerror = null;
+                speechRecognition.onend = null;
+                speechRecognition.stop();
+            } catch (e) {
+                // Ignore state exceptions when stopping
+            }
+            speechRecognition = null;
+        }
+
+        async function ensureMicrophonePermission() {
+            if (localStorage.getItem(MIC_PERMISSION_KEY) === 'granted') {
+                return true;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setSpeechError('Current browser does not support microphone permission check');
+                return false;
+            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                if (!sharedMicStream) {
+                    sharedMicStream = stream;
+                } else {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                localStorage.setItem(MIC_PERMISSION_KEY, 'granted');
+                return true;
+            } catch (error) {
+                if (error && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError')) {
+                    setSpeechError('Microphone permission denied');
+                } else {
+                    setSpeechError('Speech recognition startup failed');
+                }
+                return false;
+            }
+        }
+
+        function startSpeechRecognition() {
+            const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognitionClass) {
+                setSpeechError('Browser does not support speech recognition');
+                return Promise.resolve(false);
+            }
+
+            return new Promise((resolve) => {
+                let hasResolved = false;
+                const startTimeout = setTimeout(() => {
+                    setSpeechError('Speech recognition startup timeout, please try again');
+                    try {
+                        if (speechRecognition) {
+                            speechRecognition.stop();
+                        }
+                    } catch (e) {
+                        // Ignore state exceptions when timeout closing
+                    }
+                    speechRecognition = null;
+                    resolveOnce(false);
+                }, 4000);
+                speechRecognition = new SpeechRecognitionClass();
+                speechRecognition.lang = 'en-US';
+                speechRecognition.continuous = true;
+                speechRecognition.interimResults = true;
+
+                const resolveOnce = (value) => {
+                    if (!hasResolved) {
+                        hasResolved = true;
+                        clearTimeout(startTimeout);
+                        resolve(value);
+                    }
+                };
+
+                speechRecognition.onstart = () => {
+                    resolveOnce(true);
+                };
+
+                speechRecognition.onresult = (event) => {
+                    let finalText = '';
+                    let interimText = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            finalText += event.results[i][0].transcript;
+                        } else {
+                            interimText += event.results[i][0].transcript;
+                        }
+                    }
+                    if (finalText.trim()) {
+                        speechSessionFinalText += finalText;
+                    }
+                    speechSessionInterimText = interimText;
+                    renderSpeechText();
+                };
+
+                speechRecognition.onerror = (event) => {
+                    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                        setSpeechError('Microphone permission denied');
+                    } else {
+                        setSpeechError('Error occurred during recognition');
+                    }
+                    resolveOnce(false);
+                };
+
+                speechRecognition.onend = () => {
+                    resolveOnce(false);
+                    speechRecognition = null;
+                };
+
+                try {
+                    speechRecognition.start();
+                } catch (error) {
+                    setSpeechError('Speech recognition startup failed');
+                    speechRecognition = null;
+                    resolveOnce(false);
+                }
+            });
+        }
+
+        async function toggleRecording() {
+            const recordBtn = document.getElementById('record-btn');
+            const statusEl = document.getElementById('recording-status');
+            const playBtn = document.getElementById('play-recording-btn');
+            clearSpeechError();
+
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                // Start recording
+                try {
+                    const permissionGranted = await ensureMicrophonePermission();
+                    if (!permissionGranted) {
+                        statusEl.textContent = 'Cannot start voice input';
+                        return;
+                    }
+
+                    if (!sharedMicStream) {
+                        sharedMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    }
+
+                    statusEl.classList.add('active');
+                    statusEl.textContent = 'Preparing voice input, please wait a moment before speaking...';
+                    recordBtn.disabled = true;
+                    beginSpeechSession();
+
+                    const speechStarted = await startSpeechRecognition();
+                    if (!speechStarted) {
+                        recordBtn.disabled = false;
+                        statusEl.classList.remove('active');
+                        statusEl.textContent = 'Cannot start voice input';
+                        return;
+                    }
+
+                    recordedChunks = [];
+                    mediaRecorder = new MediaRecorder(sharedMicStream);
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(blob);
+                        currentRecordingAudio = new Audio(audioUrl);
+                        playBtn.disabled = false;
+                    };
+
+                    mediaRecorder.start();
+                    recordBtn.classList.add('recording');
+                    recordBtn.disabled = false;
+                    statusEl.textContent = 'Voice input ready, please start speaking...';
+                    playBtn.disabled = true;
+
+                    // Start timer
+                    recordingStartTime = Date.now();
+                    updateRecordingTimer();
+                    recordingInterval = setInterval(updateRecordingTimer, 1000);
+
+                } catch (error) {
+                    console.error('Recording failed:', error);
+                    setSpeechError('Speech recognition startup failed');
+                    recordBtn.disabled = false;
+                    statusEl.classList.remove('active');
+                    statusEl.textContent = 'Cannot start voice input';
+                }
+            } else {
+                // Stop recording
+                mediaRecorder.stop();
+                finalizeSpeechSession();
+                stopSpeechRecognition();
+                recordBtn.disabled = false;
+                recordBtn.classList.remove('recording');
+                statusEl.classList.remove('active');
+                statusEl.textContent = 'Voice input complete, you can add more or go to next question';
+                clearInterval(recordingInterval);
+            }
+        }
+
+        function updateRecordingTimer() {
+            const timerEl = document.getElementById('recording-timer');
+            if (recordingStartTime) {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function togglePlayRecording() {
+            const playBtn = document.getElementById('play-recording-btn');
+
+            if (!currentRecordingAudio) return;
+
+            if (currentRecordingAudio.paused) {
+                currentRecordingAudio.play();
+                playBtn.classList.add('playing');
+
+                currentRecordingAudio.onended = () => {
+                    playBtn.classList.remove('playing');
+                };
+            } else {
+                currentRecordingAudio.pause();
+                currentRecordingAudio.currentTime = 0;
+                playBtn.classList.remove('playing');
+            }
+        }
+
+        function stripHtml(htmlText) {
+            const temp = document.createElement('div');
+            temp.innerHTML = htmlText;
+            return (temp.textContent || temp.innerText || '').replace(/\s+/g, ' ').trim();
+        }
+
+        function buildResultText() {
+            const now = new Date();
+            const lines = [];
+            lines.push(`Generated at: ${now.toLocaleString('en-US')}`);
+            lines.push('Final Test Result: Animal Family Interview Completed');
+            lines.push('');
+            lines.push('Family Selection Results:');
+            lines.push(`Father: ${selections.dad ? `${selections.dad.icon} ${selections.dad.name}` : 'Not selected'}`);
+            lines.push(`Mother: ${selections.mom ? `${selections.mom.icon} ${selections.mom.name}` : 'Not selected'}`);
+            lines.push(`Baby: ${selections.child ? `${selections.child.icon} ${selections.child.name}` : 'Not selected'}`);
+            lines.push('');
+            lines.push('Interview Input Content:');
+
+            questions.forEach((item, idx) => {
+                const questionText = stripHtml(item.q);
+                const answerText = (interviewAnswers[idx] || '').trim() || '(Not filled)';
+                lines.push(`${idx + 1}. Question: ${questionText}`);
+                lines.push(`   Answer: ${answerText}`);
+            });
+
+            return lines.join('\n');
+        }
+
+        function saveResultFile() {
+            saveCurrentAnswer();
+            const content = buildResultText();
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const fileName = `Animal_Family_Interview_Result_${timestamp}.txt`;
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+    </script>
+</body>
+
+</html>

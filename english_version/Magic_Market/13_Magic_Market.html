@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaos Magic Market</title>
+    <style>
+        :root {
+            --bg-dark: #12122a;
+            --market-green: #4CAF50;
+            --market-red: #F44336;
+            --accent-yellow: #FFC107;
+            --text-light: #E0E0E0;
+            --card-bg: #1e1e4a;
+            --button-primary: #03A9F4;
+            --button-secondary: #FF9800;
+            --theme-purple: #9c27b0;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(156, 39, 176, 0.5);
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--accent-yellow);
+            text-shadow: 0 0 10px var(--accent-yellow);
+            margin-bottom: 10px;
+        }
+
+        /* Audio button styles */
+        .audio-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+            z-index: 100;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            opacity: 1;
+        }
+
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sound-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        .sound-waves {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-btn.playing .sound-waves {
+            opacity: 1;
+        }
+
+        .sound-wave {
+            width: 3px;
+            height: 8px;
+            background: white;
+            border-radius: 2px;
+            animation: soundWave 0.5s ease-in-out infinite;
+        }
+
+        .sound-wave:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .sound-wave:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 12px;
+        }
+
+        .sound-wave:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 16px;
+        }
+
+        @keyframes soundWave {
+
+            0%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(0.5);
+            }
+        }
+
+        .audio-btn.playing .sound-icon {
+            animation: speakerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes speakerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Prepare screen styles - Full screen overlay */
+        #prepare-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-dark);
+            z-index: 999;
+            padding: 0;
+            margin: 0;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #prepare-screen.show {
+            display: flex;
+        }
+
+        .prepare-content {
+            background: linear-gradient(135deg, var(--theme-purple), var(--button-primary));
+            padding: 60px 50px;
+            border-radius: 30px;
+            margin: 0;
+            max-width: 700px;
+            width: 90%;
+            box-shadow: 0 0 50px rgba(156, 39, 176, 0.8);
+            animation: prepareAppear 0.5s ease-out;
+            text-align: center;
+            position: relative;
+        }
+
+        @keyframes prepareAppear {
+            from {
+                opacity: 1;
+                transform: scale(0.95) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .prepare-content h2 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            color: white;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .prepare-content p {
+            font-size: 1.4em;
+            line-height: 1.8;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .prepare-content p strong {
+            color: var(--accent-yellow);
+            font-size: 1.2em;
+            text-shadow: 0 0 10px var(--accent-yellow);
+        }
+
+        .ready-btn {
+            padding: 20px 50px;
+            font-size: 1.5em;
+            background: var(--market-green);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.5);
+            margin-top: 20px;
+        }
+
+        .ready-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.7);
+        }
+
+        .ready-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Game interface */
+        #game-area {
+            display: none;
+            padding: 20px;
+        }
+
+        /* Market display area */
+        .market-display {
+            border: 2px solid var(--button-primary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #2a2a6a;
+        }
+
+        .market-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        #material-name {
+            font-size: 1.8em;
+            color: var(--button-primary);
+        }
+
+        #current-price {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+            transition: color 0.3s, transform 0.2s;
+        }
+
+        #timer {
+            font-size: 1em;
+            color: var(--market-red);
+            font-weight: bold;
+            background: rgba(244, 67, 54, 0.2);
+            padding: 10px 10px;
+            border-radius: 15px;
+            border: 3px solid var(--market-red);
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
+            animation: timerPulse 1s ease-in-out infinite;
+            min-width: 100px;
+            display: inline-block;
+        }
+
+        @keyframes timerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(244, 67, 54, 0.6);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(244, 67, 54, 0.9);
+            }
+        }
+
+        #timer.warning {
+            animation: timerWarning 0.5s ease-in-out infinite;
+            background: rgba(244, 67, 54, 0.4);
+            border-color: #ff0000;
+        }
+
+        @keyframes timerWarning {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 50px rgba(255, 0, 0, 1);
+            }
+        }
+
+        /* Decision buttons */
+        .decision-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .decision-buttons button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-family: inherit;
+            font-weight: bold;
+            min-width: 150px;
+        }
+
+        .btn-buy {
+            background-color: var(--market-green);
+            color: white;
+        }
+
+        .btn-wait {
+            background-color: var(--button-secondary);
+            color: var(--bg-dark);
+        }
+
+        .btn-substitute {
+            background-color: #795548;
+            color: var(--text-light);
+            position: relative;
+        }
+
+        .decision-buttons button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        /* Substitute purchase popup */
+        .substitute-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            border: 3px solid var(--accent-yellow);
+            border-radius: 15px;
+            padding: 30px 40px;
+            box-shadow: 0 0 50px rgba(255, 193, 7, 0.6);
+            z-index: 1000;
+            display: none;
+            animation: popupAppear 0.3s ease;
+        }
+
+        @keyframes popupAppear {
+            from {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .substitute-popup h3 {
+            color: var(--accent-yellow);
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .substitute-popup p {
+            font-size: 1.3em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .substitute-popup button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            background: var(--market-green);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Feedback area */
+        #feedback-area {
+            min-height: 80px;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            background: #101030;
+            color: var(--text-light);
+            text-align: left;
+            border-left: 5px solid var(--accent-yellow);
+        }
+
+        .feedback-message {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        /* Rating screen styles */
+        #rating-screen {
+            display: none;
+            padding: 40px;
+        }
+
+        .rating-content {
+            background: linear-gradient(135deg, #2a2a6a, #1e1e4a);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid var(--theme-purple);
+        }
+
+        .rating-content h2 {
+            color: var(--accent-yellow);
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        .rating-group {
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .rating-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--accent-yellow);
+            font-size: 1.2em;
+        }
+
+        .rating-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            background: #333;
+            color: white;
+            border: 2px solid var(--theme-purple);
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+
+        .rating-group select:focus {
+            outline: none;
+            border-color: var(--accent-yellow);
+        }
+
+        .submit-rating-btn {
+            padding: 15px 40px;
+            font-size: 1.3em;
+            background: var(--theme-purple);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .submit-rating-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(156, 39, 176, 0.5);
+        }
+
+        /* Final round styles */
+        .market-chaos {
+            border-color: var(--market-red) !important;
+            animation: neonRed 0.5s infinite alternate;
+        }
+
+        @keyframes neonRed {
+            from {
+                box-shadow: 0 0 10px var(--market-red);
+            }
+
+            to {
+                box-shadow: 0 0 20px var(--market-red), 0 0 5px var(--market-red);
+            }
+        }
+
+        /* Difficulty announcement */
+        #difficulty-announcement {
+            color: var(--accent-yellow);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Start screen -->
+        <div id="start-screen">
+            <button class="audio-btn" id="start-audio-btn" onclick="toggleAudio()" title="Play/Pause Audio">
+                <svg class="sound-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </button>
+            <h1>Chaos Magic Market Simulator</h1>
+            <p id="instruction-text">Help the magic apprentice purchase materials! Market prices fluctuate wildly. Decide when to buy at the best price before the countdown ends.</p>
+            <button onclick="startGame()"
+                style="padding: 15px 30px; font-size: 1.3em; background: var(--market-green); color: white; border: none; border-radius: 30px; cursor: pointer; margin-top: 20px;">Start Mission</button>
+        </div>
+
+        <!-- Prepare screen -->
+        <div id="prepare-screen">
+            <div class="prepare-content">
+                <button class="audio-btn" id="prepare-audio-btn" onclick="toggleAudio('prepare')" title="Play/Pause Audio"
+                    style="position: absolute; top: 15px; right: 15px;">
+                    <svg class="sound-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <div class="sound-waves">
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                    </div>
+                </button>
+                <h2>Preparation Phase</h2>
+                <p id="prepare-message">Next up is <strong>Round 1</strong>!</p>
+                <p>In this round, you only have 10 seconds to purchase. Can you buy at the best price?</p>
+                <button class="ready-btn" onclick="startRound()">Ready!</button>
+            </div>
+        </div>
+
+        <!-- Game screen -->
+        <div id="game-area">
+            <div id="difficulty-announcement"></div>
+
+            <div class="market-display" id="market-display">
+                <div class="market-header">
+                    <span id="material-name">---</span>
+                    <span id="timer">Preparing...</span>
+                </div>
+                <div id="current-price-display">
+                    <span style="font-size: 1.5em; color: #a0a0a0;">Current Price: </span>
+                    <span id="current-price">100</span>
+                </div>
+            </div>
+
+            <div class="decision-buttons">
+                <button class="btn-buy" id="btn-buy" onclick="handleDecision('buy')">Buy Now</button>
+                <button class="btn-wait" id="btn-wait" onclick="handleDecision('wait')">Wait</button>
+                <button class="btn-substitute" id="btn-substitute" onclick="handleSubstituteClick()">Buy Alternative</button>
+            </div>
+
+            <div id="feedback-area">
+                <div class="feedback-message" id="current-feedback">Market is fluctuating...</div>
+                <div class="feedback-message" id="wallet-status">Wallet Balance: 500 Magic Coins</div>
+            </div>
+        </div>
+
+        <!-- Substitute purchase popup -->
+        <div class="substitute-popup" id="substitute-popup">
+            <h3>Buy Alternative</h3>
+            <p id="substitute-info">You have purchased the alternative!<br>Price: <strong>110 Magic Coins</strong></p>
+            <button onclick="closeSubstitutePopup()">Confirm</button>
+        </div>
+
+        <!-- Rating screen -->
+        <div id="rating-screen">
+            <div class="rating-content" style="position: relative;">
+                <button class="audio-btn" id="rating-audio-btn" onclick="toggleAudio('rating')" title="Play/Pause Audio"
+                    style="position: absolute; top: 15px; right: 15px;">
+                    <svg class="sound-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <div class="sound-waves">
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                    </div>
+                </button>
+                <h2>Round Rating</h2>
+                <p style="font-size: 1.1em; color: var(--text-light); margin-bottom: 30px;">Please rate this round:</p>
+
+                <div class="rating-group">
+                    <label for="tension-rating">Tension Level (1 = Not tense at all, 10 = Extremely tense)</label>
+                    <select id="tension-rating">
+                        <option value="1">1 - Not tense at all</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5" selected>5 - Moderately tense</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10 - Extremely tense</option>
+                    </select>
+                </div>
+
+                <div class="rating-group">
+                    <label for="fun-rating">Fun Level (1 = Not fun, 10 = Extremely fun)</label>
+                    <select id="fun-rating">
+                        <option value="1">1 - Not fun at all</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5" selected>5 - Okay</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10 - Extremely fun</option>
+                    </select>
+                </div>
+
+                <button class="submit-rating-btn" onclick="submitRating()">Submit Rating & Continue</button>
+            </div>
+        </div>
+
+        <!-- End screen -->
+        <div id="end-screen"
+            style="display: none; padding: 30px; background: var(--market-green); border-radius: 15px;">
+            <h2>Interstellar Challenge Mission Complete!</h2>
+            <p style="font-size: 1.2em;">You have successfully completed all material procurement missions. You performed like a true market explorer!</p>
+            <button onclick="saveResults()"
+                style="padding: 10px 20px; background: var(--theme-purple); color: white; border-radius: 20px; margin-top: 20px; cursor: pointer; border: none; font-size: 1.1em; font-family: inherit;">Save Results</button>
+            <button onclick="location.reload()"
+                style="padding: 10px 20px; background: var(--bg-dark); color: white; border-radius: 20px; margin-top: 20px; margin-left: 12px; cursor: pointer; border: none; font-size: 1.1em; font-family: inherit;">Play Again</button>
+            <p id="save-status" style="margin-top: 15px; color: var(--bg-dark); font-weight: bold;"></p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Audio Control ---
+        let currentAudio = null;
+        let currentAudioType = null;
+
+        const audioFiles = {
+            start: 'music/1.m4a',
+            prepare: 'music/在这一轮中，你只有10s时间购买，你能以最合适的价格买进吗吗.m4a',
+            rating: 'music/紧张好玩程度.m4a'
+        };
+
+        function toggleAudio(type = 'start') {
+            const btnId = type === 'start' ? 'start-audio-btn' : `${type}-audio-btn`;
+            const btn = document.getElementById(btnId);
+            const audioFile = audioFiles[type];
+
+            if (!btn || !audioFile) return;
+
+            // Stop current playback if switching audio source
+            if (currentAudioType !== type && currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtnId = currentAudioType === 'start' ? 'start-audio-btn' : `${currentAudioType}-audio-btn`;
+                const oldBtn = document.getElementById(oldBtnId);
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+
+            // Same audio
+            if (currentAudioType === type && currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                    btn.classList.add('playing');
+                } else {
+                    currentAudio.pause();
+                    btn.classList.remove('playing');
+                }
+                return;
+            }
+
+            // Create new audio
+            currentAudio = new Audio(audioFile);
+            currentAudioType = type;
+
+            currentAudio.addEventListener('ended', function () {
+                btn.classList.remove('playing');
+            });
+
+            currentAudio.play();
+            btn.classList.add('playing');
+        }
+
+        // Auto-play audio helper
+        function playAudioForPage(type) {
+            const btnId = `${type}-audio-btn`;
+            const btn = document.getElementById(btnId);
+            const audioFile = audioFiles[type];
+
+            if (!btn || !audioFile) return;
+
+            // Stop current audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                if (currentAudioType) {
+                    const oldBtnId = currentAudioType === 'start' ? 'start-audio-btn' : `${currentAudioType}-audio-btn`;
+                    const oldBtn = document.getElementById(oldBtnId);
+                    if (oldBtn) oldBtn.classList.remove('playing');
+                }
+            }
+
+            // Create and play new audio
+            currentAudio = new Audio(audioFile);
+            currentAudioType = type;
+
+            currentAudio.addEventListener('ended', function () {
+                btn.classList.remove('playing');
+            });
+
+            currentAudio.play();
+            btn.classList.add('playing');
+        }
+
+        // --- Game Configuration: 4 rounds with smooth difficulty progression ---
+        const MAX_ROUNDS = 4;
+        const START_PRICE_INTERVAL = 500;
+        const END_PRICE_INTERVAL = 50;
+        const START_MAX_FLUCTUATION = 20;
+        const END_MAX_FLUCTUATION = 80;
+        const START_TIMER = 10;
+        const END_TIMER = 5;
+        const BASE_MATERIAL_PRICE = 100;
+        const SUB_COST = 110;
+
+        // Random material names list
+        const MATERIAL_NAMES = [
+            "Wind Herbs", "Earth Stones", "Flame Crystals", "Stardust", "Moonlight Dew",
+            "Shadow Mushrooms", "Thunder Essence", "Time Hourglass", "Space Fragments", "Chaos Oil"
+        ];
+
+        // --- Game state variables ---
+        let currentRoundIndex = 0;
+        let currentMaterialName = '';
+        let currentPrice = 0;
+        let wallet = 500;
+        let priceInterval;
+        let timerInterval;
+        let roundTimer;
+        let isDecisionLocked = false;
+        let gameData = [];
+        let currentDifficulty = null;
+
+        // --- DOM element references ---
+        const startScreen = document.getElementById('start-screen');
+        const prepareScreen = document.getElementById('prepare-screen');
+        const gameArea = document.getElementById('game-area');
+        const ratingScreen = document.getElementById('rating-screen');
+        const endScreen = document.getElementById('end-screen');
+        const materialNameDisplay = document.getElementById('material-name');
+        const priceDisplay = document.getElementById('current-price');
+        const timerDisplay = document.getElementById('timer');
+        const currentFeedback = document.getElementById('current-feedback');
+        const walletStatus = document.getElementById('wallet-status');
+        const marketDisplay = document.getElementById('market-display');
+        const difficultyAnnouncement = document.getElementById('difficulty-announcement');
+        const btnBuy = document.getElementById('btn-buy');
+        const btnWait = document.getElementById('btn-wait');
+        const btnSubstitute = document.getElementById('btn-substitute');
+        const tensionRating = document.getElementById('tension-rating');
+        const funRating = document.getElementById('fun-rating');
+        const substitutePopup = document.getElementById('substitute-popup');
+
+        // --- Core functions ---
+
+        function startGame() {
+            // Stop current audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtnId = currentAudioType === 'start' ? 'start-audio-btn' : `${currentAudioType}-audio-btn`;
+                const oldBtn = document.getElementById(oldBtnId);
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+
+            startScreen.style.display = 'none';
+            currentRoundIndex = 0;
+            wallet = 500;
+            updateWallet(0);
+            showPrepareScreen();
+        }
+
+        // Show prepare screen
+        function showPrepareScreen() {
+            if (currentRoundIndex >= MAX_ROUNDS) {
+                endGame();
+                return;
+            }
+
+            startScreen.style.display = 'none';
+            gameArea.style.display = 'none';
+            ratingScreen.style.display = 'none';
+
+            // Update prepare screen content
+            const roundNum = currentRoundIndex + 1;
+            document.getElementById('prepare-message').innerHTML =
+                `Next up is <strong>Round ${roundNum} / ${MAX_ROUNDS}</strong>!`;
+
+            // Show prepare screen
+            prepareScreen.classList.add('show');
+
+            // Auto-play prepare screen audio
+            setTimeout(() => {
+                playAudioForPage('prepare');
+            }, 300);
+        }
+
+        // Calculate difficulty based on current round
+        function calculateDifficulty(round) {
+            const progress = round / (MAX_ROUNDS - 1);
+
+            const maxFluctuation = START_MAX_FLUCTUATION + (END_MAX_FLUCTUATION - START_MAX_FLUCTUATION) * progress * 0.5;
+            const updateInterval = START_PRICE_INTERVAL - (START_PRICE_INTERVAL - END_PRICE_INTERVAL) * progress * 0.5;
+            const timer = START_TIMER - (START_TIMER - END_TIMER) * progress * 0.5;
+
+            return {
+                maxFluctuation: Math.round(maxFluctuation),
+                updateInterval: Math.round(updateInterval),
+                timer: Math.max(END_TIMER, Math.round(timer))
+            };
+        }
+
+        // Start current round
+        function startRound() {
+            // Stop prepare screen audio
+            if (currentAudio && currentAudioType === 'prepare') {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const prepareBtn = document.getElementById('prepare-audio-btn');
+                if (prepareBtn) prepareBtn.classList.remove('playing');
+            }
+
+            prepareScreen.classList.remove('show');
+            gameArea.style.display = 'block';
+
+            if (priceInterval) clearInterval(priceInterval);
+            if (timerInterval) clearInterval(timerInterval);
+
+            isDecisionLocked = false;
+
+            const isFinalRound = currentRoundIndex === MAX_ROUNDS - 1;
+
+            currentDifficulty = calculateDifficulty(currentRoundIndex);
+            currentMaterialName = MATERIAL_NAMES[currentRoundIndex % MATERIAL_NAMES.length] + ' (R' + (currentRoundIndex + 1) + ')';
+            currentPrice = BASE_MATERIAL_PRICE + (currentRoundIndex * 5);
+
+            // --- UI and preview ---
+            materialNameDisplay.textContent = currentMaterialName;
+            priceDisplay.textContent = currentPrice;
+            currentFeedback.textContent = `Market is fluctuating for ${currentMaterialName}...`;
+
+            // Reset countdown display immediately
+            const nextRoundTime = isFinalRound ? END_TIMER : currentDifficulty.timer;
+            timerDisplay.textContent = `${nextRoundTime}s`;
+            timerDisplay.classList.remove('warning');
+
+            if (isFinalRound) {
+                difficultyAnnouncement.textContent = "Final Round: Market Crash Test! All material prices are fluctuating wildly!";
+                marketDisplay.classList.add('market-chaos');
+                btnBuy.textContent = "Buy Now";
+                btnWait.textContent = "Stop Trading";
+                btnSubstitute.textContent = "Switch Market";
+                btnWait.classList.add('btn-substitute');
+                btnSubstitute.classList.remove('btn-substitute');
+            } else {
+                difficultyAnnouncement.textContent = `Market volatility increased! Range ±${currentDifficulty.maxFluctuation} coins, countdown ${currentDifficulty.timer} seconds.`;
+                marketDisplay.classList.remove('market-chaos');
+                btnBuy.textContent = "Buy Now";
+                btnWait.textContent = "Wait";
+                btnSubstitute.textContent = "Buy Alternative";
+                btnWait.classList.remove('btn-substitute');
+                btnSubstitute.classList.add('btn-substitute');
+            }
+
+            enableButtons(false);
+
+            // 1 second delay before starting fluctuations and timer
+            setTimeout(() => {
+                startPriceFluctuation(currentDifficulty.maxFluctuation, currentDifficulty.updateInterval, isFinalRound);
+                startRoundTimer(isFinalRound ? END_TIMER : currentDifficulty.timer);
+                enableButtons(true);
+            }, 1000);
+
+            currentRoundIndex++;
+        }
+
+        // Price fluctuation simulation
+        function startPriceFluctuation(maxFluctuation, updateInterval, isFinalRound) {
+            if (priceInterval) clearInterval(priceInterval);
+
+            const fluctuationFactor = isFinalRound ? 1.5 : 0.2;
+
+            priceInterval = setInterval(() => {
+                if (isDecisionLocked) return;
+
+                let change = (Math.random() - 0.5) * maxFluctuation * fluctuationFactor;
+                let newPrice = currentPrice + change;
+
+                newPrice = Math.max(BASE_MATERIAL_PRICE - 50, newPrice);
+                newPrice = Math.min(BASE_MATERIAL_PRICE + 300, newPrice);
+
+                let priceDelta = Math.round(newPrice - currentPrice);
+
+                currentPrice = Math.round(newPrice);
+                priceDisplay.textContent = currentPrice;
+
+                // Enhanced visual feedback for price changes
+                if (priceDelta > 0) {
+                    priceDisplay.style.color = varToHex('--market-red');
+                    priceDisplay.style.transform = 'scale(1.1)';
+                } else if (priceDelta < 0) {
+                    priceDisplay.style.color = varToHex('--market-green');
+                    priceDisplay.style.transform = 'scale(1.1)';
+                } else {
+                    priceDisplay.style.color = varToHex('--text-light');
+                }
+
+                // Restore original size
+                setTimeout(() => {
+                    priceDisplay.style.transform = 'scale(1)';
+                }, 200);
+            }, updateInterval);
+        }
+
+        // Countdown simulation
+        function startRoundTimer(timerDuration) {
+            if (timerInterval) clearInterval(timerInterval);
+            roundTimer = timerDuration;
+            timerDisplay.textContent = `${roundTimer}s`;
+            timerDisplay.classList.remove('warning');
+
+            timerInterval = setInterval(() => {
+                roundTimer--;
+                timerDisplay.textContent = `${roundTimer}s`;
+
+                // Add warning style when 3 seconds or less remain
+                if (roundTimer <= 3) {
+                    timerDisplay.classList.add('warning');
+                }
+
+                if (roundTimer <= 0) {
+                    handleTimeout();
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+        }
+
+        // Timeout handling
+        function handleTimeout() {
+            isDecisionLocked = true;
+            clearInterval(priceInterval);
+            enableButtons(false);
+
+            const isFinalRound = currentRoundIndex === MAX_ROUNDS;
+
+            if (isFinalRound) {
+                currentFeedback.innerHTML = `Time's up! You <strong>froze</strong>, missing the trading opportunity! (Trade avoidance)`;
+                recordDecision('timeout-freeze', currentPrice, 0, 'Froze under major fluctuations, trade avoidance');
+            } else {
+                let subCost = SUB_COST;
+                updateWallet(-subCost);
+                currentFeedback.innerHTML = `Time's up! You were <strong>forced to buy</strong> the stable but expensive alternative (-${subCost} coins).<br>Be faster next time!`;
+                recordDecision('timeout-sub', currentPrice, subCost, 'Forced to buy alternative');
+            }
+
+            setTimeout(showRatingScreen, 2000);
+        }
+
+        // Handle user decision
+        function handleDecision(type) {
+            if (isDecisionLocked) return;
+
+            isDecisionLocked = true;
+            clearInterval(priceInterval);
+            clearInterval(timerInterval);
+            enableButtons(false);
+
+            let finalPrice = currentPrice;
+            let finalAction = '';
+            let cost = 0;
+
+            const isFinalRound = currentRoundIndex === MAX_ROUNDS;
+
+            if (isFinalRound) {
+                // --- Final round logic ---
+                if (type === 'buy') {
+                    cost = finalPrice;
+                    updateWallet(-cost);
+                    finalAction = `You chose to <strong>buy decisively</strong> (-${cost} coins), withstanding the huge market fluctuations!`;
+                    recordDecision('final-buy', finalPrice, cost, 'Final round decisive purchase/panic buying');
+                } else if (type === 'wait') {
+                    finalAction = `You chose to <strong>stop trading</strong>, avoiding the market chaos!`;
+                    recordDecision('final-stop', finalPrice, 0, 'Final round stop trading/risk avoidance');
+                } else if (type === 'substitute') {
+                    finalAction = `You chose to <strong>switch market</strong>, deciding to find a more stable trading place!`;
+                    recordDecision('final-switch', finalPrice, 0, 'Final round switch market/adaptive response');
+                }
+
+            } else {
+                // --- Normal round logic ---
+                if (type === 'buy') {
+                    let futureChange = Math.round((Math.random() * 0.2 - 0.1) * currentPrice * 0.2);
+                    let futurePrice = finalPrice + futureChange;
+                    cost = finalPrice;
+                    updateWallet(-cost);
+                    finalAction = `You purchased ${currentMaterialName} at ${finalPrice} coins.`;
+                    finalAction += (futureChange < 0) ? `<br>Right after buying, the price dropped to ${futurePrice}! You overpaid by ${Math.abs(futureChange)} coins.` : `<br>Market price is stable.`;
+                    recordDecision('buy', finalPrice, cost, finalAction);
+
+                } else if (type === 'wait') {
+                    let waitChange = Math.round((Math.random() * 0.4 + 0.1) * currentPrice * 0.2);
+                    let newWaitPrice = finalPrice + waitChange;
+                    cost = newWaitPrice;
+                    updateWallet(-cost);
+                    finalAction = `You chose to wait, but the price immediately surged to ${newWaitPrice} coins!`;
+                    finalAction += `<br>You finally purchased ${currentMaterialName} at the high price (${newWaitPrice} coins).`;
+                    recordDecision('wait', finalPrice, cost, finalAction);
+
+                } else if (type === 'substitute') {
+                    cost = SUB_COST;
+                    updateWallet(-cost);
+                    finalAction = `You chose the safe route, purchasing the alternative for ${cost} coins. Market fluctuations don't affect you.`;
+                    recordDecision('substitute', finalPrice, cost, finalAction);
+                }
+            }
+
+            currentFeedback.innerHTML = finalAction;
+            setTimeout(showRatingScreen, 3000);
+        }
+
+        // Handle substitute click
+        function handleSubstituteClick() {
+            if (isDecisionLocked) return;
+
+            // Show popup
+            document.getElementById('substitute-info').innerHTML =
+                `You have purchased the alternative!<br>Price: <strong>${SUB_COST} Magic Coins</strong>`;
+            substitutePopup.style.display = 'block';
+
+            // Auto-confirm after 3 seconds
+            setTimeout(() => {
+                if (substitutePopup.style.display === 'block') {
+                    closeSubstitutePopup();
+                    handleDecision('substitute');
+                }
+            }, 3000);
+        }
+
+        // Close substitute popup and execute purchase
+        function closeSubstitutePopup() {
+            substitutePopup.style.display = 'none';
+            if (!isDecisionLocked) {
+                handleDecision('substitute');
+            }
+        }
+
+        // Show rating screen
+        function showRatingScreen() {
+            gameArea.style.display = 'none';
+            ratingScreen.style.display = 'block';
+
+            // Reset ratings to middle values
+            tensionRating.value = 5;
+            funRating.value = 5;
+
+            // Auto-play rating screen audio
+            setTimeout(() => {
+                playAudioForPage('rating');
+            }, 300);
+        }
+
+        // Submit rating
+        function submitRating() {
+            const tension = parseInt(tensionRating.value);
+            const fun = parseInt(funRating.value);
+
+            // Record on latest data entry
+            if (gameData.length > 0) {
+                gameData[gameData.length - 1].tension = tension;
+                gameData[gameData.length - 1].fun = fun;
+            }
+
+            // Hide rating screen and immediately show prepare screen
+            ratingScreen.style.display = 'none';
+            showPrepareScreen();
+        }
+
+        // Enable/disable decision buttons
+        function enableButtons(enable) {
+            [btnBuy, btnWait, btnSubstitute].forEach(btn => btn.disabled = !enable);
+        }
+
+        // Update wallet status
+        function updateWallet(amount) {
+            wallet += amount;
+            walletStatus.textContent = `Wallet Balance: ${wallet} Magic Coins`;
+        }
+
+        // Record complete decision data
+        function recordDecision(type, priceAtDecision, finalCost, outcome) {
+            gameData.push({
+                round: currentRoundIndex,
+                material: currentMaterialName,
+                decisionType: type,
+                price: priceAtDecision,
+                cost: finalCost,
+                outcome: outcome,
+                wallet: wallet,
+                tension: null,
+                fun: null
+            });
+            console.log(`[R${currentRoundIndex}] Decision:`, gameData[gameData.length - 1]);
+        }
+
+        function endGame() {
+            prepareScreen.style.display = 'none';
+            gameArea.style.display = 'none';
+            ratingScreen.style.display = 'none';
+            endScreen.style.display = 'block';
+            console.log("--- Final game data ---", gameData);
+        }
+
+        // Save results to local TXT file
+        function saveResults() {
+            const saveStatus = document.getElementById('save-status');
+            if (!gameData || gameData.length === 0) {
+                saveStatus.textContent = 'No results to save.';
+                return;
+            }
+
+            const now = new Date();
+            const pad = (num) => String(num).padStart(2, '0');
+            const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+            const fileName = `Magic_Market_Results_${timestamp}.txt`;
+
+            let textContent = '';
+            textContent += `Save Time: ${now.toLocaleString()}\n`;
+            textContent += `Final Wallet: ${wallet} Magic Coins\n`;
+            textContent += `Total Rounds: ${gameData.length}\n`;
+            textContent += `\n===== Round Details =====\n`;
+
+            gameData.forEach((item, index) => {
+                textContent += `\n[Round ${index + 1}]\n`;
+                textContent += `Material: ${item.material}\n`;
+                textContent += `Decision Type: ${item.decisionType}\n`;
+                textContent += `Price at Decision: ${item.price}\n`;
+                textContent += `Final Cost: ${item.cost}\n`;
+                textContent += `Outcome: ${String(item.outcome).replace(/<br>/g, ' / ').replace(/<[^>]*>/g, '')}\n`;
+                textContent += `Current Wallet: ${item.wallet}\n`;
+                textContent += `Tension Rating: ${item.tension ?? 'Not rated'}\n`;
+                textContent += `Fun Rating: ${item.fun ?? 'Not rated'}\n`;
+            });
+
+            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            saveStatus.textContent = `Results saved: ${fileName}`;
+        }
+
+        // Helper function: Convert CSS variable to hex value
+        function varToHex(varName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+        }
+    </script>
+
+</body>
+
+</html>

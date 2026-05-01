@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>银河探索学院：危机指挥官</title>
+    <link rel="stylesheet" href="./shared/game-portal.css">
+    <style>
+        .portal-game-status {
+            border: 1px solid rgba(0, 243, 255, 0.45);
+            background: rgba(5, 11, 20, 0.92);
+            color: #d8f4ff;
+            box-shadow: 0 0 22px rgba(188, 19, 254, 0.18);
+            margin-top: 18px;
+        }
+        .portal-home-link { color: #00f3ff; text-shadow: 0 0 8px rgba(0,243,255,0.35); }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+SC:wght@300;500;700&display=swap');
+
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #0aff0a;
+            --neon-red: #ff3366;
+            --neon-yellow: #ffee00;
+            --bg-dark: #050b14;
+            --glass: rgba(16, 33, 60, 0.85);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: #fff;
+            font-family: 'Noto Sans SC', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image:
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px, 130px 270px;
+            animation: starMove 100s linear infinite;
+        }
+
+        @keyframes starMove {
+            from { background-position: 0 0, 40px 60px, 130px 270px; }
+            to { background-position: 550px 550px, 390px 410px, 380px 520px; }
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .hologram-panel {
+            background: var(--glass);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue), inset 0 0 20px rgba(0, 243, 255, 0.1);
+            border-radius: 15px;
+            padding: 40px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            backdrop-filter: blur(5px);
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: scale(0.95);
+            animation: panelFadeIn 0.8s forwards;
+        }
+
+        .hologram-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .hologram-panel::-webkit-scrollbar-track {
+            background: rgba(0, 243, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .hologram-panel::-webkit-scrollbar-thumb {
+            background: var(--neon-blue);
+            border-radius: 3px;
+        }
+
+        @keyframes panelFadeIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: rgba(0, 243, 255, 0.3);
+            animation: scan 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        h1, h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            margin-top: 0;
+            letter-spacing: 2px;
+        }
+
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .highlight {
+            color: var(--neon-purple);
+            font-weight: bold;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 15px 20px;
+            font-size: 1rem;
+            font-family: 'Noto Sans SC', sans-serif;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            text-align: left;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 15px var(--neon-blue);
+            transform: translateX(10px);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--neon-blue);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button:disabled:hover {
+            transform: none;
+            background: transparent;
+        }
+
+        button.selected {
+            background: rgba(0, 243, 255, 0.3);
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-green);
+        }
+
+        button.selected::before {
+            background: var(--neon-green);
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--neon-green);
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px var(--neon-green);
+            border-radius: 2px;
+        }
+
+        .icon { font-size: 1.2em; margin-right: 10px; }
+
+        /* 音频播放按钮样式 */
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+        }
+
+        .audio-btn {
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+            border: none;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.3s;
+            min-width: auto;
+            width: auto;
+        }
+
+        .audio-btn:hover {
+            background: var(--neon-green);
+            box-shadow: 0 0 15px var(--neon-green);
+            transform: scale(1.05);
+        }
+
+        .audio-btn::before {
+            display: none;
+        }
+
+        .audio-status {
+            color: var(--neon-blue);
+            font-size: 0.9rem;
+        }
+
+        .audio-status.playing {
+            color: var(--neon-green);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 录音组件样式 */
+        .recording-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(188, 19, 254, 0.1);
+            border: 1px solid var(--neon-purple);
+            border-radius: 10px;
+        }
+
+        .recording-title {
+            color: var(--neon-purple);
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recording-hint {
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .recording-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .record-btn {
+            background: var(--neon-red);
+            border-color: var(--neon-red);
+            color: white;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 30px;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .record-btn:hover {
+            background: rgba(255, 51, 102, 0.3);
+            box-shadow: 0 0 20px var(--neon-red);
+        }
+
+        .record-btn.recording {
+            background: transparent;
+            animation: recordPulse 1s infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { box-shadow: 0 0 10px var(--neon-red); }
+            50% { box-shadow: 0 0 30px var(--neon-red), 0 0 50px var(--neon-red); }
+        }
+
+        .record-btn::before {
+            display: none;
+        }
+
+        .recording-time {
+            font-family: 'Orbitron', monospace;
+            color: var(--neon-yellow);
+            font-size: 1.2rem;
+            min-width: 80px;
+        }
+
+        .transcript-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--neon-purple);
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 80px;
+            max-height: 150px;
+            overflow-y: auto;
+            color: #ddd;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .transcript-box:empty::before {
+            content: "你说的话会实时显示在这里...";
+            color: #666;
+            font-style: italic;
+        }
+
+        .transcript-box.listening {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 10px rgba(10, 255, 10, 0.3);
+        }
+
+        .recording-status {
+            color: var(--neon-green);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .recording-status::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* 下拉选择样式 */
+        .select-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+        }
+
+        .select-label {
+            color: var(--neon-blue);
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1rem;
+            font-family: 'Noto Sans SC', sans-serif;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-blue);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        select option {
+            background: var(--bg-dark);
+            color: white;
+        }
+
+        /* 文本输入框样式 */
+        .text-input-section {
+            margin: 20px 0;
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1rem;
+            font-family: 'Noto Sans SC', sans-serif;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--neon-blue);
+            color: white;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .text-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* 角色分配展示 */
+        .role-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .role-card {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .role-card.selected {
+            background: rgba(0, 243, 255, 0.3);
+            border-color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(10, 255, 10, 0.3);
+        }
+
+        .role-card .role-name {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .role-card .role-desc {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .role-card .assigned-to {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0, 243, 255, 0.3);
+            color: var(--neon-yellow);
+            font-weight: bold;
+        }
+
+        /* 结果页样式 */
+        .result-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .bar-container {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .bar-label { width: 80px; text-align: right; margin-right: 10px; color: #aaa; }
+        .bar-bg { flex-grow: 1; background: #333; height: 10px; border-radius: 5px; overflow: hidden; }
+        .bar-val { height: 100%; background: var(--neon-purple); width: 0%; transition: width 1s ease-out; }
+
+        /* 警告样式 */
+        .warning-box {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid var(--neon-red);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #ff99aa;
+        }
+
+        .warning-box strong {
+            color: var(--neon-red);
+        }
+
+        /* 选项组标题 */
+        .option-group-title {
+            color: var(--neon-yellow);
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 238, 0, 0.3);
+        }
+
+        .next-btn-container {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .next-btn {
+            background: var(--neon-green);
+            color: var(--bg-dark);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 30px;
+            min-width: 180px;
+        }
+
+        .next-btn:hover {
+            background: var(--neon-blue);
+            box-shadow: 0 0 30px var(--neon-blue);
+            transform: scale(1.05);
+        }
+
+        .next-btn::before {
+            display: none;
+        }
+
+        .next-btn:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .next-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="hologram-panel" id="gamePanel">
+            <div class="scan-line"></div>
+            <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+            <h2 id="title">银河探索学院 - 任务启动</h2>
+
+            <!-- 音频控制区域 -->
+            <div class="audio-controls" id="audioControls">
+                <button class="audio-btn" id="audioBtn" onclick="toggleAudio()">▶ 播放音频</button>
+                <span class="audio-status" id="audioStatus">点击播放场景音频</span>
+            </div>
+
+            <div id="content" class="story-text"></div>
+
+            <!-- 动态内容区域 -->
+            <div id="dynamicContent"></div>
+
+            <div id="options" class="btn-group"></div>
+
+            <!-- 录音组件区域 -->
+            <div id="recordingSection" class="recording-section" style="display: none;">
+                <div class="recording-title">🎙️ 语音记录</div>
+                <div class="recording-hint" id="recordingHint">请说明你为什么这么做...</div>
+                <div class="recording-controls">
+                    <button class="record-btn" id="recordBtn" onclick="toggleRecording()">开始录音</button>
+                    <span class="recording-time" id="recordingTime">00:00</span>
+                </div>
+                <div class="transcript-box" id="transcriptBox"></div>
+                <div class="recording-status" id="recordingStatus" style="display: none;">正在聆听...</div>
+            </div>
+
+            <!-- 下一页按钮区域 -->
+            <div class="next-btn-container" id="nextBtnContainer" style="display: none;">
+                <button class="next-btn" id="nextBtn" onclick="nextStep()">下一页 →</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="portal-game-status"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./shared/game-portal.js"></script>
+    <script>
+        // 游戏状态
+        let currentStep = 0;
+        let scores = {
+            leadership: 0,
+            teamwork: 0,
+            communication: 0,
+            decision: 0,
+            self_understanding: 0
+        };
+        let gameData = {
+            step1Choice: null,
+            step2Choice: null,
+            selectedRole: null,
+            roleAssignments: {},
+            step4Choice: null,
+            step5Choice: null,
+            transcripts: {}
+        };
+
+        // 音频相关
+        let currentAudio = null;
+        let isAudioPlaying = false;
+
+        // 录音相关
+        let mediaRecorder = null;
+        let recognition = null;
+        let isRecording = false;
+        let recordingStartTime = null;
+        let recordingTimer = null;
+        let audioChunks = [];
+        let currentTranscript = "";
+        let countdownTimer = null;
+
+        // 初始化语音识别
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'zh-CN';
+
+                recognition.onresult = (event) => {
+                    let finalTranscript = '';
+                    let interimTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+
+                    if (finalTranscript) {
+                        currentTranscript += finalTranscript;
+                    }
+
+                    updateTranscriptDisplay(interimTranscript);
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('语音识别错误:', event.error);
+                };
+            }
+        }
+
+        function updateTranscriptDisplay(interimText) {
+            const box = document.getElementById('transcriptBox');
+            box.innerHTML = currentTranscript +
+                (interimText ? `<span style="color:#888;">${interimText}</span>` : '');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // 切换录音
+        async function toggleRecording() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                await startRecording();
+            }
+        }
+
+        // 音频上下文和音频处理节点
+        let audioContext = null;
+        let audioInput = null;
+        let scriptProcessor = null;
+        let preRecordingBuffer = []; // 预录音缓冲区
+
+
+        async function startRecording() {
+            try {
+                // 先获取麦克风权限
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                // 启动MediaRecorder
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.start(50);
+
+                // 启动语音识别
+                if (recognition) {
+                    currentTranscript = "";
+                    document.getElementById('transcriptBox').innerHTML = "";
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.log('语音识别启动失败:', e);
+                    }
+                }
+
+                isRecording = true;
+
+                // 显示倒计时，让用户等待3秒
+                document.getElementById('recordBtn').textContent = "准备中...";
+                document.getElementById('recordBtn').disabled = true;
+                document.getElementById('transcriptBox').innerHTML = "<span style='color: var(--neon-yellow); font-size: 1.2rem;'>⏳ 请等待 3 秒后再开始说话...</span>";
+                document.getElementById('transcriptBox').classList.add('listening');
+
+                recordingCountdown = 3;
+                countdownTimer = setInterval(() => {
+                    recordingCountdown--;
+                    if (recordingCountdown > 0) {
+                        document.getElementById('transcriptBox').innerHTML = `<span style='color: var(--neon-yellow); font-size: 1.2rem;'>⏳ 请等待 ${recordingCountdown} 秒后再开始说话...</span>`;
+                    } else {
+                        clearInterval(countdownTimer);
+                        // 倒计时结束，开始正式录音
+                        recordingStartTime = Date.now();
+                        document.getElementById('recordBtn').textContent = "停止录音";
+                        document.getElementById('recordBtn').disabled = false;
+                        document.getElementById('recordBtn').classList.add('recording');
+                        document.getElementById('transcriptBox').innerHTML = "<span style='color: var(--neon-green);'>🎙️ 现在可以开始说话了！</span>";
+                        document.getElementById('recordingStatus').style.display = 'flex';
+                        recordingTimer = setInterval(updateRecordingTime, 1000);
+                    }
+                }, 1000);
+
+            } catch (err) {
+                alert('无法访问麦克风，请确保已授权录音权限。');
+                console.error('录音错误:', err);
+            }
+        }
+
+        function stopRecording() {
+            // 清除倒计时定时器（如果还在倒计时）
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+
+            if (recognition) {
+                recognition.stop();
+            }
+
+            isRecording = false;
+            clearInterval(recordingTimer);
+
+            document.getElementById('recordBtn').textContent = "开始录音";
+            document.getElementById('recordBtn').disabled = false;
+            document.getElementById('recordBtn').classList.remove('recording');
+            document.getElementById('transcriptBox').classList.remove('listening');
+            document.getElementById('recordingStatus').style.display = 'none';
+
+            // 保存录音内容
+            gameData.transcripts[currentStep] = currentTranscript;
+
+            // 检查是否可以进入下一页
+            checkCanProceed();
+        }
+
+        function updateRecordingTime() {
+            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('recordingTime').textContent = `${minutes}:${seconds}`;
+        }
+
+        // 音频播放功能
+        function toggleAudio() {
+            if (isAudioPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+
+        function playAudio() {
+            // 音频文件路径 - 使用music文件夹下的m4a文件
+            const audioFiles = {
+                0: "music/队长1.m4a",
+                1: "music/队长2.m4a",
+                2: "music/队长3.m4a",
+                3: "music/队长4.m4a",
+                4: "music/队长5.m4a"
+            };
+
+            // 如果有正在播放的音频，先停止
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+
+            // 创建新的音频对象
+            currentAudio = new Audio(audioFiles[currentStep]);
+
+            currentAudio.onplay = () => {
+                isAudioPlaying = true;
+                document.getElementById('audioBtn').textContent = "⏸ 暂停音频";
+                document.getElementById('audioStatus').textContent = "正在播放...";
+                document.getElementById('audioStatus').classList.add('playing');
+            };
+
+            currentAudio.onended = () => {
+                isAudioPlaying = false;
+                document.getElementById('audioBtn').textContent = "▶ 播放音频";
+                document.getElementById('audioStatus').textContent = "播放完成";
+                document.getElementById('audioStatus').classList.remove('playing');
+            };
+
+            currentAudio.onerror = () => {
+                console.error('音频加载失败:', audioFiles[currentStep]);
+                document.getElementById('audioStatus').textContent = "音频加载失败";
+                isAudioPlaying = false;
+            };
+
+            currentAudio.play().catch(err => {
+                console.error('音频播放失败:', err);
+                document.getElementById('audioStatus').textContent = "点击播放音频";
+                isAudioPlaying = false;
+            });
+        }
+
+        function pauseAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+            }
+            isAudioPlaying = false;
+            document.getElementById('audioBtn').textContent = "▶ 播放音频";
+            document.getElementById('audioStatus').textContent = "点击播放场景音频";
+            document.getElementById('audioStatus').classList.remove('playing');
+        }
+
+        // 游戏脚本数据
+        const scenarios = [
+            {
+                title: "⚠️ 紧急警报：船体受损",
+                audioFile: "scene1_alert.mp3",
+                text: `你被选入<span class="highlight">银河探索学院</span>。此刻，飞船遭遇流星雨袭击，船长失联，氧气系统受损。
+                <br><br>你身边有两个外星伙伴：
+                <br>👽 <b>露露 (Lulu)</b>：心思细腻，但容易紧张。
+                <br>🤖 <b>波波 (Bobo)</b>：技术宅，但脾气倔强。
+                <br><br>任务迫在眉睫，现在必须有人站出来指挥，或者听从安排。你更倾向于：`,
+                hasOptions: true,
+                options: [
+                    {
+                        text: "我是天生的指挥官，我来做临时船长。",
+                        score: { leadership: 2, self_understanding: 1 }
+                    },
+                    {
+                        text: "我更愿意配合大家，做一个高效的执行队员。",
+                        score: { teamwork: 2, leadership: 0 }
+                    }
+                ],
+                recordingHint: "你为什么做出这个选择？请说说你的想法...",
+                requireRecording: true
+            },
+            {
+                title: "🌟 角色确认",
+                audioFile: "scene2_role.mp3",
+                text: `经过短暂的眼神交流，露露和波波一致推举你为<b>临时船长</b>。
+                <br>在紧急关头，你觉得他们为什么会把票投给你？`,
+                hasOptions: true,
+                options: [
+                    {
+                        text: "因为我有能力，我相信自己比他们更强。",
+                        score: { self_understanding: 2, leadership: 1 }
+                    },
+                    {
+                        text: "因为我平时善于倾听，大家信任我。",
+                        score: { communication: 2, teamwork: 1 }
+                    },
+                    {
+                        text: "因为我平时很有条理，能够组织大家。",
+                        score: { leadership: 2, decision: 1 }
+                    },
+                    {
+                        text: "我也不知道大家为什么选我。",
+                        score: { self_understanding: -1, teamwork: 1 }
+                    }
+                ],
+                recordingHint: "你觉得被选为船长意味着什么？你准备好了吗？",
+                requireRecording: true
+            },
+            {
+                title: "⚙️ 紧急分工",
+                audioFile: "scene3_division.mp3",
+                text: `飞船受损严重，三个模块必须同时修复才能起飞：
+                <br><br>⚙️ <b>A. 能源线路</b>（枯燥、需极度耐心）
+                <br>🔧 <b>B. 外壳加固</b>（高压、体力活、责任重）
+                <br>🧭 <b>C. 导航校准</b>（烧脑、决定生死方向）
+                <br><br><b>作为队长，你需要进行分工。</b>`,
+                hasRoleSelection: true,
+                recordingHint: "说明你为什么选择这个角色，以及你给其他两位伙伴的安排和理由...",
+                requireRecording: true
+            },
+            {
+                title: "🔥 高危作业",
+                audioFile: "scene4_crisis.mp3",
+                text: `修复过程中发现一个意外：核心部件处于高温区。
+                <br>这是额外的脏活累活，甚至有轻微烫伤风险。
+                <br>露露和波波都往后缩，不太想接。时间一分一秒流逝...
+                <br><br><b>你要怎么办呢？</b>`,
+                hasInnerThought: true,
+                recordingHint: "说说你选择这个方案的原因，以及你当时的内心想法...",
+                requireRecording: true
+            },
+            {
+                title: "🐢 成员掉链子",
+                audioFile: "scene5_team.mp3",
+                text: `露露负责的线路修复进展非常慢，她因为手抖频频出错。
+                <br>倒计时只剩10分钟，如果她修不好，大家都得完蛋。
+                <br><br><b>你深吸一口气，开始处理这个危机。你打算怎么办？</b>`,
+                hasOptions: true,
+                options: [
+                    {
+                        text: "鼓励露露，相信她能完成",
+                        score: { communication: 2, teamwork: 2 }
+                    },
+                    {
+                        text: "自己亲自上手帮忙",
+                        score: { leadership: 2, teamwork: 1 }
+                    },
+                    {
+                        text: "让波波去协助露露",
+                        score: { decision: 2, leadership: 1 }
+                    }
+                ],
+                recordingHint: "为什么你选择这个处理方式？你会具体怎么做？",
+                requireRecording: true
+            }
+        ];
+
+        // 渲染当前步骤
+        function renderStep() {
+            const panel = document.getElementById('gamePanel');
+            const title = document.getElementById('title');
+            const content = document.getElementById('content');
+            const optionsDiv = document.getElementById('options');
+            const dynamicContent = document.getElementById('dynamicContent');
+            const progressBar = document.getElementById('progress');
+            const recordingSection = document.getElementById('recordingSection');
+            const nextBtnContainer = document.getElementById('nextBtnContainer');
+
+            // 重置状态
+            currentTranscript = "";
+            if (gameData.transcripts[currentStep]) {
+                currentTranscript = gameData.transcripts[currentStep];
+            }
+            document.getElementById('transcriptBox').innerHTML = currentTranscript || "";
+            document.getElementById('recordingTime').textContent = "00:00";
+
+            // 进度条
+            const progressPercent = ((currentStep) / scenarios.length) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+
+            // 动画重置
+            panel.style.animation = 'none';
+            panel.offsetHeight;
+            panel.style.animation = 'panelFadeIn 0.5s forwards';
+
+            // 检查游戏结束
+            if (currentStep >= scenarios.length) {
+                showResult();
+                return;
+            }
+
+            const scene = scenarios[currentStep];
+
+            // 标题
+            title.innerHTML = scene.title;
+
+            // 文本
+            content.innerHTML = scene.text;
+
+            // 清空动态内容
+            dynamicContent.innerHTML = "";
+            optionsDiv.innerHTML = "";
+
+            // 录音区域设置
+            if (scene.requireRecording) {
+                recordingSection.style.display = 'block';
+                document.getElementById('recordingHint').textContent = scene.recordingHint;
+            } else {
+                recordingSection.style.display = 'none';
+            }
+
+            // 自动播放音频
+            setTimeout(() => {
+                playAudio();
+            }, 500);
+
+            // 根据场景类型渲染不同内容
+            if (scene.hasRoleSelection) {
+                renderRoleSelection(dynamicContent, optionsDiv);
+                nextBtnContainer.style.display = 'none';
+            } else if (scene.hasInnerThought) {
+                renderInnerThought(dynamicContent, optionsDiv);
+                nextBtnContainer.style.display = 'none';
+            } else if (scene.hasOptions) {
+                renderOptions(scene.options, optionsDiv);
+                nextBtnContainer.style.display = 'none';
+            } else {
+                nextBtnContainer.style.display = 'block';
+                document.getElementById('nextBtn').disabled = false;
+            }
+
+            checkCanProceed();
+        }
+
+        // 渲染选项
+        function renderOptions(options, container) {
+            options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.innerHTML = `<span class="icon">➤</span> ${opt.text}`;
+                btn.dataset.index = index;
+                btn.onclick = () => selectOption(opt, index, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        // 选择选项
+        function selectOption(option, index, btnElement) {
+            // 移除其他选中状态
+            const allBtns = btnElement.parentElement.querySelectorAll('button');
+            allBtns.forEach(b => b.classList.remove('selected'));
+
+            // 添加选中状态
+            btnElement.classList.add('selected');
+
+            // 保存选择
+            if (currentStep === 0) {
+                gameData.step1Choice = option;
+            } else if (currentStep === 1) {
+                gameData.step2Choice = option;
+            } else if (currentStep === 4) {
+                gameData.step5Choice = option;
+            }
+
+            // 计分
+            for (let key in option.score) {
+                if (scores.hasOwnProperty(key)) {
+                    scores[key] += option.score[key];
+                }
+            }
+
+            // 显示录音区域（如果还没显示）
+            const scene = scenarios[currentStep];
+            if (scene.requireRecording) {
+                document.getElementById('recordingSection').style.display = 'block';
+            }
+
+            // 立即显示并启用下一页按钮（不强制要求录音）
+            document.getElementById('nextBtnContainer').style.display = 'block';
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        // 渲染角色选择
+        function renderRoleSelection(dynamicContent, optionsDiv) {
+            // 提示文字
+            const hintText = document.createElement('div');
+            hintText.style.marginBottom = '15px';
+            hintText.style.color = '#aaa';
+            hintText.innerHTML = `<i>点击选择你要扮演的角色：</i>`;
+            dynamicContent.appendChild(hintText);
+
+            // 角色卡片展示（可点击选择）
+            const roleDisplay = document.createElement('div');
+            roleDisplay.className = 'role-display';
+            roleDisplay.id = 'roleDisplay';
+            roleDisplay.innerHTML = `
+                <div class="role-card" id="roleA" onclick="selectRole('A')">
+                    <div class="role-name">⚙️ A</div>
+                    <div class="role-desc">能源线路<br>枯燥、需耐心</div>
+                    <div class="assigned-to" id="assignA">?</div>
+                </div>
+                <div class="role-card" id="roleB" onclick="selectRole('B')">
+                    <div class="role-name">🔧 B</div>
+                    <div class="role-desc">外壳加固<br>高压、体力活</div>
+                    <div class="assigned-to" id="assignB">?</div>
+                </div>
+                <div class="role-card" id="roleC" onclick="selectRole('C')">
+                    <div class="role-name">🧭 C</div>
+                    <div class="role-desc">导航校准<br>烧脑、决定方向</div>
+                    <div class="assigned-to" id="assignC">?</div>
+                </div>
+            `;
+            dynamicContent.appendChild(roleDisplay);
+        }
+
+        // 选择角色
+        function selectRole(role) {
+            if (!role) return;
+
+            gameData.selectedRole = role;
+
+            // 更新角色卡片显示
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById(`role${role}`).classList.add('selected');
+
+            // 分配角色
+            let assignments = {};
+            if (role === 'A') {
+                assignments = { A: '你', B: '波波', C: '露露' };
+            } else if (role === 'B') {
+                assignments = { A: '露露', B: '你', C: '波波' };
+            } else if (role === 'C') {
+                assignments = { A: '露露', B: '波波', C: '你' };
+            }
+
+            gameData.roleAssignments = assignments;
+
+            document.getElementById('assignA').textContent = assignments.A;
+            document.getElementById('assignB').textContent = assignments.B;
+            document.getElementById('assignC').textContent = assignments.C;
+
+            // 显示录音区域
+            document.getElementById('recordingSection').style.display = 'block';
+
+            // 显示下一页按钮
+            document.getElementById('nextBtnContainer').style.display = 'block';
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        // 渲染内心活动选择（高危作业场景）
+        function renderInnerThought(dynamicContent, optionsDiv) {
+            // 内心活动描述
+            const thoughtText = document.createElement('div');
+            thoughtText.style.marginBottom = '15px';
+            thoughtText.style.color = '#aaa';
+            thoughtText.innerHTML = `<i>此时此刻，你的内心闪过各种念头...</i>`;
+            dynamicContent.appendChild(thoughtText);
+
+            // 选项组1：第一反应
+            const group1Title = document.createElement('div');
+            group1Title.className = 'option-group-title';
+            group1Title.textContent = "你的第一反应是：";
+            optionsDiv.appendChild(group1Title);
+
+            const thoughts1 = [
+                {
+                    id: 'thought1_a',
+                    text: "好痛苦，为什么会现在进入到这种境地？他们两个为什么都不干？",
+                    type: 'feeling'
+                },
+                {
+                    id: 'thought1_b',
+                    text: "这是一个非常好的机会，我觉得可以展示自己！",
+                    type: 'feeling'
+                },
+                {
+                    id: 'thought1_c',
+                    text: "冷静下来，现在不是想这些的时候，得解决问题。",
+                    type: 'feeling'
+                }
+            ];
+
+            thoughts1.forEach(thought => {
+                const btn = document.createElement('button');
+                btn.innerHTML = `<span class="icon">💭</span> ${thought.text}`;
+                btn.dataset.type = 'thought1';
+                btn.dataset.id = thought.id;
+                btn.onclick = () => selectThought(btn, 'thought1');
+                optionsDiv.appendChild(btn);
+            });
+
+            // 选项组2：最终决定
+            const group2Title = document.createElement('div');
+            group2Title.className = 'option-group-title';
+            group2Title.textContent = "最终，你决定：";
+            optionsDiv.appendChild(group2Title);
+
+            const thoughts2 = [
+                {
+                    id: 'thought2_a',
+                    text: "那么，我只好自己来干。",
+                    score: { leadership: 2, decision: 1 }
+                },
+                {
+                    id: 'thought2_b',
+                    text: "不行，我必须让他们也参与进来。",
+                    score: { teamwork: 2, communication: 1 }
+                },
+                {
+                    id: 'thought2_c',
+                    text: "找个折中方案，轮流来做。",
+                    score: { decision: 2, teamwork: 1 }
+                }
+            ];
+
+            thoughts2.forEach(thought => {
+                const btn = document.createElement('button');
+                btn.innerHTML = `<span class="icon">⚡</span> ${thought.text}`;
+                btn.dataset.type = 'thought2';
+                btn.dataset.id = thought.id;
+                btn.dataset.score = JSON.stringify(thought.score);
+                btn.onclick = () => selectThought(btn, 'thought2');
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        // 选择内心活动
+        function selectThought(btn, type) {
+            // 移除同组的选中状态
+            const groupBtns = document.querySelectorAll(`[data-type="${type}"]`);
+            groupBtns.forEach(b => b.classList.remove('selected'));
+
+            // 添加选中状态
+            btn.classList.add('selected');
+
+            // 保存选择
+            if (type === 'thought1') {
+                gameData.step4Choice = { ...gameData.step4Choice, thought1: btn.dataset.id };
+            } else {
+                gameData.step4Choice = { ...gameData.step4Choice, thought2: btn.dataset.id };
+                // 计分
+                const score = JSON.parse(btn.dataset.score);
+                for (let key in score) {
+                    if (scores.hasOwnProperty(key)) {
+                        scores[key] += score[key];
+                    }
+                }
+            }
+
+            // 检查是否可以进入下一页
+            const thought1Selected = document.querySelector('[data-type="thought1"].selected');
+            const thought2Selected = document.querySelector('[data-type="thought2"].selected');
+            if (thought1Selected && thought2Selected) {
+                document.getElementById('nextBtnContainer').style.display = 'block';
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        // 检查是否可以进入下一页（简化版本，不强制要求录音）
+        function checkCanProceed() {
+            // 这个函数现在主要用于初始化状态
+            // 实际的可行性检查在选择时已经处理
+        }
+
+        // 进入下一步
+        function nextStep() {
+            // 保存当前页的文本输入（如果有）
+            if (currentStep === 2) {
+                const arrangementText = document.getElementById('arrangementText');
+                if (arrangementText) {
+                    gameData.arrangementText = arrangementText.value;
+                }
+            }
+
+            currentStep++;
+            renderStep();
+        }
+
+        // 显示结果
+        function showResult() {
+            const content = document.getElementById('content');
+            const optionsDiv = document.getElementById('options');
+            const title = document.getElementById('title');
+            const recordingSection = document.getElementById('recordingSection');
+            const audioControls = document.getElementById('audioControls');
+            const nextBtnContainer = document.getElementById('nextBtnContainer');
+
+            // 隐藏不需要的元素
+            recordingSection.style.display = 'none';
+            audioControls.style.display = 'none';
+            nextBtnContainer.style.display = 'none';
+
+            document.getElementById('progress').style.width = '100%';
+
+            title.innerHTML = "🚀 任务完成：指挥官评估报告";
+
+            // 计算分数
+            const maxScore = 12;
+
+            let html = `<p>飞船成功起飞！银河探索学院根据你在危机中的表现，生成了你的领导力雷达图：</p>`;
+            html += `<div class="result-chart">`;
+
+            const dimensions = [
+                { key: 'leadership', label: '领导力' },
+                { key: 'decision', label: '决策力' },
+                { key: 'communication', label: '沟通' },
+                { key: 'teamwork', label: '团队合作' },
+                { key: 'self_understanding', label: '理解自我' }
+            ];
+
+            dimensions.forEach(dim => {
+                let val = Math.max(0, scores[dim.key]);
+                let width = Math.min(100, Math.max(10, (val / maxScore) * 100 + 20));
+
+                html += `
+                <div class="bar-container">
+                    <div class="bar-label">${dim.label}</div>
+                    <div class="bar-bg">
+                        <div class="bar-val" style="width: ${width}%"></div>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+
+            html += `<br><p><i>"真正的领导者不是从不害怕，而是带着恐惧依然前行。"</i></p>`;
+
+            // 显示用户的选择摘要
+            html += `<div style="margin-top: 30px; padding: 15px; background: rgba(0,243,255,0.1); border-radius: 8px;">`;
+            html += `<h3 style="color: var(--neon-blue); margin-top: 0;">📋 你的决策记录</h3>`;
+
+            if (gameData.step1Choice) {
+                html += `<p><b>场景1：</b>${gameData.step1Choice.text}</p>`;
+            }
+            if (gameData.step2Choice) {
+                html += `<p><b>场景2：</b>${gameData.step2Choice.text}</p>`;
+            }
+            if (gameData.selectedRole) {
+                html += `<p><b>角色分配：</b>你选择扮演 ${gameData.selectedRole} 角色</p>`;
+            }
+            if (gameData.step4Choice) {
+                html += `<p><b>高危作业：</b>第一反应：${gameData.step4Choice.thought1 || ''} / 最终决定：${gameData.step4Choice.thought2 || ''}</p>`;
+            }
+            if (gameData.step5Choice) {
+                html += `<p><b>成员掉链子：</b>${gameData.step5Choice.text}</p>`;
+            }
+
+            html += `</div>`;
+
+            content.innerHTML = html;
+
+            // 重玩按钮
+            optionsDiv.innerHTML = '';
+            const btn = document.createElement('button');
+            btn.innerHTML = "↺ 重启模拟训练";
+            btn.style.textAlign = 'center';
+            btn.onclick = () => location.reload();
+            optionsDiv.appendChild(btn);
+
+            // 自动云端保存 + 跳转下一个游戏
+            if (!hasAutoUploadedAlienDivision) {
+                saveAlienDivisionToCloud();
+            }
+            if (window.GamePortal && !hasScheduledNextGameAlienDivision) {
+                hasScheduledNextGameAlienDivision = true;
+                window.GamePortal.scheduleNextGame('alien-division', { delayMs: 5000 });
+            }
+        }
+
+        let hasAutoUploadedAlienDivision = false;
+        let hasScheduledNextGameAlienDivision = false;
+
+        function buildAlienDivisionDetailJson() {
+            return {
+                generatedAt: new Date().toISOString(),
+                scores: { ...scores },
+                step1Choice: gameData.step1Choice ? { id: gameData.step1Choice.id, text: gameData.step1Choice.text } : null,
+                step2Choice: gameData.step2Choice ? { id: gameData.step2Choice.id, text: gameData.step2Choice.text } : null,
+                selectedRole: gameData.selectedRole,
+                roleAssignments: { ...gameData.roleAssignments },
+                step4Choice: gameData.step4Choice ? { ...gameData.step4Choice } : null,
+                step5Choice: gameData.step5Choice ? { id: gameData.step5Choice.id, text: gameData.step5Choice.text } : null,
+                arrangementText: gameData.arrangementText || '',
+                voiceTranscripts: { ...gameData.transcripts }
+            };
+        }
+
+        function buildAlienDivisionMarkdown() {
+            const d = buildAlienDivisionDetailJson();
+            const lines = [
+                '# 银河探索学院·危机指挥官记录',
+                '',
+                `- 生成时间: ${new Date().toLocaleString('zh-CN')}`,
+                '',
+                '## 雷达分维度',
+                `- 领导力: ${d.scores.leadership}`,
+                `- 决策力: ${d.scores.decision}`,
+                `- 沟通: ${d.scores.communication}`,
+                `- 团队合作: ${d.scores.teamwork}`,
+                `- 理解自我: ${d.scores.self_understanding}`,
+                '',
+                '## 决策记录',
+                `- 场景1: ${d.step1Choice ? d.step1Choice.text : '未选'}`,
+                `- 场景2: ${d.step2Choice ? d.step2Choice.text : '未选'}`,
+                `- 角色分配: ${d.selectedRole || '未选'}`,
+                `- 高危作业第一反应: ${d.step4Choice ? (d.step4Choice.thought1 || '未选') : '未选'}`,
+                `- 高危作业最终决定: ${d.step4Choice ? (d.step4Choice.thought2 || '未选') : '未选'}`,
+                `- 成员掉链子选择: ${d.step5Choice ? d.step5Choice.text : '未选'}`,
+                `- 任务安排说明: ${d.arrangementText || '未填写'}`,
+                '',
+                '## 语音记录'
+            ];
+            Object.keys(d.voiceTranscripts || {}).forEach((step) => {
+                lines.push(`- 第${step}步语音: ${d.voiceTranscripts[step] || '（无）'}`);
+            });
+            return lines.join('\n');
+        }
+
+        async function saveAlienDivisionToCloud() {
+            if (!window.GamePortal) return;
+            if (hasAutoUploadedAlienDivision) return;
+            try {
+                const detailJson = buildAlienDivisionDetailJson();
+                await window.GamePortal.saveRecord({
+                    gameKey: 'alien-division',
+                    gameTitle: '银河探索学院·危机指挥官',
+                    recordType: 'assessment',
+                    resultType: '危机指挥官评估完成',
+                    summary: `领导力 ${detailJson.scores.leadership} / 决策力 ${detailJson.scores.decision}`,
+                    recordMarkdown: buildAlienDivisionMarkdown(),
+                    detailJson
+                });
+                hasAutoUploadedAlienDivision = true;
+                console.log('[云端] 外星分工记录已上传');
+            } catch (err) {
+                console.error('[云端] 保存失败：', err);
+            }
+        }
+
+        if (window.GamePortal) {
+            window.GamePortal.renderGameStatus('#portal-game-status', { homeHref: './home.html' });
+        }
+
+        // 初始化
+        initSpeechRecognition();
+        renderStep();
+    </script>
+</body>
+</html>

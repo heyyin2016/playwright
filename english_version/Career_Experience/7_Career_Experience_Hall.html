@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Explorer · Interest Universe Adventure</title>
+    <style>
+        :root {
+            --bg-deep: #0b0f19;
+            --card-bg: #151a28;
+            --accent-blue: #00e0ff;
+            --accent-gold: #ffd700;
+            --text-main: #eef5ff;
+            --text-dim: #8899b3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: radial-gradient(circle at 50% 0, #1a2540 0%, #0b0f19 80%);
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            padding-bottom: 120px; /* Space for bottom control bar */
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+            filter: drop-shadow(0 0 15px rgba(0, 224, 255, 0.4));
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-dim);
+            margin-bottom: 40px;
+            font-size: 1.1em;
+            border-bottom: 1px dashed #335;
+            padding-bottom: 20px;
+        }
+
+        /* --- Step 1: Planet Hall --- */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .theme-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+
+        .theme-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--glow-color, var(--accent-blue));
+            box-shadow: 0 15px 30px var(--shadow-color, rgba(0, 242, 255, 0.15));
+        }
+
+        .theme-icon-bg {
+            width: 85px; height: 85px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        .theme-title {
+            font-size: 1.6em;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .theme-desc {
+            font-size: 0.95em;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        /* --- Step 2: Task Selection --- */
+        #career-section { display: none; width: 100%; animation: slideUp 0.4s ease-out; }
+
+        .top-back-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid #334; color: var(--text-dim);
+            cursor: pointer; font-size: 1em; margin-bottom: 20px;
+            display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 30px;
+            transition: 0.2s;
+        }
+        .top-back-btn:hover { color: #fff; background: rgba(255,255,255,0.1); border-color: #556; }
+
+        .planet-header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 2.2em;
+            font-weight: 600;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #2e3e5a;
+            padding-bottom: 15px;
+        }
+
+        .career-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .career-card {
+            background: #1a2335;
+            border-radius: 16px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 8px 0 #0f1420;
+        }
+
+        .career-card:hover {
+            background: #202b42;
+            transform: translateY(-3px);
+            box-shadow: 0 11px 0 #0f1420;
+        }
+
+        .career-card.selected {
+            border-color: var(--accent-gold);
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2), 0 5px 0 #998100;
+            transform: translateY(3px);
+        }
+
+        .job-visual {
+            height: 90px;
+            width: 90px;
+            background: #111827;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            border: 1px solid #2d3748;
+        }
+
+        .job-title {
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            line-height: 1.4;
+        }
+
+        .job-earth {
+            font-size: 0.85em;
+            color: #7a8b9e;
+            background: #0f1420;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-top: auto;
+        }
+
+        /* "Back to Hall" button at bottom of hall */
+        .hall-back-btn {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            padding: 16px;
+            background: #2c3855;
+            border: 1px solid #5f73a0;
+            color: #fff;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .hall-back-btn:hover { background: #3b4a70; }
+
+        /* --- Bottom Global Control Bar --- */
+        .control-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(10, 15, 30, 0.85);
+            border-top: 1px solid #2f3b5c;
+            padding: 15px 30px;
+            display: flex; justify-content: center; align-items: center; gap: 30px;
+            backdrop-filter: blur(10px);
+            z-index: 90;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
+        }
+
+        .status-text { font-size: 1.2em; color: var(--accent-blue); font-weight: bold; }
+
+        .finish-btn {
+            background: var(--accent-gold); color: #0a0c14;
+            border: none; padding: 12px 35px; border-radius: 40px;
+            font-weight: bold; cursor: pointer; font-size: 1.2em;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            transition: 0.2s;
+            letter-spacing: 1px;
+        }
+        .finish-btn:hover { transform: scale(1.05); background: #ffe68f; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Speaker Button Styles --- */
+        .page-header { position: relative; display: flex; align-items: center; justify-content: center; }
+        .page-header h1, .page-header h2 { margin: 0; flex-grow: 1; }
+
+        .sound-btn {
+            background: linear-gradient(135deg, #00e0ff 0%, #0080ff 100%);
+            border: none; width: 44px; height: 44px; border-radius: 50%;
+            cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 224, 255, 0.4);
+            transition: all 0.3s ease; opacity: 0.9; margin-left: 15px;
+        }
+        .sound-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0, 224, 255, 0.6); opacity: 1; }
+        .sound-btn:active { transform: scale(0.95); }
+        .sound-icon { width: 24px; height: 24px; fill: white; transition: all 0.3s ease; }
+
+        /* Sound wave animation when playing */
+        .sound-waves { position: absolute; display: flex; align-items: center; gap: 2px; opacity: 0; transition: opacity 0.3s ease; margin-left: 28px; }
+        .sound-btn.playing .sound-waves { opacity: 1; }
+        .sound-wave { width: 3px; height: 8px; background: white; border-radius: 2px; animation: soundWave 0.5s ease-in-out infinite; }
+        .sound-wave:nth-child(1) { animation-delay: 0s; }
+        .sound-wave:nth-child(2) { animation-delay: 0.1s; height: 12px; }
+        .sound-wave:nth-child(3) { animation-delay: 0.2s; height: 16px; }
+        @keyframes soundWave { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.5); } }
+
+        /* Pulse animation when playing */
+        .sound-btn.playing .sound-icon { animation: speakerPulse 1s ease-in-out infinite; }
+        @keyframes speakerPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .sound-btn.paused .sound-icon { opacity: 0.7; }
+
+        audio { display: none; }
+
+        /* --- Result Modal --- */
+        #result-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 4, 15, 0.95); z-index: 100;
+            backdrop-filter: blur(8px);
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #141e30; padding: 40px; border-radius: 32px;
+            border: 2px solid var(--accent-gold); text-align: center; max-width: 650px;
+            width: 90%;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.2);
+        }
+
+        .top-three-box {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 25px 0;
+        }
+        .top-badge {
+            background: linear-gradient(145deg, #2c3e62, #1b2540);
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1.4em;
+            font-weight: bold;
+            border: 2px solid gold;
+            color: #fff;
+        }
+
+        .advice-box {
+            background: #0d1628; border-radius: 20px; padding: 25px;
+            margin: 20px 0 30px; text-align: left;
+            line-height: 1.6; color: #baccf0; font-size: 1.05em;
+        }
+
+        .restart-btn {
+            background: transparent; border: 2px solid var(--accent-blue); color: var(--accent-blue);
+            padding: 10px 30px; border-radius: 30px; font-size: 1.1em; cursor: pointer;
+            transition: 0.2s; font-weight: bold;
+        }
+        .restart-btn:hover { background: var(--accent-blue); color: #000; }
+
+        /* --- Recording Modal Styles --- */
+        #record-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 4, 15, 0.95); z-index: 200;
+            backdrop-filter: blur(8px);
+            justify-content: center; align-items: center;
+        }
+        .record-modal-content {
+            background: linear-gradient(145deg, #1a2540, #0f1623);
+            padding: 40px; border-radius: 32px;
+            border: 2px solid var(--accent-blue); text-align: center;
+            max-width: 500px; width: 90%;
+            box-shadow: 0 0 50px rgba(0, 224, 255, 0.3);
+            animation: slideUp 0.4s ease-out;
+        }
+        .record-modal-title {
+            font-size: 1.8em; color: var(--accent-gold);
+            margin-bottom: 10px;
+        }
+        .record-modal-subtitle {
+            color: var(--text-dim); margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+        .record-task-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px; padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        .record-task-emoji { font-size: 3em; margin-bottom: 10px; }
+        .record-task-name { font-size: 1.3em; color: var(--text-main); margin-bottom: 5px; }
+        .record-task-earth { color: var(--text-dim); font-size: 0.9em; }
+        .record-question {
+            font-size: 1.2em; color: var(--accent-blue);
+            margin-bottom: 20px; padding: 15px;
+            background: rgba(0, 224, 255, 0.1);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-blue);
+        }
+        .record-textarea {
+            width: 100%; min-height: 120px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #334; border-radius: 12px;
+            padding: 15px; color: var(--text-main);
+            font-size: 1em; resize: vertical;
+            box-sizing: border-box; margin-bottom: 15px;
+        }
+        .record-textarea:focus {
+            outline: none; border-color: var(--accent-blue);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .record-textarea::placeholder { color: #556; }
+        .voice-input-controls {
+            display: flex; align-items: center; justify-content: center;
+            gap: 15px; margin-bottom: 20px;
+        }
+        .voice-input-btn {
+            background: linear-gradient(135deg, #00e0ff 0%, #0080ff 100%);
+            border: none; color: #fff; border-radius: 30px;
+            padding: 12px 24px; font-size: 1em; font-weight: bold;
+            cursor: pointer; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 224, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        .voice-input-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 224, 255, 0.6);
+        }
+        .voice-input-btn:disabled {
+            opacity: 0.6; cursor: not-allowed; transform: none;
+        }
+        .voice-input-btn.recording {
+            background: linear-gradient(135deg, #ff4d4d 0%, #e74c3c 100%);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            50% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
+        }
+        .voice-status {
+            color: var(--text-dim); font-size: 0.9em;
+            min-height: 20px;
+        }
+        .voice-error {
+            color: #ff6b6b; font-size: 0.85em;
+            min-height: 20px;
+        }
+        .record-modal-buttons {
+            display: flex; gap: 15px; justify-content: center;
+        }
+        .record-save-btn {
+            background: var(--accent-gold); color: #0a0c14;
+            border: none; padding: 12px 30px; border-radius: 30px;
+            font-weight: bold; cursor: pointer; font-size: 1em;
+            transition: all 0.2s;
+        }
+        .record-save-btn:hover { transform: scale(1.05); background: #ffe68f; }
+        .record-skip-btn {
+            background: transparent; border: 2px solid #556;
+            color: #889; padding: 12px 30px; border-radius: 30px;
+            font-weight: bold; cursor: pointer; font-size: 1em;
+            transition: all 0.2s;
+        }
+        .record-skip-btn:hover { border-color: #889; color: #aab; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="page-header">
+        <h1>🪐 Star Explorer</h1>
+        <button class="sound-btn" id="main-sound-btn" onclick="playAudio('main')" title="Play Audio">
+            <svg class="sound-icon" viewBox="0 0 24 24">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+            <div class="sound-waves">
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+            </div>
+        </button>
+    </div>
+    <p class="subtitle" id="main-subtitle">Welcome to the Interest Universe! Feel free to visit the 6 dimension planets and light up the interstellar missions that interest you.</p>
+
+    <div id="theme-gallery" class="theme-grid"></div>
+
+    <div id="career-section">
+        <button class="top-back-btn" onclick="goBack()">⬅ Back to Star Map</button>
+        <div class="planet-header-title" id="current-theme-title"></div>
+        <div class="page-header" style="justify-content: flex-start; margin-bottom: 20px;">
+            <button class="sound-btn" id="planet-sound-btn" onclick="playPlanetAudio()" title="Play Audio">
+                <svg class="sound-icon" viewBox="0 0 24 24">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </button>
+        </div>
+
+        <div class="career-grid" id="career-container"></div>
+
+        <button class="hall-back-btn" onclick="goBack()">🏠 Complete Planet Exploration · Back to Map</button>
+    </div>
+</div>
+
+<div class="control-bar" id="control-bar">
+    <div class="status-text" id="status-text">0 exploration missions lit up</div>
+    <button class="finish-btn" id="finish-btn" onclick="showResult()" style="display: none;">Generate Interest Report 🚀</button>
+</div>
+
+<div id="result-modal">
+    <div class="modal-content">
+        <h2 style="color:var(--accent-gold); font-size: 2.2em; margin-bottom: 10px;">🧬 Interest Universe · Exploration Report</h2>
+        <p style="color: #8899b3;">Based on your choices, here are the dimensions you're most interested in:</p>
+
+        <div class="top-three-box" id="topThreeList"></div>
+
+        <div class="advice-box" id="interestAdvice"></div>
+
+        <button class="restart-btn" onclick="location.reload()">🔄 Explore Again</button>
+    </div>
+</div>
+
+<!-- Recording Modal -->
+<div id="record-modal">
+    <div class="record-modal-content">
+        <div class="record-modal-title">🎤 Share Your Thoughts</div>
+        <div class="record-modal-subtitle">Share your past related experiences</div>
+
+        <div class="record-task-display" id="record-task-display">
+            <div class="record-task-emoji" id="record-task-emoji">⚡</div>
+            <div class="record-task-name" id="record-task-name">Fix the space station's energy circuits</div>
+            <div class="record-task-earth" id="record-task-earth">🌍 Earth Career: Electrician</div>
+        </div>
+
+        <div class="record-question">
+            💬 Why does this task appeal to you?
+        </div>
+
+        <div class="record-question">
+            💬 In your past experiences, have you done anything related to this task? Do you think you're good at it?
+        </div>
+
+        <textarea class="record-textarea" id="record-textarea" placeholder="For example: I joined a woodworking club at school and made some small boxes. I feel like I'm pretty good at hands-on work..."></textarea>
+
+        <div class="voice-input-controls">
+            <button class="voice-input-btn" id="record-voice-btn" onclick="toggleVoiceInput()">
+                🎤 Start Voice Input
+            </button>
+        </div>
+        <div class="voice-status" id="voice-status"></div>
+        <div class="voice-error" id="voice-error"></div>
+
+        <div class="record-modal-buttons">
+            <button class="record-save-btn" onclick="saveRecord()">💾 Save</button>
+            <button class="record-skip-btn" onclick="skipRecord()">⏭️ Skip</button>
+        </div>
+    </div>
+</div>
+
+<!-- Audio Files -->
+<audio id="audio-main" src="music/职业体验1.m4a"></audio>
+<audio id="audio-realistic" src="music/职业体验2.m4a"></audio>
+<audio id="audio-investigative" src="music/职业体验3.m4a"></audio>
+<audio id="audio-artistic" src="music/职业体验4.m4a"></audio>
+<audio id="audio-social" src="music/职业体验5.m4a"></audio>
+<audio id="audio-enterprising" src="music/职业体验6.m4a"></audio>
+<audio id="audio-conventional" src="music/职业体验7.m4a"></audio>
+<audio id="audio-result" src="music/职业体验8.m4a"></audio>
+
+<script>
+    // --- Integrated dataset (using Holland Hexagon model, mapping to planets and tasks) ---
+    const PLANETS = [
+        {
+            id: 'realistic', name: 'Mechanic Workshop Planet', icon: '🔧', color: '#ff9f4a',
+            desc: 'Hands-on operations, tools, machinery—solving problems with your hands',
+            tasks: [
+                { task: 'Fix the space station\'s energy circuits', emoji: '⚡', earth: 'Electrician' },
+                { task: 'Assemble an exploration robot', emoji: '🔧', earth: 'Mechanic' },
+                { task: 'Build wooden supports for the space greenhouse', emoji: '🪚', earth: 'Carpenter' },
+                { task: 'Weld cracks in the spaceship hull', emoji: '🔥', earth: 'Welder' },
+                { task: 'Grow alien potatoes on the space farm', emoji: '🌽', earth: 'Farmer' },
+                { task: 'Prepare a balanced nutritious meal', emoji: '🍲', earth: 'Chef' },
+                { task: 'Put out a fire in the simulation chamber', emoji: '🧯', earth: 'Firefighter' },
+                { task: 'Pilot a shuttle through an asteroid belt', emoji: '🛸', earth: 'Pilot' }
+            ]
+        },
+        {
+            id: 'investigative', name: 'Science Lab Planet', icon: '🔬', color: '#6bffb8',
+            desc: 'Exploring the unknown, analyzing data, studying natural laws',
+            tasks: [
+                { task: 'Analyze the composition of alien minerals', emoji: '⚗️', earth: 'Chemist' },
+                { task: 'Cultivate unknown space microorganisms', emoji: '🧫', earth: 'Biologist' },
+                { task: 'Measure fluctuations in the quantum field', emoji: '📡', earth: 'Physicist' },
+                { task: 'Track a newly discovered comet', emoji: '🌠', earth: 'Astronomer' },
+                { task: 'Conduct a comprehensive physical examination for astronauts', emoji: '💉', earth: 'Doctor' },
+                { task: 'Design a relaxation and focus mini-game', emoji: '🎮', earth: 'Psychology Researcher' },
+                { task: 'Predict oxygen consumption trends', emoji: '📈', earth: 'Data Analyst' },
+                { task: 'Detect sounds from the ocean under ice', emoji: '🐋', earth: 'Oceanographer' }
+            ]
+        },
+        {
+            id: 'artistic', name: 'Creative Arts Planet', icon: '🎨', color: '#ff70a0',
+            desc: 'Creating, designing, expressing emotions and wild imagination',
+            tasks: [
+                { task: 'Write a short story about an interstellar adventure', emoji: '✍️', earth: 'Writer' },
+                { task: 'Paint a picture of an alien sunset', emoji: '🖼️', earth: 'Painter' },
+                { task: 'Create space background music with a synthesizer', emoji: '🎹', earth: 'Musician' },
+                { task: 'Play the role of a friendly alien', emoji: '👽', earth: 'Actor' },
+                { task: 'Make a 5-second zero-gravity animation', emoji: '🖥️', earth: 'Animator' },
+                { task: 'Design a planet-themed cake', emoji: '🧁', earth: 'Pastry Chef' },
+                { task: 'Film a space station life vlog', emoji: '📹', earth: 'Director' },
+                { task: 'Sketch a design for a new spacesuit', emoji: '✂️', earth: 'Fashion Designer' }
+            ]
+        },
+        {
+            id: 'social', name: 'Social Space Station', icon: '🤝', color: '#b87cff',
+            desc: 'Helping others, communication, education, focusing on teamwork',
+            tasks: [
+                { task: 'Teach alien children basic language', emoji: '🧑‍🏫', earth: 'Teacher' },
+                { task: 'Bandage wounds for injured team members', emoji: '🩺', earth: 'Nurse' },
+                { task: 'Listen to a companion\'s troubles and encourage them', emoji: '❤️', earth: 'Psychologist' },
+                { task: 'Lead new team members to familiarize themselves with the space station', emoji: '🚀', earth: 'Tour Guide' },
+                { task: 'Organize donated supplies for the colony', emoji: '🎁', earth: 'Volunteer' },
+                { task: 'Clean wounds for alien small animals', emoji: '🐶', earth: 'Veterinarian' },
+                { task: 'Design a set of zero-gravity exercise routines', emoji: '🤸', earth: 'Fitness Trainer' },
+                { task: 'Help two alien merchants communicate with Earth people', emoji: '🌐', earth: 'Translator' }
+            ]
+        },
+        {
+            id: 'enterprising', name: 'Business Center Planet', icon: '💼', color: '#ffd966',
+            desc: 'Leadership, persuasion, negotiation, starting and managing businesses',
+            tasks: [
+                { task: 'Draft an interstellar trade agreement', emoji: '📜', earth: 'Lawyer' },
+                { task: 'Design a business plan for a space tourism company', emoji: '📊', earth: 'Entrepreneur' },
+                { task: 'Sell a newly invented purifier to the space station', emoji: '🛒', earth: 'Salesperson' },
+                { task: 'Assign next week\'s task schedule to team members', emoji: '📋', earth: 'Project Manager' },
+                { task: 'Fairly mediate disputes between two groups', emoji: '⚖️', earth: 'Judge' },
+                { task: 'Write a speech for an alien media press conference', emoji: '🎤', earth: 'Public Relations' },
+                { task: 'Negotiate to buy titanium ore at the lowest price', emoji: '💰', earth: 'Purchasing Agent' },
+                { task: 'Plan an interstellar New Year celebration party', emoji: '🎇', earth: 'Event Planner' }
+            ]
+        },
+        {
+            id: 'conventional', name: 'Administrative Headquarters Planet', icon: '📋', color: '#5f9ea0',
+            desc: 'Organization, arrangement, executing processes, focusing on extreme details',
+            tasks: [
+                { task: 'Check last month\'s supply purchase accounts', emoji: '📉', earth: 'Accountant' },
+                { task: 'Arrange the commander\'s weekly schedule', emoji: '🗓️', earth: 'Secretary' },
+                { task: 'Organize and file all team members\' records', emoji: '🗂️', earth: 'Administrative Assistant' },
+                { task: 'Calculate and distribute this month\'s interstellar salaries', emoji: '💰', earth: 'Cashier' },
+                { task: 'Classify newly arrived electronic star maps', emoji: '📖', earth: 'Librarian' },
+                { task: 'Enter high-frequency observation data into the database', emoji: '💾', earth: 'Data Entry Clerk' },
+                { task: 'Inventory remaining backup oxygen cylinders in the warehouse', emoji: '🧴', earth: 'Logistics Specialist' },
+                { task: 'File and save all mission completion reports', emoji: '📌', earth: 'Archivist' }
+            ]
+        }
+    ];
+
+    // Global state management
+    let selectedTasks = new Set();
+    let dimensionScores = {
+        realistic: 0, investigative: 0, artistic: 0,
+        social: 0, enterprising: 0, conventional: 0
+    };
+    let visitedPlanets = new Set(); // Track visited planets
+
+    // Currently playing audio element
+    let currentAudio = null;
+    let currentPlanetId = null;
+
+    // Play audio function
+    function playAudio(pageId) {
+        const audioId = `audio-${pageId}`;
+        const audio = document.getElementById(audioId);
+        const soundBtn = document.getElementById('main-sound-btn');
+
+        if (!audio) {
+            console.error('Audio element does not exist:', audioId);
+            return;
+        }
+
+        // If clicking on currently playing audio, pause it
+        if (currentAudio === audio && !audio.paused) {
+            audio.pause();
+            if (soundBtn) {
+                soundBtn.classList.remove('playing');
+                soundBtn.classList.add('paused');
+            }
+            currentAudio = null;
+            return;
+        }
+
+        // If clicking on paused audio, resume playing
+        if (currentAudio === audio && audio.paused) {
+            audio.play();
+            if (soundBtn) {
+                soundBtn.classList.remove('paused');
+                soundBtn.classList.add('playing');
+            }
+            return;
+        }
+
+        // Stop currently playing audio
+        stopAllAudio();
+
+        // Play new audio
+        audio.play().then(() => {
+            currentAudio = audio;
+            if (soundBtn) {
+                soundBtn.classList.remove('paused');
+                soundBtn.classList.add('playing');
+            }
+        }).catch(error => {
+            console.error('Playback failed:', error);
+        });
+
+        // Callback after audio finishes playing
+        audio.onended = function () {
+            if (soundBtn) {
+                soundBtn.classList.remove('playing', 'paused');
+            }
+            currentAudio = null;
+        };
+    }
+
+    // Play planet audio
+    function playPlanetAudio() {
+        if (!currentPlanetId) return;
+
+        const audioId = `audio-${currentPlanetId}`;
+        const audio = document.getElementById(audioId);
+        const soundBtn = document.getElementById('planet-sound-btn');
+
+        if (!audio) {
+            console.error('Audio element does not exist:', audioId);
+            return;
+        }
+
+        // If clicking on currently playing audio, pause it
+        if (currentAudio === audio && !audio.paused) {
+            audio.pause();
+            if (soundBtn) {
+                soundBtn.classList.remove('playing');
+                soundBtn.classList.add('paused');
+            }
+            currentAudio = null;
+            return;
+        }
+
+        // If clicking on paused audio, resume playing
+        if (currentAudio === audio && audio.paused) {
+            audio.play();
+            if (soundBtn) {
+                soundBtn.classList.remove('paused');
+                soundBtn.classList.add('playing');
+            }
+            return;
+        }
+
+        // Stop currently playing audio
+        stopAllAudio();
+
+        // Play new audio
+        audio.play().then(() => {
+            currentAudio = audio;
+            if (soundBtn) {
+                soundBtn.classList.remove('paused');
+                soundBtn.classList.add('playing');
+            }
+        }).catch(error => {
+            console.error('Playback failed:', error);
+        });
+
+        // Callback after audio finishes playing
+        audio.onended = function () {
+            if (soundBtn) {
+                soundBtn.classList.remove('playing', 'paused');
+            }
+            currentAudio = null;
+        };
+    }
+
+    // Stop all audio
+    function stopAllAudio() {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+        // Clear all button states
+        document.querySelectorAll('.sound-btn').forEach(btn => {
+            btn.classList.remove('playing', 'paused');
+        });
+        currentAudio = null;
+    }
+
+    // Check if all planets have been visited
+    function checkAllPlanetsVisited() {
+        const finishBtn = document.getElementById('finish-btn');
+        if (visitedPlanets.size >= 6) {
+            finishBtn.style.display = 'block';
+        }
+    }
+
+    // --- Initialize rendering of the hall ---
+    window.onload = function() {
+        const grid = document.getElementById('theme-gallery');
+        PLANETS.forEach(planet => {
+            const card = document.createElement('div');
+            card.className = 'theme-card';
+            card.style.setProperty('--glow-color', planet.color);
+            card.style.setProperty('--shadow-color', `${planet.color}40`);
+
+            card.innerHTML = `
+                <div class="theme-icon-bg" style="color:${planet.color}">${planet.icon}</div>
+                <div class="theme-title" style="color:${planet.color}">${planet.name}</div>
+                <div class="theme-desc">${planet.desc}</div>
+            `;
+            card.onclick = () => openPlanet(planet);
+            grid.appendChild(card);
+        });
+
+        // Auto-play main audio after page loads
+        setTimeout(() => {
+            playAudio('main');
+        }, 500);
+    };
+
+    // --- Open a specific planet ---
+    function openPlanet(planet) {
+        document.getElementById('theme-gallery').style.display = 'none';
+        document.getElementById('main-subtitle').style.display = 'none';
+
+        const section = document.getElementById('career-section');
+        section.style.display = 'block';
+        window.scrollTo(0,0);
+
+        // Set current planet ID and record visit
+        currentPlanetId = planet.id;
+        visitedPlanets.add(planet.id);
+
+        // Check if all planets have been visited
+        checkAllPlanetsVisited();
+
+        // Stop previous audio
+        stopAllAudio();
+
+        // Set top title
+        document.getElementById('current-theme-title').innerHTML =
+            `<span style="font-size:1.5em; filter: drop-shadow(0 0 10px ${planet.color});">${planet.icon}</span>
+             <span style="color:${planet.color}">${planet.name}</span>`;
+
+        const container = document.getElementById('career-container');
+        container.innerHTML = '';
+
+        // Render specific tasks for this planet
+        planet.tasks.forEach(task => {
+            const taskId = `${planet.id}-${task.earth}`; // Use ID + Earth career as unique identifier
+            const card = document.createElement('div');
+            card.className = 'career-card';
+
+            // Restore selected state
+            if (selectedTasks.has(taskId)) {
+                card.classList.add('selected');
+            }
+
+            card.innerHTML = `
+                <div class="job-visual">${task.emoji}</div>
+                <div class="job-title">${task.task}</div>
+                <div class="job-earth">🌍 Earth Career: ${task.earth}</div>
+            `;
+
+            // Store task data to card
+            card.dataset.taskId = taskId;
+            card.dataset.planetId = planet.id;
+            card.dataset.taskEmoji = task.emoji;
+            card.dataset.taskName = task.task;
+            card.dataset.taskEarth = task.earth;
+
+            card.onclick = () => toggleTask(card, planet.id, taskId, task);
+            container.appendChild(card);
+        });
+
+        // Auto-play planet audio
+        setTimeout(() => {
+            playPlanetAudio();
+        }, 300);
+    }
+
+    // --- Return to hall ---
+    function goBack() {
+        // Stop audio
+        stopAllAudio();
+        currentPlanetId = null;
+
+        document.getElementById('career-section').style.display = 'none';
+        document.getElementById('theme-gallery').style.display = 'grid';
+        document.getElementById('main-subtitle').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    // --- Select/deselect task ---
+    function toggleTask(card, planetId, taskId, task) {
+        if (selectedTasks.has(taskId)) {
+            // If already selected, deselect
+            selectedTasks.delete(taskId);
+            dimensionScores[planetId] -= 1;
+            card.classList.remove('selected');
+            // Delete record
+            delete taskRecords[taskId];
+        } else {
+            // If not selected, select first
+            selectedTasks.add(taskId);
+            dimensionScores[planetId] += 1;
+            card.classList.add('selected');
+
+            // Open recording modal
+            openRecordModal(taskId, task, planetId);
+        }
+        updateControlBar();
+    }
+
+    // --- Update bottom scoreboard ---
+    function updateControlBar() {
+        document.getElementById('status-text').innerText = `${selectedTasks.size} exploration missions lit up`;
+    }
+
+    // --- Recording modal related variables and functions ---
+    let currentRecordingTask = null;
+    let taskRecords = {}; // Store recording records for each task
+    let recordRecognition = null;
+    let isRecordRecognizing = false;
+
+    // Open recording modal
+    function openRecordModal(taskId, task, planetId) {
+        currentRecordingTask = { taskId, task, planetId };
+
+        // Update modal display content
+        document.getElementById('record-task-emoji').textContent = task.emoji;
+        document.getElementById('record-task-name').textContent = task.task;
+        document.getElementById('record-task-earth').textContent = '🌍 Earth Career: ' + task.earth;
+
+        // Restore previously saved content (if any)
+        const savedRecord = taskRecords[taskId];
+        document.getElementById('record-textarea').value = savedRecord ? savedRecord.text : '';
+
+        // Reset voice status
+        document.getElementById('voice-status').textContent = '';
+        document.getElementById('voice-status').style.color = '';
+        document.getElementById('voice-error').textContent = '';
+        const voiceBtn = document.getElementById('record-voice-btn');
+        voiceBtn.textContent = '🎤 Start Voice Input';
+        voiceBtn.classList.remove('recording');
+
+        // Show modal
+        document.getElementById('record-modal').style.display = 'flex';
+
+        // Stop background audio
+        stopAllAudio();
+
+        // Pre-request microphone permission to reduce delay after user clicks record button
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    // Release immediately after getting permission to avoid occupying microphone
+                    stream.getTracks().forEach(track => track.stop());
+                    console.log('Microphone permission obtained');
+                })
+                .catch(err => {
+                    console.log('Microphone permission not obtained:', err);
+                });
+        }
+    }
+
+    // Close recording modal
+    function closeRecordModal() {
+        document.getElementById('record-modal').style.display = 'none';
+
+        // Stop voice recognition
+        if (recordRecognition && isRecordRecognizing) {
+            recordRecognition.stop();
+        }
+
+        currentRecordingTask = null;
+    }
+
+    // Save recording record
+    function saveRecord() {
+        if (!currentRecordingTask) return;
+
+        const text = document.getElementById('record-textarea').value.trim();
+
+        // Save record
+        taskRecords[currentRecordingTask.taskId] = {
+            task: currentRecordingTask.task,
+            text: text,
+            timestamp: new Date().toISOString()
+        };
+
+        closeRecordModal();
+    }
+
+    // Skip recording
+    function skipRecord() {
+        closeRecordModal();
+    }
+
+    // Toggle voice input
+    function toggleVoiceInput() {
+        const voiceBtn = document.getElementById('record-voice-btn');
+        const statusEl = document.getElementById('voice-status');
+        const errorEl = document.getElementById('voice-error');
+
+        // If recording, stop
+        if (isRecordRecognizing && recordRecognition) {
+            recordRecognition.stop();
+            return;
+        }
+
+        // Start recording
+        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognitionAPI) {
+            errorEl.textContent = 'Your browser does not support speech recognition';
+            return;
+        }
+
+        // Request microphone permission
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    stream.getTracks().forEach(track => track.stop());
+                    startRecordRecognition();
+                })
+                .catch(err => {
+                    errorEl.textContent = 'Cannot access microphone, please check permission settings';
+                });
+        } else {
+            startRecordRecognition();
+        }
+    }
+
+    // Start speech recognition
+    function startRecordRecognition() {
+        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const voiceBtn = document.getElementById('record-voice-btn');
+        const statusEl = document.getElementById('voice-status');
+        const errorEl = document.getElementById('voice-error');
+        const textarea = document.getElementById('record-textarea');
+
+        errorEl.textContent = '';
+
+        recordRecognition = new SpeechRecognitionAPI();
+        recordRecognition.lang = 'en-US';
+        recordRecognition.interimResults = true;
+        recordRecognition.continuous = true;
+        recordRecognition.maxAlternatives = 1;
+
+        // Record textarea length and content before speech recognition starts
+        let recognitionStartIndex = textarea.value.length;
+        let baseText = textarea.value;
+
+        recordRecognition.onstart = function() {
+            isRecordRecognizing = true;
+            voiceBtn.textContent = '⏹️ End Voice Input';
+            voiceBtn.classList.add('recording');
+            statusEl.textContent = 'Initializing microphone...';
+        };
+
+        // Triggered when actually starting to capture audio (later than onstart but more accurate)
+        recordRecognition.onaudiostart = function() {
+            statusEl.textContent = '🎤 Listening... Please speak';
+            // Add brief visual feedback to prompt user they can speak now
+            statusEl.style.color = '#00e0ff';
+        };
+
+        recordRecognition.onaudioend = function() {
+            statusEl.style.color = '';
+        };
+
+        recordRecognition.onresult = function(event) {
+            let interimTranscript = '';
+
+            // Iterate through all results, distinguishing between final and interim results
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    // Final result: append to base text
+                    const separator = baseText && !baseText.endsWith(' ') ? ' ' : '';
+                    baseText = baseText + separator + transcript;
+                    textarea.value = baseText;
+                    // Update starting position
+                    recognitionStartIndex = baseText.length;
+                } else {
+                    // Interim result: accumulate for display
+                    interimTranscript += transcript;
+                }
+            }
+
+            // If there are interim results, display after final text (don't save to baseText)
+            if (interimTranscript) {
+                const separator = baseText && !baseText.endsWith(' ') ? ' ' : '';
+                textarea.value = baseText + separator + interimTranscript;
+            }
+        };
+
+        recordRecognition.onerror = function(event) {
+            isRecordRecognizing = false;
+            voiceBtn.textContent = '🎤 Start Voice Input';
+            voiceBtn.classList.remove('recording');
+            statusEl.textContent = '';
+
+            if (event.error === 'not-allowed') {
+                errorEl.textContent = 'Microphone permission denied';
+            } else if (event.error === 'no-speech') {
+                errorEl.textContent = 'No speech detected, please try again';
+            } else {
+                errorEl.textContent = 'Speech recognition error: ' + event.error;
+            }
+        };
+
+        recordRecognition.onend = function() {
+            isRecordRecognizing = false;
+            voiceBtn.textContent = '🎤 Start Voice Input';
+            voiceBtn.classList.remove('recording');
+            statusEl.textContent = '';
+            recordRecognition = null;
+        };
+
+        try {
+            recordRecognition.start();
+        } catch (error) {
+            errorEl.textContent = 'Speech recognition failed to start';
+        }
+    }
+
+    // --- Display final report ---
+    function showResult() {
+        const topThreeDiv = document.getElementById('topThreeList');
+        const adviceDiv = document.getElementById('interestAdvice');
+
+        // Build dimension statistics array
+        const dims = [
+            { id: 'realistic', label: '🔧 Realistic (R)', score: dimensionScores.realistic, color: '#ff9f4a' },
+            { id: 'investigative', label: '🔬 Investigative (I)', score: dimensionScores.investigative, color: '#6bffb8' },
+            { id: 'artistic', label: '🎨 Artistic (A)', score: dimensionScores.artistic, color: '#ff70a0' },
+            { id: 'social', label: '🤝 Social (S)', score: dimensionScores.social, color: '#b87cff' },
+            { id: 'enterprising', label: '💼 Enterprising (E)', score: dimensionScores.enterprising, color: '#ffd966' },
+            { id: 'conventional', label: '📋 Conventional (C)', score: dimensionScores.conventional, color: '#5f9ea0' }
+        ];
+
+        // Sort and extract top 3 with scores greater than 0
+        const sorted = [...dims].sort((a,b) => b.score - a.score);
+        const top3 = sorted.slice(0,3).filter(d => d.score > 0);
+
+        if (selectedTasks.size === 0) {
+            topThreeDiv.innerHTML = '<div class="top-badge" style="border-color:#555; color:#888;">🌌 Observation Period</div>';
+            adviceDiv.innerHTML = 'You didn\'t light up any specific interstellar missions this time. Maybe you\'re still observing, or want to create a completely new career field? That\'s fine—the vast sea of stars has infinite possibilities, and you\'re welcome to come back and explore anytime!';
+        } else {
+            topThreeDiv.innerHTML = top3.map(t =>
+                `<div class="top-badge" style="border-color:${t.color}">${t.label} <span>(${t.score})</span></div>`
+            ).join('');
+
+            const labels = top3.map(t => t.label.split(' ')[1]).join(', '); // Extract "Realistic" etc.
+
+            // Build recording records display
+            let recordsHtml = '';
+            const recordEntries = Object.entries(taskRecords);
+            if (recordEntries.length > 0) {
+                recordsHtml = `
+                    <div style="margin-top: 25px; text-align: left;">
+                        <h3 style="color: var(--accent-gold); margin-bottom: 15px;">📝 Your Career Thoughts</h3>
+                        ${recordEntries.map(([taskId, record]) => `
+                            <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 12px; border-left: 3px solid var(--accent-blue);">
+                                <div style="font-weight: bold; color: var(--text-main); margin-bottom: 8px;">
+                                    ${record.task.emoji} ${record.task.task} <span style="color: var(--text-dim); font-size: 0.85em;">(${record.task.earth})</span>
+                                </div>
+                                <div style="color: var(--text-dim); line-height: 1.6;">
+                                    ${record.text || '<i style="color: #556;">No thoughts recorded</i>'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            adviceDiv.innerHTML = `<p style="margin-bottom:10px;">🌟 <strong>Analysis Conclusion:</strong> You have shown a strong interest in the <strong>${labels}</strong> fields!</p>
+            <p>On Earth, you would likely also enjoy the corresponding work in these fields (like the Earth careers shown on the cards). Understanding your interest radar is the first step toward an ideal life!</p>
+            ${recordsHtml}`;
+        }
+
+        document.getElementById('result-modal').style.display = 'flex';
+
+        // Play result audio
+        stopAllAudio();
+        setTimeout(() => {
+            const resultAudio = document.getElementById('audio-result');
+            if (resultAudio) {
+                resultAudio.play().catch(error => {
+                    console.error('Result audio playback failed:', error);
+                });
+            }
+        }, 300);
+    }
+</script>
+
+</body>
+</html>

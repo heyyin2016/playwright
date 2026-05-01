@@ -1,0 +1,2794 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mind Weather Adventure v5.0 (Lite)</title>
+    <style>
+        /* --- Base Styles --- */
+        :root {
+            --bg-gradient: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --cell-empty: #e0e0e0;
+            --cell-low: #ff4d4d;
+            /* 1-3 points: Red */
+            --cell-mid: #f9cb28;
+            /* 4-7 points: Yellow */
+            --cell-high: #4cd964;
+            /* 8-10 points: Green */
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-gradient);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 650px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        /* Page Header Area */
+        .page-header {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 50px;
+        }
+
+        .page-header h1,
+        .page-header h2 {
+            margin: 0;
+            flex-grow: 1;
+            padding-right: 50px;
+            /* Space for speaker button */
+        }
+
+        /* Speaker Container */
+        .sound-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        }
+
+        .sound-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            opacity: 1;
+        }
+
+        .sound-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        /* Speaker SVG Icon */
+        .sound-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        /* Sound Wave Animation During Playback */
+        .sound-waves {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sound-btn.playing .sound-waves {
+            opacity: 1;
+        }
+
+        .sound-wave {
+            width: 3px;
+            height: 8px;
+            background: white;
+            border-radius: 2px;
+            animation: soundWave 0.5s ease-in-out infinite;
+        }
+
+        .sound-wave:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .sound-wave:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 12px;
+        }
+
+        .sound-wave:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 16px;
+        }
+
+        @keyframes soundWave {
+
+            0%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(0.5);
+            }
+        }
+
+        /* Rotation Animation During Playback */
+        .sound-btn.playing .sound-icon {
+            animation: speakerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes speakerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Paused State */
+        .sound-btn.paused .sound-icon {
+            opacity: 0.7;
+        }
+
+        /* Hide Audio Elements */
+        audio {
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .btn {
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 30px auto 0;
+            display: block;
+            width: 80%;
+            transition: transform 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Chat Bubble / Diary Card Styles */
+        .chat-bubble {
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 2px solid #e8f4f8;
+        }
+
+        .chat-bubble::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: -10px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #fff;
+        }
+
+        .chat-bubble.happy {
+            border-color: #d4edda;
+            background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+        }
+
+        .chat-bubble.happy::before {
+            border-bottom-color: #f0fff4;
+        }
+
+        .chat-bubble.sad {
+            border-color: #f5c6cb;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+        }
+
+        .chat-bubble.sad::before {
+            border-bottom-color: #fff5f5;
+        }
+
+        .chat-bubble .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 12px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .chat-bubble.happy .avatar {
+            background: #d4edda;
+        }
+
+        .chat-bubble.sad .avatar {
+            background: #f8d7da;
+        }
+
+        .question-section {
+            background: #f4f8fb;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .question-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: #fff;
+        }
+
+        /* Glassmorphism Card - New Home Page Style */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            border-radius: 3rem;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.4);
+            transition: transform 0.2s ease;
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .glass-card:hover {
+            transform: scale(1.01);
+        }
+
+        .glass-card .hero {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .glass-card .hero h1 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1a3c6e, #2e5a9e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 5px rgba(255,255,250,0.5);
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .glass-card .badge {
+            display: inline-block;
+            background: #e1f0fe;
+            color: #2a6b9e;
+            padding: 0.4rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.8rem;
+            backdrop-filter: blur(4px);
+            box-shadow: inset 0 0 2px white, 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .glass-card .rule-block {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 2rem;
+            padding: 1.2rem 1.8rem;
+            margin: 1.8rem 0;
+            text-align: center;
+            font-weight: 500;
+            color: #1e4663;
+            font-size: 1rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,240,0.8);
+        }
+
+        .glass-card .highlight {
+            font-weight: 800;
+            color: #c95b0f;
+            background: linear-gradient(120deg, #ffefcf, #ffe0b5);
+            padding: 0.1rem 0.4rem;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .glass-card .weather-demo {
+            background: #cfe4ffb3;
+            border-radius: 2rem;
+            padding: 0.8rem;
+            margin: 0.8rem 0;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.8rem;
+            flex-wrap: wrap;
+        }
+
+        .glass-card .weather-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .glass-card .key-zone {
+            margin: 2rem 0;
+        }
+
+        .glass-card .key-card {
+            background: #ffffffcc;
+            border-radius: 1.8rem;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.2rem;
+            border-left: 8px solid #ffb347;
+            transition: all 0.2s;
+        }
+
+        .glass-card .key-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #1c4d7a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .glass-card .key-title span {
+            background: #ffd966;
+            padding: 0 12px;
+            border-radius: 40px;
+            font-size: 1rem;
+        }
+
+        .glass-card .key-desc {
+            color: #1e3e5c;
+            margin-top: 0.6rem;
+            line-height: 1.4;
+            font-weight: 500;
+            padding-left: 0.3rem;
+        }
+
+        .glass-card .key-card.trash {
+            background: #ffe2e2cc;
+            border-left-color: #e16262;
+        }
+
+        .glass-card .btn-primary {
+            display: block;
+            width: fit-content;
+            margin: 2rem auto 0.5rem;
+            background: #1e4880;
+            color: white;
+            border: none;
+            padding: 0.9rem 2.8rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 14px rgba(0,0,0,0.1);
+        }
+
+        .glass-card .btn-primary:hover {
+            background: #2c629b;
+            transform: scale(0.97);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .glass-card .footer-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #1f4970;
+            margin-top: 1rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 550px) {
+            .glass-card { padding: 1.5rem; }
+            .glass-card .hero h1 { font-size: 1.9rem; }
+        }
+
+        /* Game 1: Weather */
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin: 20px 0;
+        }
+
+        .day-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .day-column:hover .day-box {
+            border-color: #4facfe;
+            background: #f0faff;
+        }
+
+        .weather-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .weather-icon {
+            font-size: 28px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+
+        .weather-icon.selected {
+            background-color: #e3f2fd;
+            border-color: #4facfe;
+            transform: scale(1.2);
+        }
+
+        /* Small Weather Icon Styles (for Questions) */
+        .weather-icon-small {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transition: 0.2s;
+            display: inline-block;
+        }
+
+        .weather-icon-small:hover {
+            background-color: #e3f2fd;
+            transform: scale(1.1);
+        }
+
+        .weather-icon-small.selected {
+            background-color: #e3f2fd;
+            border-color: #4facfe;
+            transform: scale(1.2);
+        }
+
+        .day-box {
+            width: 35px;
+            height: 35px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-top: 5px;
+            background: #fff;
+        }
+
+        /* --- Game 2: 10-Grid Battery Styles --- */
+        .energy-row {
+            margin: 25px 0;
+        }
+
+        .battery-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        /* Battery Shell */
+        .battery-shell {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            height: 40px;
+            border: 3px solid #555;
+            border-radius: 6px;
+            padding: 3px;
+            background: #fff;
+            position: relative;
+        }
+
+        /* Battery Terminal */
+        .battery-shell::after {
+            content: '';
+            position: absolute;
+            right: -9px;
+            top: 10px;
+            bottom: 10px;
+            width: 6px;
+            background: #555;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Battery Cells */
+        .battery-cell {
+            flex: 1;
+            height: 100%;
+            background: var(--cell-empty);
+            margin: 0 2px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .battery-cell:hover {
+            transform: scaleY(1.1);
+        }
+
+        /* Active State Colors */
+        .cell-active-low {
+            background-color: var(--cell-low) !important;
+            box-shadow: 0 0 5px var(--cell-low);
+        }
+
+        .cell-active-mid {
+            background-color: var(--cell-mid) !important;
+            box-shadow: 0 0 5px var(--cell-mid);
+        }
+
+        .cell-active-high {
+            background-color: var(--cell-high) !important;
+            box-shadow: 0 0 5px var(--cell-high);
+        }
+
+        /* Custom Slider Styles (Absolutely Reliable) */
+        .battery-slider-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .battery-slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider-track {
+            position: relative;
+            flex-grow: 1;
+            height: 16px;
+            background: linear-gradient(to right,
+                    #ff4d4d 0%,
+                    #ff4d4d 30%,
+                    #f9cb28 30%,
+                    #f9cb28 70%,
+                    #4cd964 70%,
+                    #4cd964 100%);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .slider-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: transparent;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px;
+            height: 32px;
+            background: white;
+            border: 3px solid #4facfe;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, box-shadow 0.1s;
+            user-select: none;
+        }
+
+        .slider-thumb:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .slider-thumb:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.15);
+            box-shadow: 0 4px 16px rgba(79, 172, 254, 0.6);
+        }
+
+        .slider-val-overlay {
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            pointer-events: none;
+        }
+
+        .slider-value {
+            min-width: 60px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Value Display */
+        .battery-val {
+            min-width: 80px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: #555;
+        }
+
+        .battery-desc {
+            font-size: 12px;
+            color: #888;
+            display: block;
+            text-align: center;
+        }
+
+
+        /* Card Selection */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .card-item {
+            border: 2px solid #eee;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.2s;
+            background: #fff;
+        }
+
+        .card-item:hover {
+            border-color: #ccc;
+        }
+
+        .card-item.selected-drain {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+            font-weight: bold;
+        }
+
+        /* Game 4 Styles (Game 3 Deleted) */
+        .section-header {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 25px 0 10px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: space-between;
+        }
+
+        .pack-grid,
+        .trash-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .item-pill {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .item-pill.selected-pack {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .item-pill.selected-trash {
+            background: #fadbd8;
+            border-color: #e74c3c;
+            color: #922b21;
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 5px solid #ccc;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Question Line (Label + Play Button) */
+        .question-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .question-line .question-label {
+            margin-bottom: 0;
+            flex-grow: 1;
+        }
+
+        /* Inline Play Button Styles */
+        .inline-sound-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .inline-sound-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.6);
+        }
+
+        .inline-sound-btn:active {
+            transform: scale(0.95);
+        }
+
+        .inline-sound-icon {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .inline-sound-btn.playing {
+            animation: inlinePulse 1s ease-in-out infinite;
+        }
+
+        @keyframes inlinePulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .voice-input-controls {
+            margin: 8px 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .voice-input-btn {
+            background: linear-gradient(to right, #34d399 0%, #10b981 100%);
+            border: none;
+            color: #fff;
+            border-radius: 20px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 160px;
+            justify-content: center;
+        }
+
+        .voice-input-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.5);
+        }
+
+        .voice-input-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        /* Waiting State - Orange */
+        .voice-input-btn.state-preparing {
+            background: linear-gradient(to right, #fbbf24 0%, #f59e0b 100%);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+            animation: pulse-preparing 1.5s ease-in-out infinite;
+        }
+
+        /* Ready State - Green */
+        .voice-input-btn.state-ready {
+            background: linear-gradient(to right, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.6);
+            animation: pulse-ready 1s ease-in-out infinite;
+        }
+
+        /* Loading Animation */
+        @keyframes pulse-preparing {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+            }
+            50% {
+                transform: scale(1.03);
+                box-shadow: 0 6px 20px rgba(245, 158, 11, 0.7);
+            }
+        }
+
+        @keyframes pulse-ready {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Microphone Loading Animation Icon */
+        .mic-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: mic-spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes mic-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Sound Wave Animation */
+        .mic-waves {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            height: 16px;
+        }
+
+        .mic-wave {
+            width: 3px;
+            background: #fff;
+            border-radius: 2px;
+            animation: mic-wave 0.5s ease-in-out infinite;
+        }
+
+        .mic-wave:nth-child(1) {
+            height: 6px;
+            animation-delay: 0s;
+        }
+
+        .mic-wave:nth-child(2) {
+            height: 12px;
+            animation-delay: 0.15s;
+        }
+
+        .mic-wave:nth-child(3) {
+            height: 8px;
+            animation-delay: 0.3s;
+        }
+
+        @keyframes mic-wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.8); }
+        }
+
+        /* Status Text Styles */
+        .voice-status-waiting {
+            color: #d97706 !important;
+            font-weight: bold;
+            background: #fef3c7;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            animation: status-blink 1.5s ease-in-out infinite;
+        }
+
+        .voice-status-ready {
+            color: #059669 !important;
+            font-weight: bold;
+            background: #d1fae5;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        @keyframes status-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .voice-input-error {
+            color: #d93025;
+            font-size: 13px;
+            min-height: 18px;
+            line-height: 1.2;
+        }
+
+        .voice-input-status {
+            color: #0f766e;
+            font-size: 13px;
+            min-height: 18px;
+            line-height: 1.2;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <!-- Page 1: Mind Fantasy Adventure -->
+    <div id="intro-screen">
+        <div class="glass-card" style="
+            background: linear-gradient(135deg, #ffe8f3, #fff6e8);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        ">
+
+            <div class="hero" style="text-align:center; margin-bottom: 1.5rem; position: relative;">
+                <h1 style="
+                    font-size: 1.8rem;
+                    background: linear-gradient(90deg, #ff7eb3, #ffb347);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    font-weight: bold;
+                    padding-right: 50px;
+                    display: inline-block;
+                ">
+                    ✨ Mind Weather Fantasy Adventure ✨
+                </h1>
+                <button class="sound-btn" onclick="playAudio('intro-screen')" title="Play Audio" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%);">
+                    <svg class="sound-icon" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <div class="sound-waves">
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                    </div>
+                </button>
+            </div>
+
+            <div class="intro-content" style="
+                text-align: center;
+                font-size: 1.1rem;
+                line-height: 1.8;
+                color: #5a3e36;
+            ">
+                <p style="margin-bottom: 1.2rem; font-size:1.2rem;">
+                    🌈 Your personal Mind Weather Detector is now active!
+                </p>
+
+                <div style="
+                    background: rgba(255,255,255,0.7);
+                    border-radius: 16px;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                ">
+                    ☀️ Good mood, like a clear blue sky
+                    <br>
+                    🌧️ Bad mood, like pouring rain
+                </div>
+
+                <div style="
+                    background: rgba(255,255,255,0.7);
+                    border-radius: 16px;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                ">
+                    🔋 We'll check your <b>Mind Battery</b>
+                    <br>
+                    🎒 Help you organize your emotional backpack
+                    <br>
+                    🧹 Clear away worry trash
+                </div>
+
+                <p style="margin-top: 1.2rem; font-weight: 500;">
+                    💛 Face your feelings honestly!
+                </p>
+            </div>
+
+            <div style="text-align:center; margin-top: 2rem;">
+                <button class="btn-primary" onclick="nextScreen('game1-happy')" style="
+                    background: linear-gradient(90deg, #ff7eb3, #ffb347);
+                    border: none;
+                    border-radius: 999px;
+                    padding: 0.9rem 2rem;
+                    font-size: 1.1rem;
+                    color: white;
+                    box-shadow: 0 6px 15px rgba(255,126,179,0.4);
+                    cursor: pointer;
+                ">
+                    🚀 Start Adventure
+                </button>
+            </div>
+
+        </div>
+
+
+
+        <!-- Page 2: Happy Mood -->
+        <div id="game1-happy" class="hidden">
+            <div class="page-header">
+                <h2>😊 Happy Diary</h2>
+                <button class="sound-btn" onclick="playAudio('game1-happy')" title="Play Audio">
+                    <svg class="sound-icon" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <div class="sound-waves">
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Chat Bubble 1: Mood Weather -->
+            <div class="chat-bubble happy">
+                <div class="avatar">😊</div>
+                <div class="question-line">
+                    <label class="question-label" style="color: #28a745;">Which day this past week were you happiest? What was your mood weather?</label>
+                </div>
+                <div style="margin-bottom: 15px; text-align: center;">
+                    <span class="weather-icon-small" onclick="setQuestionWeather('happy', '☀️')" title="Happy">☀️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('happy', '🌤️')" title="Okay">🌤️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('happy', '🌧️')" title="Stressed">🌧️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('happy', '⛈️')" title="Anxious">⛈️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('happy', '🌪️')" title="Chaotic">🌪️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('happy', '❄️')" title="Tired">❄️</span>
+                    <span id="happy-weather-display" style="margin-left: 10px; font-size: 28px;"></span>
+                </div>
+            </div>
+
+            <!-- Chat Bubble 2: What Happened -->
+            <div class="chat-bubble happy">
+                <div class="avatar">💭</div>
+                <div class="question-line">
+                    <label class="question-label" style="color: #28a745;">What good thing happened?</label>
+                </div>
+                <input type="text" id="g1-happy" placeholder="For example: Friday was the best because I won in PE class..." oninput="resetFollowup('happy')">
+
+                <!-- Good Thing Category Selection -->
+                <div id="happy-category-section" style="margin-top: 15px; display: none;">
+                    <label class="question-label" style="color: #28a745; font-size: 14px;">Which category does this belong to?</label>
+                    <select id="g1-happy-category" onchange="showHappyFollowup()">
+                        <option value="">Please select a category...</option>
+                    </select>
+                </div>
+
+                <!-- Follow-up Area: Happy -->
+                <div id="followup-happy" style="display:none; margin-top:15px; padding:12px 14px; background:#fff; border-left:4px solid #28a745; border-radius:8px;">
+                    <div style="font-weight:bold; color:#155724; margin-bottom:8px;">💬 Please answer:</div>
+                    <div id="followup-happy-questions" style="color:#155724; margin-bottom:10px; line-height:1.6;"></div>
+                    <input type="text" id="g1-happy-followup" placeholder="Share your thoughts..." style="margin-bottom:0;">
+                    <div class="voice-input-controls" style="margin-top: 8px;">
+                        <button class="voice-input-btn" type="button" id="happy-voice-btn" onclick="startVoiceInputForInput('g1-happy-followup', 'happy-voice-btn')">🎤 Start Voice Input</button>
+                        <span class="voice-input-status"></span>
+                        <span class="voice-input-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="checkHappyAndNext()">Next Page ➡️</button>
+        </div>
+
+        <!-- Page 3: Bad Mood -->
+        <div id="game1-bad" class="hidden">
+            <div class="page-header">
+                <h2>😔 Worry Diary</h2>
+                <button class="sound-btn" onclick="playAudio('game1-bad')" title="Play Audio">
+                    <svg class="sound-icon" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <div class="sound-waves">
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Chat Bubble 1: Mood Weather -->
+            <div class="chat-bubble sad">
+                <div class="avatar">😔</div>
+                <div class="question-line">
+                    <label class="question-label" style="color: #e74c3c;">Which day this past week were you unhappiest? What was your mood weather?</label>
+                </div>
+                <div style="margin-bottom: 15px; text-align: center;">
+                    <span class="weather-icon-small" onclick="setQuestionWeather('bad', '☀️')" title="Happy">☀️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('bad', '🌤️')" title="Okay">🌤️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('bad', '🌧️')" title="Stressed">🌧️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('bad', '⛈️')" title="Anxious">⛈️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('bad', '🌪️')" title="Chaotic">🌪️</span>
+                    <span class="weather-icon-small" onclick="setQuestionWeather('bad', '❄️')" title="Tired">❄️</span>
+                    <span id="bad-weather-display" style="margin-left: 10px; font-size: 28px;"></span>
+                </div>
+            </div>
+
+            <!-- Chat Bubble 2: What Happened -->
+            <div class="chat-bubble sad">
+                <div class="avatar">💭</div>
+                <div class="question-line">
+                    <label class="question-label" style="color: #e74c3c;">What unhappy thing happened?</label>
+                </div>
+                <input type="text" id="g1-bad" placeholder="For example: Wednesday was the worst because I couldn't finish my homework..." oninput="resetFollowup('bad')">
+
+                <!-- Bad Thing Category Selection -->
+                <div id="bad-category-section" style="margin-top: 15px; display: none;">
+                    <label class="question-label" style="color: #e74c3c; font-size: 14px;">Which category does this belong to?</label>
+                    <select id="g1-bad-category" onchange="showBadFollowup()">
+                        <option value="">Please select a category...</option>
+                    </select>
+                </div>
+
+                <!-- Follow-up Area: Unhappy -->
+                <div id="followup-bad" style="display:none; margin-top:15px; padding:12px 14px; background:#fff; border-left:4px solid #e74c3c; border-radius:8px;">
+                    <div style="font-weight:bold; color:#7b241c; margin-bottom:8px;">💬 Please answer:</div>
+                    <div id="followup-bad-questions" style="color:#7b241c; margin-bottom:10px; line-height:1.6;"></div>
+                    <input type="text" id="g1-bad-followup" placeholder="Share your thoughts..." style="margin-bottom:0;">
+                    <div class="voice-input-controls" style="margin-top: 8px;">
+                        <button class="voice-input-btn" type="button" id="bad-voice-btn" onclick="startVoiceInputForInput('g1-bad-followup', 'bad-voice-btn')">🎤 Start Voice Input</button>
+                        <span class="voice-input-status"></span>
+                        <span class="voice-input-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="checkBadAndNext()">Next Stop ➡️</button>
+        </div>
+
+        <!-- Page 4: Energy Battery Check -->
+        <div id="game2-battery" class="hidden">
+            <div class="page-header">
+                <h2>🔋 Energy Battery Check</h2>
+                <button class="sound-btn" onclick="playAudio('game2-battery')" title="Play Audio">
+                    <svg class="sound-icon" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <div class="sound-waves">
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Chat Bubble: Energy Explanation -->
+            <div class="chat-bubble">
+                <div class="avatar">🔋</div>
+                <p style="text-align: center; margin: 0;">Drag the slider to rate your energy!<br>
+                    <small style="color:#666">(0 is completely drained, 10 is fully charged)</small><br>
+                    <span style="color:#28a745; font-size: 13px; display: block; margin-top: 8px; background: #e8f8f0; padding: 8px; border-radius: 6px;">
+                        💡 Higher means more energy, lower means very tired and drained
+                    </span>
+                </p>
+            </div>
+
+            <div id="battery-container"></div>
+
+            <!-- Chat Bubble: Follow-up -->
+            <div class="chat-bubble" id="battery-followup-section">
+                <div class="avatar">🎤</div>
+                <div class="question-line">
+                    <label class="question-label">Why is your energy battery at this level? Please share:</label>
+                </div>
+                <input type="text" id="battery-followup-answer" placeholder="Click the microphone 🎤 to share your thoughts...">
+            </div>
+
+            <button class="btn" onclick="checkBatteryAndNext()">Next Stop ➡️</button>
+        </div>
+
+        <!-- Page 5: What's Stealing Your Energy? -->
+        <div id="game2" class="hidden">
+            <div class="page-header">
+                <h2 style="font-weight: bold; margin-top: 30px; text-align:center;">⚠️ What's Stealing Your Energy? (Pick 3)</h2>
+                <button class="sound-btn" onclick="playAudio('game2')" title="Play Audio">
+                    <svg class="sound-icon" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <div class="sound-waves">
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                    </div>
+                </button>
+            </div>
+            <div class="card-grid">
+                <div class="card-item" onclick="toggleDrain(this)" data-value="📚 Too much homework">📚 Too much homework</div>
+                <div class="card-item" onclick="toggleDrain(this)" data-value="😕 Questions too hard to understand">😕 Questions too hard to understand</div>
+                <div class="card-item" onclick="toggleDrain(this)" data-value="💥 Argued with friends">💥 Argued with friends</div>
+                <div class="card-item" onclick="toggleDrain(this)" data-value="🌙 Stayed up too late">🌙 Stayed up too late</div>
+                <div class="card-item" onclick="toggleDrain(this)" data-value="😰 Worried about exam results">😰 Worried about exam results</div>
+                <div class="card-item" onclick="toggleDrain(this)" data-value="😵 Too many things, too chaotic">😵 Too many things, too chaotic</div>
+                <div class="card-item" onclick="toggleDrain(this)" data-value="🧠 Brain won't stop thinking">🧠 Brain won't stop thinking</div>
+                <div class="card-item" onclick="toggleDrain(this)" data-value="🔇 Afraid to speak up">🔇 Afraid to speak up</div>
+            </div>
+
+            <!-- Energy Drain Follow-up Area -->
+            <div id="drain-followup-section" class="chat-bubble" style="display: none;">
+                <div class="avatar">💬</div>
+                <label class="question-label">Tell us why you chose these:</label>
+                <div id="drain-followup-questions"></div>
+            </div>
+
+            <!-- Chat Bubble: Magic Wish -->
+            <div class="chat-bubble">
+                <div class="avatar">✨</div>
+                <label class="question-label">If you had magic to make one card disappear, which would you choose?</label>
+                <input type="text" id="g2-wish" placeholder="Write the card text here...">
+            </div>
+
+            <button class="btn" onclick="checkDrainAndNext()">Next Stop ➡️</button>
+        </div>
+
+        <!-- Page 6: Backpack -->
+        <div id="game4-pack" class="hidden">
+            <div class="page-header">
+                <h2>🎒 My Backpack</h2>
+                <button class="sound-btn" onclick="playAudio('game4-pack')" title="Play Audio">
+                    <svg class="sound-icon" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <div class="sound-waves">
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Chat Bubble: Backpack Explanation -->
+            <div class="chat-bubble happy">
+                <div class="avatar">🎒</div>
+                <p style="text-align: center; margin: 0; color: #28a745;">
+                    <strong>Must Pack in Backpack (2 Most Important Things)</strong><br>
+                    <small>Backpack Capacity: <span id="pack-count">0</span> / 2</small>
+                </p>
+            </div>
+
+            <div class="pack-grid">
+                <div class="item-pill" onclick="togglePack(this)" data-value="📖 Do homework">📖 Do homework</div>
+                <div class="item-pill" onclick="togglePack(this)" data-value="📝 Prepare for exams">📝 Prepare for exams</div>
+                <div class="item-pill" onclick="togglePack(this)" data-value="🧪 School tasks">🧪 School tasks</div>
+                <div class="item-pill" onclick="togglePack(this)" data-value="🎹 Interest class practice">🎹 Interest class practice</div>
+                <div class="item-pill" onclick="togglePack(this)" data-value="🏠 Do housework">🏠 Do housework</div>
+                <div class="item-pill" onclick="togglePack(this)" data-value="🏃 Physical exercise">🏃 Physical exercise</div>
+                <div class="item-pill" onclick="togglePack(this)" data-value="🛌 Sleep on time">🛌 Sleep on time</div>
+                <div class="item-pill" onclick="togglePack(this)" data-value="🤝 Help friends">🤝 Help friends</div>
+            </div>
+
+            <!-- Backpack Follow-up Area -->
+            <div id="pack-followup-section" class="chat-bubble happy" style="display: none;">
+                <div class="avatar">💬</div>
+                <label class="question-label" style="color: #155724;">Tell us why you chose these for your backpack:</label>
+                <div id="pack-followup-questions"></div>
+            </div>
+
+            <button class="btn" onclick="checkPackAndNext()">Next Page ➡️</button>
+        </div>
+
+        <!-- Page 7: Trash Bag -->
+        <div id="game4-trash" class="hidden">
+            <div class="page-header">
+                <h2>🗑️ My Trash Bag</h2>
+                <button class="sound-btn" onclick="playAudio('game4-trash')" title="Play Audio">
+                    <svg class="sound-icon" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <div class="sound-waves">
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Chat Bubble: Trash Bag Explanation -->
+            <div class="chat-bubble sad">
+                <div class="avatar">🗑️</div>
+                <p style="text-align: center; margin: 0; color: #e74c3c;">
+                    <strong>Throw in Trash Bag (2 Most Troublesome Things)</strong><br>
+                    <small>Discarded: <span id="trash-count">0</span> / 2</small>
+                </p>
+            </div>
+
+            <div class="trash-grid">
+                <div class="item-pill" onclick="toggleTrash(this)" data-value="📚 Can't finish homework">📚 Can't finish homework</div>
+                <div class="item-pill" onclick="toggleTrash(this)" data-value="🤬 Teacher/Parent criticism">🤬 Teacher/Parent criticism</div>
+                <div class="item-pill" onclick="toggleTrash(this)" data-value="❄️ Friends ignoring me">❄️ Friends ignoring me</div>
+                <div class="item-pill" onclick="toggleTrash(this)" data-value="📉 Grades dropping">📉 Grades dropping</div>
+                <div class="item-pill" onclick="toggleTrash(this)" data-value="👀 Others' judgment">👀 Others' judgment</div>
+                <div class="item-pill" onclick="toggleTrash(this)" data-value="🙍 Feeling stupid">🙍 Feeling stupid</div>
+                <div class="item-pill" onclick="toggleTrash(this)" data-value="🌑 Feeling sad for no reason">🌑 Feeling sad for no reason</div>
+                <div class="item-pill" onclick="toggleTrash(this)" data-value="🌪️ Can't do things well">🌪️ Can't do things well</div>
+            </div>
+
+            <!-- Trash Bag Follow-up Area -->
+            <div id="trash-followup-section" class="chat-bubble sad" style="display: none;">
+                <div class="avatar">💬</div>
+                <label class="question-label" style="color: #7b241c;">Tell us why you want to throw away these worries:</label>
+                <div id="trash-followup-questions"></div>
+            </div>
+
+            <button class="btn" onclick="checkTrashAndFinish()">Generate Mind Report 📊</button>
+        </div>
+
+        <!-- Page 6: Mind Report -->
+        <div id="result-screen" class="hidden">
+            <div class="page-header">
+                <h2>✨ Your Mind Report ✨</h2>
+            </div>
+            <div id="report-content"></div>
+            <button class="btn" onclick="location.reload()">Start Over</button>
+        </div>
+
+    </div>
+
+</div>
+
+    <!-- Audio Files -->
+    <audio id="audio-intro-screen" src="music/Emotion_Weather_1.m4a"></audio>
+    <audio id="audio-game2-battery" src="music/Emotion_Weather_2.m4a"></audio>
+    <audio id="audio-game2" src="music/Emotion_Weather_4.m4a"></audio>
+    <audio id="audio-game4" src="music/Emotion_Weather_5.m4a"></audio>
+    <audio id="audio-result-screen" src="music/Emotion_Weather_6.m4a"></audio>
+    <!-- Emotion Weather Station Page Question Audio -->
+    <audio id="audio-game1-happy" src="music/Emotion_Weather_3.m4a"></audio>
+    <audio id="audio-game1-bad" src="music/Emotion_Weather_33.m4a"></audio>
+    <!-- Backpack and Trash Bag Page Question Audio -->
+    <audio id="audio-game4-pack" src="music/Emotion_Weather_5.m4a"></audio>
+    <audio id="audio-game4-trash" src="music/Emotion_Weather_7.m4a"></audio>
+
+    <script>
+        // Page to Audio Mapping
+        const pageAudioMap = {
+            'intro-screen': 'Emotion_Weather_1.m4a',
+            'game2-battery': 'Emotion_Weather_2.m4a',
+            'game1-happy': 'Emotion_Weather_3.m4a',
+            'game1-bad': 'Emotion_Weather_33.m4a',
+            'game2': 'Emotion_Weather_4m4a',
+            'game4-pack': 'Emotion_Weather_5.m4a',
+            'game4-trash': 'Emotion_Weather_7.m4a',
+            'result-screen': 'Emotion_Weather_6.m4a'
+        };
+
+        // Currently Playing Audio Element
+        let currentAudio = null;
+        const MIC_PERMISSION_KEY = 'MIC_PERMISSION_KEY';
+        let recognition = null;
+        let isVoiceRecognizing = false;
+        let isVoicePreparing = false;
+        let activeVoiceSession = null;
+        let micPermissionGrantedInSession = false;
+        let micPermissionAttempted = false;
+        let micPermissionRequest = null;
+        let micPermissionDenied = false;
+
+        // Play Audio Function
+        function playAudio(pageId) {
+            const audioId = `audio-${pageId}`;
+            const audio = document.getElementById(audioId);
+            const soundBtn = document.querySelector(`#${pageId} .sound-btn`);
+
+            if (!audio) {
+                console.error('Audio element does not exist:', audioId);
+                return;
+            }
+
+            // If clicking the currently playing audio, pause it
+            if (currentAudio === audio && !audio.paused) {
+                audio.pause();
+                if (soundBtn) {
+                    soundBtn.classList.remove('playing');
+                    soundBtn.classList.add('paused');
+                }
+                currentAudio = null;
+                return;
+            }
+
+            // If clicking a paused audio, resume playback
+            if (currentAudio === audio && audio.paused) {
+                audio.play();
+                if (soundBtn) {
+                    soundBtn.classList.remove('paused');
+                    soundBtn.classList.add('playing');
+                }
+                return;
+            }
+
+            // Stop currently playing audio
+            if (currentAudio && currentAudio !== audio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const prevBtn = document.querySelector(`#${Object.keys(pageAudioMap).find(key => `audio-${key}` === currentAudio.id)} .sound-btn`);
+                if (prevBtn) {
+                    prevBtn.classList.remove('playing', 'paused');
+                }
+            }
+
+            // Play new audio
+            audio.play().then(() => {
+                currentAudio = audio;
+                if (soundBtn) {
+                    soundBtn.classList.remove('paused');
+                    soundBtn.classList.add('playing');
+                }
+            }).catch(error => {
+                console.error('Playback failed:', error);
+            });
+
+            // Audio playback ended callback
+            audio.onended = function () {
+                if (soundBtn) {
+                    soundBtn.classList.remove('playing', 'paused');
+                }
+                currentAudio = null;
+            };
+        }
+
+        // Listen for audio playback events (stop when user switches pages)
+        document.addEventListener('DOMContentLoaded', function () {
+            // Stop previous audio
+            document.querySelectorAll('audio').forEach(audio => {
+                audio.addEventListener('play', function () {
+                    // If other audio is playing, stop it
+                    document.querySelectorAll('audio').forEach(a => {
+                        if (a !== audio && !a.paused) {
+                            a.pause();
+                            a.currentTime = 0;
+                            const btn = document.querySelector(`#${a.id.replace('audio-', '')} .sound-btn`);
+                            if (btn) btn.classList.remove('playing', 'paused');
+                        }
+                    });
+                    currentAudio = audio;
+                });
+
+                audio.addEventListener('ended', function () {
+                    if (currentAudio === audio) {
+                        currentAudio = null;
+                    }
+                    const btn = document.querySelector(`#${audio.id.replace('audio-', '')} .sound-btn`);
+                    if (btn) btn.classList.remove('playing', 'paused');
+                });
+            });
+
+            initCategorySelects();
+            mountVoiceInputControls();
+            mountSaveResultButton();
+        });
+
+        function findMainTextInput() {
+            const candidates = Array.from(document.querySelectorAll('textarea, input[type="text"]'))
+                .filter(el => !el.disabled && !el.readOnly);
+            if (candidates.length === 0) return null;
+
+            const byId = candidates.find(el => el.id === 'g1-happy');
+            if (byId) return byId;
+
+            return candidates[0];
+        }
+
+        function setVoiceError(containerEl, message) {
+            const errEl = containerEl ? containerEl.querySelector('.voice-input-error') : null;
+            if (errEl) errEl.innerText = message || '';
+        }
+
+        function setVoiceStatus(containerEl, message) {
+            const statusEl = containerEl ? containerEl.querySelector('.voice-input-status') : null;
+            if (statusEl) {
+                statusEl.innerText = message || '';
+                // Add corresponding style classes based on message content
+                statusEl.classList.remove('voice-status-waiting', 'voice-status-ready');
+                if (message && message.includes('Prepare')) {
+                    statusEl.classList.add('voice-status-waiting');
+                } else if (message && message.includes('Ready')) {
+                    statusEl.classList.add('voice-status-ready');
+                }
+            }
+        }
+
+        function updateVoiceButtonState(btn, state) {
+            if (!btn) return;
+
+            // Clear all state classes
+            btn.classList.remove('state-preparing', 'state-ready');
+
+            switch (state) {
+                case 'preparing':
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="mic-spinner"></span> Please wait...';
+                    btn.classList.add('state-preparing');
+                    break;
+                case 'ready':
+                    btn.disabled = false;
+                    btn.innerHTML = '<span class="mic-waves"><span class="mic-wave"></span><span class="mic-wave"></span><span class="mic-wave"></span></span> 🛑 End Voice Input';
+                    btn.classList.add('state-ready');
+                    break;
+                default:
+                    btn.disabled = false;
+                    btn.innerHTML = '🎤 Start Voice Input';
+                    break;
+            }
+        }
+
+        function playVoiceReadyCue() {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+
+            try {
+                const ctx = new AudioCtx();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 880;
+                gainNode.gain.value = 0.03;
+
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+                oscillator.start(now);
+                oscillator.stop(now + 0.12);
+                oscillator.onended = () => ctx.close().catch(() => { });
+            } catch (error) {
+                console.warn('Failed to play voice cue sound:', error);
+            }
+        }
+
+        function normalizeVoicePunctuation(text, options = {}) {
+            if (!text) return '';
+
+            const { finalize = false } = options;
+            let normalized = text
+                .replace(/,/g, ',')
+                .replace(/\./g, '.')
+                .replace(/\?/g, '?')
+                .replace(/!/g, '!')
+                .replace(/:/g, ':')
+                .replace(/;/g, ';')
+                .replace(/\(/g, '(')
+                .replace(/\)/g, ')')
+                .replace(/\[/g, '[')
+                .replace(/\]/g, ']')
+                .replace(/"/g, '"')
+                .replace(/'/g, "'")
+                .replace(/\s+([,\.?!:;])/g, '$1')
+                .replace(/[ \t]+/g, ' ')
+                .trim();
+
+            // Add common pause punctuation for spoken language
+            normalized = normalized
+                .replace(/([^\s,\.?!;:])(?:(?:then|later|afterwards|as a result|finally|but|however|so|therefore|moreover|actually|for example))/g, '$1,')
+                .replace(/([^\s,\.?!;:])(?:(?:because|if|although|and then|next|also|plus))/g, '$1,')
+                .replace(/((?:I think|I feel|I found|I remember|I want|I hope|I worry|I'm afraid|I'm a little))(?=[^\s,\.?!;:])/g, '$1,')
+                .replace(/([^\s,\.?!;:])(?:(?:when|after|before|just now|today|yesterday|just|suddenly))/g, '$1,')
+                .replace(/([^\s,\.?!;:])(?:(?:then I|then he|then she|then we|then mom|then dad))/g, '$1,')
+                .replace(/([^\s,\.?!;:])(?:(?:that is|that|then))/g, '$1,')
+                .replace(/, {2,}/g, ',')
+                .replace(/([\.?!;]),/g, '$1');
+
+            // When continuous speech segments are too long, add commas proactively
+            normalized = normalized.replace(/([^\s,\.?!;:]{10,})(?=([^\s,\.?!;:]{8,}))/g, function (_, chunk, nextChunk) {
+                const safeChunk = chunk;
+                if (/[\.?!;,]$/.test(safeChunk)) return safeChunk;
+
+                let splitIndex = -1;
+                const softBreakWords = ['we', 'then', 'later', 'but', 'however', 'so', 'because', 'if', 'think', 'feel', 'found', 'today', 'yesterday', 'suddenly', 'already', 'started', 'now'];
+
+                for (const word of softBreakWords) {
+                    const idx = safeChunk.lastIndexOf(word);
+                    if (idx > 3 && idx < safeChunk.length - 2) {
+                        splitIndex = idx;
+                        break;
+                    }
+                }
+
+                if (splitIndex === -1) {
+                    splitIndex = Math.min(8, safeChunk.length - 3);
+                }
+
+                return `${safeChunk.slice(0, splitIndex)},${safeChunk.slice(splitIndex)}`;
+            });
+
+            // Final pass: elevate longer comma segments to periods
+            if (finalize) {
+                let charsSinceSentenceEnd = 0;
+                let punctuated = '';
+
+                for (const char of normalized) {
+                    if (char === ',' && charsSinceSentenceEnd >= 14) {
+                        punctuated += '.';
+                        charsSinceSentenceEnd = 0;
+                        continue;
+                    }
+
+                    punctuated += char;
+                    if (/[\.?!;…]/.test(char)) {
+                        charsSinceSentenceEnd = 0;
+                    } else if (!/\s/.test(char)) {
+                        charsSinceSentenceEnd += 1;
+                    }
+                }
+
+                normalized = punctuated
+                    .replace(/\. {2,}/g, '.')
+                    .replace(/([\.?!;])([,;:])/g, '$1')
+                    .replace(/([^\s,\.?!;:]{18,}),/g, '$1.');
+            }
+
+            if (finalize && normalized && !/[\.?!;…]$/.test(normalized)) {
+                normalized += '.';
+            }
+
+            return normalized;
+        }
+
+        function buildVoiceInputValue(prefixText, finalText, interimText) {
+            const parts = [];
+            if (prefixText) parts.push(prefixText);
+
+            const normalizedFinal = normalizeVoicePunctuation(finalText, { finalize: Boolean(finalText && !interimText) });
+            const normalizedInterim = normalizeVoicePunctuation(interimText, { finalize: false });
+
+            if (normalizedFinal) parts.push(normalizedFinal);
+            if (normalizedInterim) parts.push(normalizedInterim);
+
+            return parts.join('');
+        }
+
+        function updateVoiceTargetInput(session, options = {}) {
+            if (!session || !session.targetInput) return;
+
+            const value = buildVoiceInputValue(
+                session.baseValue,
+                session.finalTranscript,
+                options.includeInterim === false ? '' : session.interimTranscript
+            );
+
+            session.targetInput.value = value;
+            session.targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        async function ensureMicPermissionOnce(containerEl) {
+            if (micPermissionGrantedInSession) return true;
+
+            try {
+                if (localStorage.getItem(MIC_PERMISSION_KEY) === 'granted') {
+                    micPermissionGrantedInSession = true;
+                    return true;
+                }
+            } catch (e) {
+                // Ignore localStorage access exceptions, continue with session variables
+            }
+
+            // If already attempted and failed in this session, don't trigger permission popup again
+            if (micPermissionAttempted && micPermissionDenied) {
+                setVoiceError(containerEl, 'Microphone permission denied');
+                return false;
+            }
+
+            // When multiple buttons are clicked almost simultaneously, reuse the same permission request
+            if (micPermissionRequest) {
+                return micPermissionRequest;
+            }
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return true;
+
+            micPermissionAttempted = true;
+            micPermissionRequest = (async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    stream.getTracks().forEach(track => track.stop());
+                    micPermissionGrantedInSession = true;
+                    micPermissionDenied = false;
+                    try {
+                        localStorage.setItem(MIC_PERMISSION_KEY, 'granted');
+                    } catch (e) {
+                        // Ignore localStorage write exceptions
+                    }
+                    return true;
+                } catch (error) {
+                    const deniedErrors = ['NotAllowedError', 'PermissionDeniedError'];
+                    if (deniedErrors.includes(error.name)) {
+                        micPermissionDenied = true;
+                        setVoiceError(containerEl, 'Microphone permission denied');
+                    } else {
+                        setVoiceError(containerEl, 'Voice recognition failed to start');
+                    }
+                    return false;
+                } finally {
+                    micPermissionRequest = null;
+                }
+            })();
+
+            return micPermissionRequest;
+        }
+
+        function mountVoiceInputControls() {
+            const inputs = Array.from(document.querySelectorAll('textarea, input[type="text"]'))
+                .filter(el => !el.disabled && !el.readOnly);
+            if (!inputs.length) return;
+
+            inputs.forEach((inputEl, idx) => {
+                if (inputEl.nextElementSibling && inputEl.nextElementSibling.classList.contains('voice-input-controls')) {
+                    return;
+                }
+
+                if (!inputEl.id) {
+                    inputEl.id = `auto-voice-input-${idx + 1}`;
+                }
+
+                const controls = document.createElement('div');
+                controls.className = 'voice-input-controls';
+                controls.dataset.targetId = inputEl.id;
+                controls.innerHTML = `
+                    <button class="voice-input-btn" type="button">🎤 Start Voice Input</button>
+                    <span class="voice-input-status"></span>
+                    <span class="voice-input-error"></span>
+                `;
+                inputEl.insertAdjacentElement('afterend', controls);
+
+                const btn = controls.querySelector('.voice-input-btn');
+                btn.addEventListener('click', startVoiceInput);
+            });
+        }
+
+        async function startVoiceInput(event) {
+            const btn = event.currentTarget;
+            const controls = btn.closest('.voice-input-controls');
+            setVoiceError(controls, '');
+            setVoiceStatus(controls, '');
+
+            const targetInputId = controls ? controls.dataset.targetId : '';
+            const targetInput = targetInputId ? document.getElementById(targetInputId) : findMainTextInput();
+            if (!targetInput) {
+                setVoiceError(controls, 'Voice recognition failed to start');
+                return;
+            }
+
+            if ((isVoiceRecognizing || isVoicePreparing) && recognition) {
+                recognition.stop();
+                return;
+            }
+
+            const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognitionAPI) {
+                setVoiceError(controls, 'Browser does not support voice recognition');
+                return;
+            }
+
+            const permissionOk = await ensureMicPermissionOnce(controls);
+            if (!permissionOk) return;
+
+            recognition = new SpeechRecognitionAPI();
+            recognition.lang = 'en-US';
+            recognition.interimResults = true;
+            recognition.continuous = true;
+            activeVoiceSession = {
+                targetInput,
+                baseValue: targetInput.value || '',
+                finalTranscript: '',
+                interimTranscript: ''
+            };
+
+            isVoicePreparing = true;
+            updateVoiceButtonState(btn, 'preparing');
+            setVoiceStatus(controls, 'Please wait until ready to speak...');
+
+            recognition.onstart = function () {
+                isVoicePreparing = false;
+                isVoiceRecognizing = true;
+                updateVoiceButtonState(btn, 'ready');
+                // Delay prompt to ensure microphone is truly ready
+                setVoiceStatus(controls, '⏳ Preparing...');
+                setTimeout(() => {
+                    if (isVoiceRecognizing && activeVoiceSession) {
+                        setVoiceStatus(controls, '✅ Ready! Please start speaking');
+                        playVoiceReadyCue();
+                    }
+                }, 800);
+            };
+
+            recognition.onresult = function (event) {
+                if (!activeVoiceSession) return;
+
+                let finalTranscript = '';
+                let interimTranscript = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                activeVoiceSession.finalTranscript = finalTranscript;
+                activeVoiceSession.interimTranscript = interimTranscript;
+                updateVoiceTargetInput(activeVoiceSession);
+            };
+
+            recognition.onerror = function (event) {
+                isVoicePreparing = false;
+                isVoiceRecognizing = false;
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    setVoiceError(controls, 'Microphone permission denied');
+                    setVoiceStatus(controls, '');
+                    recognition = null;
+                    activeVoiceSession = null;
+                    updateVoiceButtonState(btn, 'idle');
+                    return;
+                }
+                if (event.error === 'aborted') {
+                    setVoiceStatus(controls, '');
+                    updateVoiceButtonState(btn, 'idle');
+                    return;
+                }
+                setVoiceError(controls, 'Error occurred during recognition');
+                setVoiceStatus(controls, '');
+                recognition = null;
+                activeVoiceSession = null;
+                updateVoiceButtonState(btn, 'idle');
+            };
+
+            recognition.onend = function () {
+                // Before ending, ensure final results are saved to input box
+                if (activeVoiceSession) {
+                    // Merge interim content into final to ensure last words aren't lost
+                    if (activeVoiceSession.interimTranscript) {
+                        activeVoiceSession.finalTranscript += activeVoiceSession.interimTranscript;
+                        activeVoiceSession.interimTranscript = '';
+                    }
+                    updateVoiceTargetInput(activeVoiceSession, { includeInterim: false });
+                }
+                isVoicePreparing = false;
+                isVoiceRecognizing = false;
+                recognition = null;
+                activeVoiceSession = null;
+                updateVoiceButtonState(btn, 'idle');
+                setVoiceStatus(controls, '');
+            };
+
+            try {
+                recognition.start();
+            } catch (error) {
+                isVoicePreparing = false;
+                isVoiceRecognizing = false;
+                recognition = null;
+                activeVoiceSession = null;
+                updateVoiceButtonState(btn, 'idle');
+                setVoiceStatus(controls, '');
+                setVoiceError(controls, 'Voice recognition failed to start');
+            }
+        }
+
+        function mountSaveResultButton() {
+            const resultScreen = document.getElementById('result-screen');
+            const reportBox = document.getElementById('report-content');
+            if (!resultScreen || !reportBox || document.getElementById('save-result-btn')) return;
+
+            const saveBtn = document.createElement('button');
+            saveBtn.id = 'save-result-btn';
+            saveBtn.type = 'button';
+            saveBtn.className = 'btn';
+            saveBtn.innerText = '💾 Save Result File';
+            saveBtn.style.marginTop = '12px';
+            saveBtn.addEventListener('click', saveResultToFile);
+
+            reportBox.insertAdjacentElement('afterend', saveBtn);
+        }
+
+        function formatTimestamp(date) {
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+        }
+
+        function saveResultToFile() {
+            const now = new Date();
+            const timestamp = formatTimestamp(now);
+
+            const happyDay = document.getElementById('g1-happy')?.value || 'Not filled';
+            const badDay = document.getElementById('g1-bad')?.value || 'Not filled';
+            const badTag = document.getElementById('g1-tag')?.value || 'Uncategorized';
+            const magicWish = document.getElementById('g2-wish')?.value || 'None';
+            const reportText = document.getElementById('report-content')?.innerText?.trim() || 'No report content yet';
+            const avgEn = (data.energy.reduce((a, b) => a + b, 0) / 3).toFixed(1);
+
+            const lines = [
+                `Generated: ${now.toLocaleString('en-US')}`,
+                `Timestamp: ${timestamp}`,
+                '',
+                '[User Input]',
+                `Happy Moment: ${happyDay}`,
+                `Stressful Moment: ${badDay}`,
+                `Magic Wish: ${magicWish}`,
+                '',
+                '[User Selections/Answers]',
+                `Happy Weather: ${data.questionWeather.happy || 'Not selected'}`,
+                `Stress Weather: ${data.questionWeather.bad || 'Not selected'}`,
+                `Stress Tag: ${badTag}`,
+                `Average Energy: ${avgEn}/10`,
+                `Energy Drains: ${data.drainCards.join(', ') || 'None'}`,
+                `Responsibility Backpack: ${data.backpack.join(', ') || 'Empty'}`,
+                `Discarded Worries: ${data.trash.join(', ') || 'Empty'}`,
+                '',
+                '[Final Test Results]',
+                reportText
+            ];
+
+            const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Mind_Report_${timestamp}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Data Center
+        const data = {
+            energy: [5, 5, 5], // Default 5 points
+            drainCards: [],
+            backpack: [],
+            trash: [],
+            // Record weather selections in questions
+            questionWeather: {
+                happy: null,  // Happy question weather
+                bad: null     // Unhappy question weather
+            }
+        };
+
+        // --- Game 1: Question Weather Selection Function ---
+        function setQuestionWeather(questionType, weather) {
+            // If already selected weather, click again to deselect
+            if (data.questionWeather[questionType] === weather) {
+                data.questionWeather[questionType] = null;
+                document.getElementById(`${questionType}-weather-display`).innerText = '';
+                // Remove selected state from all weather icons in this area
+                document.querySelectorAll(`#${questionType}-weather-display`).forEach(() => {
+                    // Clear selected state when re-rendering
+                });
+            } else {
+                // Select new weather
+                data.questionWeather[questionType] = weather;
+                document.getElementById(`${questionType}-weather-display`).innerText = weather;
+            }
+
+            // Update selected state of weather icons in this area
+            updateWeatherIconSelection(questionType);
+        }
+
+        function updateWeatherIconSelection(questionType) {
+            // Get all small weather icons in this area
+            const container = document.getElementById(`${questionType}-weather-display`).parentElement;
+            const icons = container.querySelectorAll('.weather-icon-small');
+
+            icons.forEach(icon => {
+                // Extract weather type from onclick attribute
+                const onclickText = icon.getAttribute('onclick');
+                const weatherMatch = onclickText.match(/setQuestionWeather\('[^']+',\s*'([^']+)'/);
+                if (weatherMatch) {
+                    const weather = weatherMatch[1];
+                    if (data.questionWeather[questionType] === weather) {
+                        icon.classList.add('selected');
+                    } else {
+                        icon.classList.remove('selected');
+                    }
+                }
+            });
+        }
+
+        // Keep original setWeatherTool function (for possible other features)
+        function setWeatherTool(weather) {
+            console.log('Weather tool:', weather);
+        }
+
+        // ===== Follow-up Logic (Keyword Matching, No AI Needed) =====
+
+        // Good Thing Categories and Question Bank (Full Version, Kid-Friendly)
+        const GOOD_CATEGORIES = [
+            { id: 'study', name: '📚 Good things related to studying and exams', questions: ['How did this make you feel?', 'Is this situation common?'] },
+            { id: 'friend', name: '👥 Did something fun with friends', questions: ['Do you often do this together?', 'Do you have other friends like this?'] },
+            { id: 'family', name: '🏠 Did something fun with parents / Parents were nice to me', questions: ['Do you usually spend much time together?', 'What do you like doing most with your parents?'] },
+            { id: 'teacher', name: '👨‍🏫 Something good happened with a teacher', questions: ['Which subject teacher was it?', 'Would you like other teachers to be like this too?'] },
+            { id: 'want', name: '🎁 Got something I liked / Ate something delicious', questions: ['Had you been looking forward to it for a long time?', 'How did you feel at the time?'] },
+            { id: 'free', name: '🕊️ No one was watching me / Could decide for myself', questions: ['Do you like this feeling?', 'Can you usually decide things for yourself?'] },
+            { id: 'praise', name: '👏 Got praised / Got recognized', questions: ['Who praised you?', 'Does this happen often?'] },
+            { id: 'health', name: '💪 Felt physically comfortable / Well rested', questions: ['Have you been getting enough rest lately?', 'How does your body feel?'] },
+            { id: 'luck', name: '🍀 Got lucky / Something good happened', questions: ['Did it happen by chance?', 'Were you a bit surprised at the time?'] },
+            { id: 'other_good', name: '❓ Other good things', questions: ['Can you tell us more?', 'What did this mean to you?'] }
+        ];
+
+        // Bad Thing Categories and Question Bank (Full Version, Kid-Friendly)
+        const BAD_CATEGORIES = [
+            { id: 'study_hard', name: '📚 Bad things related to studying and exams', questions: ['Which subject bothers you the most?', 'What help would you like to get?'] },
+            { id: 'friend_bad', name: '👥 Something unpleasant happened with friends', questions: ['When did it start?', 'Do you have other friends?'] },
+            { id: 'family_bad', name: '🏠 Something unpleasant happened with parents', questions: ['Would you like them to do it differently?', 'Have you told them how you feel?'] },
+            { id: 'teacher_bad', name: '👨‍🏫 Something unpleasant happened with a teacher', questions: ['Which subject teacher was it?', 'What did you do at the time?'] },
+            { id: 'lost', name: '💔 Lost something / Something broke / Gone', questions: ['What was it? How important was it to you?', 'Can it be fixed?'] },
+            { id: 'controlled', name: '🔒 Being controlled / Rushed / Scolded / Criticized / Compared to others', questions: ['How did you feel at the time?', 'Have you told the other person how you feel?'] },
+            { id: 'health_bad', name: '😷 Not feeling well / Didn't sleep well / Tired', questions: ['When did it start?', 'Have you told anyone else? Have you tried to make it better?'] },
+            { id: 'luck_bad', name: '☔ Bad luck / Something unlucky happened', questions: ['What were you expecting?', 'Does this happen often?'] },
+            { id: 'other_bad', name: '❓ Other bad things', questions: ['Can you tell us more?', 'How long did this affect your mood?'] }
+        ];
+
+        // Keyword Libraries for Each Dimension
+        const REASON_WORDS = ['because','so','since','reason','therefore','due to','makes me','makes','let me','lets','called','makes me'];
+        const FEELING_WORDS = ['happy','glad','joyful','excited','satisfied','proud','sad','upset','heartbroken','wronged','angry','mad','annoyed','anxious','scared','nervous','worried','disappointed','bored','tired','exhausted','relaxed','moved','surprised','amazed','embarrassed','depressed','crashed','great','bad','unhappy','annoyed','very tired'];
+        const PERSON_WORDS = ['classmate','friend','teacher','mom','dad','family','myself','I','he','she','we','everyone'];
+
+        // Follow-up Rules for "Happy" Questions (Priority Order, Stop at First Match)
+        const FOLLOWUP_RULES = {
+            happy: [
+                {
+                    check: (text) => text.length < 8,
+                    question: '😊 Wow, sounds nice! Can you tell us more? Like what exactly happened?'
+                },
+                {
+                    check: (text) => !REASON_WORDS.some(w => text.includes(w)),
+                    question: '🌟 So why did this make you feel so good?'
+                },
+                {
+                    check: (text) => !FEELING_WORDS.some(w => text.includes(w)),
+                    question: '💛 What did you feel inside at the time? Happy? Excited? Or something else?'
+                },
+            ],
+            bad: [
+                {
+                    check: (text) => text.length < 8,
+                    question: '😔 Sounds tough, can you tell us more? What happened?'
+                },
+                {
+                    check: (text) => !REASON_WORDS.some(w => text.includes(w)),
+                    question: '🤔 What made you feel bad that day? Why did it happen?'
+                },
+                {
+                    check: (text) => !FEELING_WORDS.some(w => text.includes(w)),
+                    question: '💙 What did you feel inside at the time? Sad? Angry? Or wronged?'
+                },
+            ]
+        };
+
+        // Follow-up State: Records which questions have already been followed up
+        const followupShown = { happy: false, bad: false };
+
+        // Initialize Category Dropdown Menus
+        function initCategorySelects() {
+            const happySelect = document.getElementById('g1-happy-category');
+            const badSelect = document.getElementById('g1-bad-category');
+
+            GOOD_CATEGORIES.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                happySelect.appendChild(option);
+            });
+
+            BAD_CATEGORIES.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                badSelect.appendChild(option);
+            });
+        }
+
+        // When user modifies original input, hide displayed follow-up (give chance to re-detect)
+        function resetFollowup(type) {
+            followupShown[type] = false;
+            document.getElementById(`followup-${type}`).style.display = 'none';
+
+            // If there's input content, show category selection
+            const input = document.getElementById(`g1-${type}`);
+            const categorySection = document.getElementById(`${type}-category-section`);
+            if (input && input.value.trim().length > 0) {
+                categorySection.style.display = 'block';
+            } else {
+                categorySection.style.display = 'none';
+                document.getElementById(`g1-${type}-category`).value = '';
+            }
+        }
+
+        // Display Happy Follow-up (Three questions displayed together, one input box for answers)
+        function showHappyFollowup() {
+            const categoryId = document.getElementById('g1-happy-category').value;
+            if (!categoryId) return;
+
+            const category = GOOD_CATEGORIES.find(c => c.id === categoryId);
+            if (category && category.questions.length > 0) {
+                const container = document.getElementById('followup-happy-questions');
+                // Three questions displayed together
+                const questionsText = category.questions.map((q, idx) => `${idx + 1}. ${q}`).join('<br>');
+                container.innerHTML = questionsText;
+                document.getElementById('followup-happy').style.display = 'block';
+                followupShown.happy = true;
+            }
+        }
+
+        // Display Bad Follow-up (Three questions displayed together, one input box for answers)
+        function showBadFollowup() {
+            const categoryId = document.getElementById('g1-bad-category').value;
+            if (!categoryId) return;
+
+            const category = BAD_CATEGORIES.find(c => c.id === categoryId);
+            if (category && category.questions.length > 0) {
+                const container = document.getElementById('followup-bad-questions');
+                // Three questions displayed together
+                const questionsText = category.questions.map((q, idx) => `${idx + 1}. ${q}`).join('<br>');
+                container.innerHTML = questionsText;
+                document.getElementById('followup-bad').style.display = 'block';
+                followupShown.bad = true;
+            }
+        }
+
+        // Detect an answer, return follow-up question text needed, or null (no follow-up needed)
+        function getFollowupQuestion(type) {
+            const mainVal = document.getElementById(`g1-${type}`).value.trim();
+            if (!mainVal) return null; // Empty, don't follow up, let required prompt handle it
+            const rules = FOLLOWUP_RULES[type];
+            for (const rule of rules) {
+                if (rule.check(mainVal)) return rule.question;
+            }
+            return null; // Sufficient answer, no follow-up
+        }
+
+        // "Next Stop" Click Interception Entry (Deprecated, Split into Separate Functions)
+        function checkAndNext() {
+            console.log('checkAndNext is deprecated, use checkHappyAndNext and checkBadAndNext');
+        }
+
+        // Check Happy Page and Jump to Bad Mood
+        function checkHappyAndNext() {
+            const happyCategory = document.getElementById('g1-happy-category').value;
+
+            if (!happyCategory) {
+                alert('Please select which category this good thing belongs to 📋');
+                document.getElementById('happy-category-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            nextScreen('game1-bad');
+        }
+
+        // Check Bad Mood Page and Jump to Battery
+        function checkBadAndNext() {
+            const badCategory = document.getElementById('g1-bad-category').value;
+
+            if (!badCategory) {
+                alert('Please select which category this bad thing belongs to 📋');
+                document.getElementById('bad-category-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            nextScreen('game2-battery');
+        }
+
+        // ===== Follow-up Logic End =====
+
+        // Page Navigation
+        function nextScreen(id) {
+            document.querySelector('.container > div:not(.hidden)').classList.add('hidden');
+            document.getElementById(id).classList.remove('hidden');
+
+            // Render battery on game2-battery page
+            if ((id === 'game2-battery' || id === 'game2') && document.getElementById('battery-container').innerHTML.trim() === '') {
+                renderBatteries();
+            }
+        }
+
+        // --- Game 2 (Battery Logic, Includes Slider) ---
+        function renderBatteries() {
+            const container = document.getElementById('battery-container');
+            const days = ['Current'];
+
+            days.forEach((day, dayIdx) => {
+                // Generate 10 cells
+                let cellsHtml = '';
+                for (let i = 1; i <= 10; i++) {
+                    cellsHtml += `<div class="battery-cell" id="d${dayIdx}-c${i}" onclick="setBatteryLevel(${dayIdx}, ${i})"></div>`;
+                }
+
+                container.innerHTML += `
+                <div class="energy-row">
+                    <div style="font-weight:bold; margin-bottom:5px;">${day} Energy:</div>
+
+                    <!-- Slider -->
+                    <div class="battery-slider-container">
+                        <div class="battery-slider-wrapper">
+                            <span style="font-size: 20px;">🔋</span>
+                            <div class="slider-track" id="slider-track-${dayIdx}" onclick="clickSlider(event, ${dayIdx})">
+                                <div class="slider-fill" id="slider-fill-${dayIdx}"></div>
+                                <div class="slider-thumb" id="slider-thumb-${dayIdx}"
+                                     onmousedown="startDrag(event, ${dayIdx})"
+                                     ontouchstart="startDrag(event, ${dayIdx})">
+                                    <span id="slider-val-${dayIdx}" class="slider-val-overlay">5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Battery Cell Display -->
+                    <div class="battery-wrapper">
+                        <div class="battery-shell">
+                            ${cellsHtml}
+                        </div>
+                        <div>
+                            <div class="battery-val" id="val-${dayIdx}">5/10</div>
+                            <small class="battery-desc" id="desc-${dayIdx}">😐 Okay</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+                // Initialize default value 5
+                setBatteryLevel(dayIdx, 5);
+            });
+        }
+
+        // Custom Slider Drag Function
+        let isDragging = false;
+        let currentDayIdx = null;
+
+        function startDrag(event, dayIdx) {
+            event.preventDefault();
+            isDragging = true;
+            currentDayIdx = dayIdx;
+
+            // Add global event listeners
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchmove', onDrag);
+            document.addEventListener('touchend', stopDrag);
+
+            updateSliderPosition(event, dayIdx);
+        }
+
+        function onDrag(event) {
+            if (!isDragging || currentDayIdx === null) return;
+            updateSliderPosition(event, currentDayIdx);
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            currentDayIdx = null;
+
+            // Remove global event listeners
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchmove', onDrag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+
+        function updateSliderPosition(event, dayIdx) {
+            const track = document.getElementById(`slider-track-${dayIdx}`);
+            const thumb = document.getElementById(`slider-thumb-${dayIdx}`);
+
+            // Get event coordinates (supports touch and mouse)
+            const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+
+            const rect = track.getBoundingClientRect();
+            let percentage = (clientX - rect.left) / rect.width;
+
+            // Limit range 0-1
+            percentage = Math.max(0, Math.min(1, percentage));
+
+            // Calculate score (0-10)
+            const score = Math.round(percentage * 10);
+
+            // Update slider position
+            thumb.style.left = `${percentage * 100}%`;
+
+            // Update value display
+            document.getElementById(`slider-val-${dayIdx}`).innerText = score;
+
+            // Update battery
+            setBatteryLevel(dayIdx, score);
+        }
+
+        // Slider click can also update position
+        function clickSlider(event, dayIdx) {
+            updateSliderPosition(event, dayIdx);
+        }
+
+        // Check energy battery and jump
+        function checkBatteryAndNext() {
+            nextScreen('game2');
+        }
+
+        function setBatteryLevel(dayIdx, score) {
+            data.energy[dayIdx] = score;
+
+            // Update slider position
+            const thumb = document.getElementById(`slider-thumb-${dayIdx}`);
+            if (thumb) {
+                const percentage = score / 10;
+                thumb.style.left = `${percentage * 100}%`;
+                document.getElementById(`slider-val-${dayIdx}`).innerText = score;
+            }
+
+            // Update text and emoji
+            const valText = document.getElementById(`val-${dayIdx}`);
+            const descText = document.getElementById(`desc-${dayIdx}`);
+            valText.innerText = `${score}/10`;
+
+            let colorClass = '';
+            let desc = '';
+            if (score <= 3) { colorClass = 'cell-active-low'; desc = '😫 Drained'; }
+            else if (score <= 7) { colorClass = 'cell-active-mid'; desc = '😐 Okay'; }
+            else { colorClass = 'cell-active-high'; desc = '🤩 Fully Charged'; }
+
+            descText.innerText = desc;
+
+            // Update cell styles
+            for (let i = 1; i <= 10; i++) {
+                const cell = document.getElementById(`d${dayIdx}-c${i}`);
+                // Clear old styles
+                cell.className = 'battery-cell';
+                // Add new styles (only light up cells <= score)
+                if (i <= score) {
+                    cell.classList.add(colorClass);
+                }
+            }
+        }
+
+        function toggleDrain(el) {
+            const txt = el.getAttribute('data-value') || el.innerText;
+            if (data.drainCards.includes(txt)) {
+                data.drainCards = data.drainCards.filter(t => t !== txt);
+                el.classList.remove('selected-drain');
+            } else {
+                if (data.drainCards.length >= 3) return alert('You can only pick 3 "energy drainers"!');
+                data.drainCards.push(txt);
+                el.classList.add('selected-drain');
+            }
+            // Refresh follow-up area
+            updateDrainFollowupQuestions();
+        }
+
+        // Update follow-up questions after energy drain selection
+        function updateDrainFollowupQuestions() {
+            const container = document.getElementById('drain-followup-questions');
+            const section = document.getElementById('drain-followup-section');
+
+            if (data.drainCards.length === 0) {
+                section.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+
+            section.style.display = 'block';
+            let html = '';
+            data.drainCards.forEach((item, index) => {
+                const inputId = `drain-followup-${index}`;
+                const btnId = `drain-voice-btn-${index}`;
+                // Check if input box already exists, preserve existing value
+                const existingValue = document.getElementById(inputId)?.value || '';
+                html += `
+                    <div style="margin-bottom: 15px; padding: 10px; background: #fff; border-radius: 8px;">
+                        <div style="font-weight: bold; color: #856404; margin-bottom: 8px;">
+                            ${index + 1}. Why did you choose "${item}"?
+                        </div>
+                        <input type="text" id="${inputId}" data-item="${item}" placeholder="Click the microphone 🎤 to tell us why..." value="${existingValue}">
+                        <div class="voice-input-controls" style="margin-top: 8px;">
+                            <button class="voice-input-btn" type="button" id="${btnId}" onclick="startVoiceInputForInput('${inputId}', '${btnId}')">🎤 Start Voice Input</button>
+                            <span class="voice-input-status"></span>
+                            <span class="voice-input-error"></span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Start voice input for specified input box
+        async function startVoiceInputForInput(inputId, btnId) {
+            const btn = document.getElementById(btnId);
+            const input = document.getElementById(inputId);
+            const controls = btn.closest('.voice-input-controls');
+
+            if (!input || !btn) return;
+
+            setVoiceError(controls, '');
+            setVoiceStatus(controls, '');
+
+            // If already recognizing, stop recognition
+            if ((isVoiceRecognizing || isVoicePreparing) && recognition) {
+                recognition.stop();
+                return;
+            }
+
+            const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognitionAPI) {
+                setVoiceError(controls, 'Browser does not support voice recognition');
+                return;
+            }
+
+            const permissionOk = await ensureMicPermissionOnce(controls);
+            if (!permissionOk) return;
+
+            recognition = new SpeechRecognitionAPI();
+            recognition.lang = 'en-US';
+            recognition.interimResults = true;
+            recognition.continuous = true;
+
+            activeVoiceSession = {
+                targetInput: input,
+                baseValue: input.value || '',
+                finalTranscript: '',
+                interimTranscript: ''
+            };
+
+            isVoicePreparing = true;
+            updateVoiceButtonState(btn, 'preparing');
+            setVoiceStatus(controls, 'Please wait until ready to speak...');
+
+            recognition.onstart = function () {
+                isVoicePreparing = false;
+                isVoiceRecognizing = true;
+                updateVoiceButtonState(btn, 'ready');
+                // Delay prompt to ensure microphone is truly ready
+                setVoiceStatus(controls, '⏳ Preparing...');
+                setTimeout(() => {
+                    if (isVoiceRecognizing && activeVoiceSession) {
+                        setVoiceStatus(controls, '✅ Ready! Please start speaking');
+                        playVoiceReadyCue();
+                    }
+                }, 800);
+            };
+
+            recognition.onresult = function (event) {
+                if (!activeVoiceSession) return;
+
+                let finalTranscript = '';
+                let interimTranscript = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                activeVoiceSession.finalTranscript = finalTranscript;
+                activeVoiceSession.interimTranscript = interimTranscript;
+                updateVoiceTargetInput(activeVoiceSession);
+            };
+
+            recognition.onerror = function (event) {
+                isVoicePreparing = false;
+                isVoiceRecognizing = false;
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    setVoiceError(controls, 'Microphone permission denied');
+                } else if (event.error === 'aborted') {
+                    // User stopped actively, don't show error
+                } else {
+                    setVoiceError(controls, 'Error occurred during recognition');
+                }
+                recognition = null;
+                activeVoiceSession = null;
+                updateVoiceButtonState(btn, 'idle');
+            };
+
+            recognition.onend = function () {
+                if (activeVoiceSession) {
+                    if (activeVoiceSession.interimTranscript) {
+                        activeVoiceSession.finalTranscript += activeVoiceSession.interimTranscript;
+                        activeVoiceSession.interimTranscript = '';
+                    }
+                    updateVoiceTargetInput(activeVoiceSession, { includeInterim: false });
+                }
+                isVoicePreparing = false;
+                isVoiceRecognizing = false;
+                recognition = null;
+                activeVoiceSession = null;
+                updateVoiceButtonState(btn, 'idle');
+                setVoiceStatus(controls, '');
+            };
+
+            try {
+                recognition.start();
+            } catch (error) {
+                isVoicePreparing = false;
+                isVoiceRecognizing = false;
+                recognition = null;
+                activeVoiceSession = null;
+                updateVoiceButtonState(btn, 'idle');
+                setVoiceError(controls, 'Voice recognition failed to start');
+            }
+        }
+
+        // Check energy drain page and jump
+        function checkDrainAndNext() {
+            // Check if at least 1 selected
+            if (data.drainCards.length === 0) {
+                alert('Please select at least 1 reason for energy drain!');
+                return;
+            }
+
+            nextScreen('game4-pack');
+        }
+
+        // Check backpack page and jump to trash bag
+        function checkPackAndNext() {
+            if (data.backpack.length === 0) {
+                alert('Please select at least 1 item to put in your backpack!');
+                return;
+            }
+
+            nextScreen('game4-trash');
+        }
+
+        // Check trash bag page and generate report
+        function checkTrashAndFinish() {
+            if (data.trash.length === 0) {
+                alert('Please select at least 1 worry to throw in the trash bag!');
+                return;
+            }
+
+            finishGame();
+        }
+
+        // Check backpack trash bag and generate report (Deprecated)
+        function checkPackTrashAndFinish() {
+            console.log('checkPackTrashAndFinish is deprecated, use checkPackAndNext and checkTrashAndFinish');
+        }
+
+        // --- Backpack and Trash Bag Functions ---
+        function togglePack(el) {
+            const txt = el.getAttribute('data-value') || el.innerText;
+            if (data.trash.includes(txt)) return alert('This is already in the trash bag!');
+            if (data.backpack.includes(txt)) {
+                data.backpack = data.backpack.filter(t => t !== txt);
+                el.classList.remove('selected-pack');
+            } else {
+                if (data.backpack.length >= 2) return alert('Backpack is full! (Limit 2 items)');
+                data.backpack.push(txt);
+                el.classList.add('selected-pack');
+            }
+            document.getElementById('pack-count').innerText = data.backpack.length;
+            updatePackFollowupQuestions();
+        }
+
+        function toggleTrash(el) {
+            const txt = el.getAttribute('data-value') || el.innerText;
+            if (data.backpack.includes(txt)) return alert('This is already in the backpack!');
+            if (data.trash.includes(txt)) {
+                data.trash = data.trash.filter(t => t !== txt);
+                el.classList.remove('selected-trash');
+            } else {
+                if (data.trash.length >= 2) return alert('Trash bag is full! (Limit 2 items)');
+                data.trash.push(txt);
+                el.classList.add('selected-trash');
+            }
+            document.getElementById('trash-count').innerText = data.trash.length;
+            updateTrashFollowupQuestions();
+        }
+
+        // Update backpack follow-up questions
+        function updatePackFollowupQuestions() {
+            const container = document.getElementById('pack-followup-questions');
+            const section = document.getElementById('pack-followup-section');
+
+            if (data.backpack.length === 0) {
+                section.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+
+            section.style.display = 'block';
+            let html = '';
+            data.backpack.forEach((item, index) => {
+                const inputId = `pack-followup-${index}`;
+                const btnId = `pack-voice-btn-${index}`;
+                const existingValue = document.getElementById(inputId)?.value || '';
+                html += `
+                    <div style="margin-bottom: 15px; padding: 10px; background: #fff; border-radius: 8px;">
+                        <div style="font-weight: bold; color: #155724; margin-bottom: 8px;">
+                            ${index + 1}. Why did you put "${item}" in your backpack?
+                        </div>
+                        <input type="text" id="${inputId}" data-item="${item}" placeholder="Click the microphone 🎤 to tell us why..." value="${existingValue}">
+                        <div class="voice-input-controls" style="margin-top: 8px;">
+                            <button class="voice-input-btn" type="button" id="${btnId}" onclick="startVoiceInputForInput('${inputId}', '${btnId}')">🎤 Start Voice Input</button>
+                            <span class="voice-input-status"></span>
+                            <span class="voice-input-error"></span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Update trash bag follow-up questions
+        function updateTrashFollowupQuestions() {
+            const container = document.getElementById('trash-followup-questions');
+            const section = document.getElementById('trash-followup-section');
+
+            if (data.trash.length === 0) {
+                section.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+
+            section.style.display = 'block';
+            let html = '';
+            data.trash.forEach((item, index) => {
+                const inputId = `trash-followup-${index}`;
+                const btnId = `trash-voice-btn-${index}`;
+                const existingValue = document.getElementById(inputId)?.value || '';
+                html += `
+                    <div style="margin-bottom: 15px; padding: 10px; background: #fff; border-radius: 8px;">
+                        <div style="font-weight: bold; color: #7b241c; margin-bottom: 8px;">
+                            ${index + 1}. Why do you want to throw away "${item}"?
+                        </div>
+                        <input type="text" id="${inputId}" data-item="${item}" placeholder="Click the microphone 🎤 to tell us why..." value="${existingValue}">
+                        <div class="voice-input-controls" style="margin-top: 8px;">
+                            <button class="voice-input-btn" type="button" id="${btnId}" onclick="startVoiceInputForInput('${inputId}', '${btnId}')">🎤 Start Voice Input</button>
+                            <span class="voice-input-status"></span>
+                            <span class="voice-input-error"></span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- Report Generation ---
+        function finishGame() {
+            nextScreen('result-screen');
+            const box = document.getElementById('report-content');
+
+            const happyDay = document.getElementById('g1-happy').value || 'Not filled';
+            const badDay = document.getElementById('g1-bad').value || 'Not filled';
+            const badTag = document.getElementById('g1-tag')?.value || 'Uncategorized';
+            const magicWish = document.getElementById('g2-wish').value || 'None';
+
+            // Get weather selected in questions
+            const happyWeather = data.questionWeather.happy || 'Not selected';
+            const badWeather = data.questionWeather.bad || 'Not selected';
+
+            // Calculate average energy (0-10)
+            const avgEn = (data.energy.reduce((a, b) => a + b, 0) / 3).toFixed(1);
+
+            box.innerHTML = `
+            <div class="result-item" style="border-left-color: #28a745;">
+                <strong>😊 Source of Happiness:</strong> ${happyDay} <br>
+                <strong>Weather:</strong> ${happyWeather}
+            </div>
+            <div class="result-item" style="border-left-color: #e74c3c;">
+                <strong>🌧️ Stressful Moment:</strong> ${badDay} <br>
+                <strong>Weather:</strong> ${badWeather} <br>
+                <small>Stress Tag: ${badTag}</small>
+            </div>
+            <div class="result-item" style="border-left-color: #f9cb28;">
+                <strong>🔋 Average Energy:</strong> ${avgEn} / 10 <br>
+                <strong>⚡ Energy Drains:</strong> ${data.drainCards.join(', ') || 'None'} <br>
+                <small>Magic Wish: Eliminate "${magicWish}"</small>
+            </div>
+            <div class="result-item" style="border-left-color: #4facfe;">
+                <strong>🎒 Responsibility Backpack:</strong><br> ${data.backpack.join(', ') || 'Empty'}
+            </div>
+            <div class="result-item" style="border-left-color: #333; background:#eaeaea;">
+                <strong>🗑️ Discarded Worries:</strong><br>
+                <span style="text-decoration:line-through; color:#555;">${data.trash.join(', ') || 'Empty'}</span>
+            </div>
+        `;
+        }
+    </script>
+
+</body>
+
+</html>

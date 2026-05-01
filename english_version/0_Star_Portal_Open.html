@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Portal Open</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* --- Core Settings --- */
+        :root {
+            --space-bg: #00020a;
+            --neon-blue: #00f7ff;
+            --neon-purple: #bd00ff;
+            --text-color: #e0f7ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            background-color: var(--space-bg);
+            color: var(--text-color);
+        }
+
+        /* --- Dynamic Starfield Background --- */
+        .space-background {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            overflow: hidden;
+        }
+
+        .stars-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 2px;
+            width: 2px;
+            background: white;
+            border-radius: 100%;
+            box-shadow:
+                -400px 300px white, 320px -200px white, -200px -100px white,
+                500px 100px white, -150px 400px white, 200px 300px white,
+                -300px -350px white, 450px -400px white, -50px 200px white,
+                100px -100px white, -400px -200px white, 300px 150px white;
+            animation: zoom 15s linear infinite;
+        }
+
+        .stars-layer:nth-child(2) {
+            animation-duration: 25s;
+            opacity: 0.7;
+             box-shadow:
+                -300px 200px white, 420px -100px white, -100px -300px white,
+                600px 200px white, -250px 300px white, 100px 400px white,
+                -400px -250px white, 350px -300px white, 50px 100px white;
+        }
+
+        @keyframes zoom {
+            0% { transform: scale(1); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: scale(10); opacity: 0; }
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 2, 10, 0.8) 100%);
+            z-index: 0;
+        }
+
+        /* --- Main Content Container --- */
+        .container {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .holo-box {
+            background: rgba(0, 24, 48, 0.6);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.3), inset 0 0 20px rgba(0, 247, 255, 0.1);
+            backdrop-filter: blur(8px);
+            padding: 40px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+        }
+
+        /* Scanline Decoration */
+        .holo-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(transparent 0%, transparent 2px, rgba(0, 247, 255, 0.05) 3px);
+            pointer-events: none;
+        }
+
+        /* --- Typography --- */
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow:
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 20px var(--neon-blue),
+                0 0 40px var(--neon-blue);
+            animation: flicker 4s infinite alternate;
+        }
+
+        /* Typewriter Text Area */
+        .typewriter-text {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            min-height: 200px;
+            margin-bottom: 30px;
+            text-align: left;
+            white-space: pre-wrap;
+            font-weight: bold;
+            color: #d0f0ff;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.4rem;
+            background-color: var(--neon-blue);
+            margin-left: 5px;
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+
+        /* --- Button Styles --- */
+        .cyborg-btn {
+            font-family: 'Orbitron', sans-serif;
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .cyborg-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 247, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .cyborg-btn:hover {
+            background: var(--neon-blue);
+            color: var(--space-bg);
+            box-shadow: 0 0 30px rgba(0, 247, 255, 0.8);
+        }
+
+        .cyborg-btn:hover::before { left: 100%; }
+
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-blue), 0 0 40px var(--neon-blue);
+            }
+            20%, 24%, 55% { text-shadow: none; opacity: 0.5; }
+        }
+
+        @keyframes blink { from, to { opacity: 1; } 50% { opacity: 0; } }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .holo-box { padding: 25px; }
+            .typewriter-text { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="space-background">
+        <div class="stars-layer"></div>
+        <div class="stars-layer"></div>
+        <div class="overlay"></div>
+    </div>
+
+    <main class="container">
+        <section class="holo-box">
+            <h1>STAR PORTAL OPEN</h1>
+
+            <div class="text-container">
+                <p id="typed-text" class="typewriter-text"></p><span class="cursor"></span>
+            </div>
+
+            <button class="cyborg-btn" onclick="startJourney()">ENTER MISSION</button>
+        </section>
+    </main>
+
+    <script>
+        // --- Your Message Content ---
+        const message = "Welcome to the Deep Space Mission Station, Explorer.\n\nYou are now at the convergence point on the edge of the galaxy. There are no school bells here, no homework -\nonly a series of interstellar brain games waiting for your challenge.\n\nEach mission will test different abilities: judgment, observation, strategy, communication...\nIt's also how alien civilizations learn about Earth humans.\n\nDon't be nervous, these are all \"fun but a bit challenging\" types.\n\nReady to launch?\n\n👇 Enter the mission and see where your limits are.";
+
+        const speed = 60;
+        let i = 0;
+        const targetElement = document.getElementById("typed-text");
+
+        // Typewriter Effect Function
+        function typeWriter() {
+            if (i < message.length) {
+                if (message.charAt(i) === "\n") {
+                    targetElement.innerHTML += "<br>";
+                } else {
+                    targetElement.innerHTML += message.charAt(i);
+                }
+                i++;
+                setTimeout(typeWriter, speed);
+            }
+        }
+
+        // Start after page loads
+        window.onload = function() {
+            setTimeout(typeWriter, 800);
+        };
+
+        // Button click navigation
+        function startJourney() {
+            window.location.href = 'Alien_Learning_Lab.html';
+        }
+    </script>
+</body>
+</html>

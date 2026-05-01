@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Cipher: Deep Space Expedition</title>
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: 'Monospace', 'Consolas', monospace;
+            background-color: #0d1117;
+            color: #00ff99;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 800px;
+            border: 2px solid #00ff99;
+            box-shadow: 0 0 15px #00ff99;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #161b22;
+            display: grid;
+            grid-template-areas:
+                "terminal log"
+                "input input";
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        #terminal-display {
+            grid-area: terminal;
+            min-height: 300px;
+            padding: 10px;
+            border-right: 1px solid #00ff99;
+        }
+
+        .system-status {
+            color: #ffcc00;
+            margin-bottom: 15px;
+        }
+
+        .feedback-wrong-position {
+            color: #ffcc00;
+        }
+        .feedback-not-exist {
+            color: #ff5733;
+        }
+
+        #log-file {
+            grid-area: log;
+            max-height: 320px;
+            overflow-y: auto;
+            border-left: 1px solid #00ff99;
+            padding-left: 20px;
+        }
+        #log-file h3 {
+            color: #ffcc00;
+            margin-top: 0;
+            border-bottom: 1px dashed #ffcc00;
+            padding-bottom: 5px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        #input-panel {
+            grid-area: input;
+            padding-top: 20px;
+            border-top: 2px solid #00ff99;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-digit {
+            width: 40px;
+            height: 40px;
+            font-size: 1.5em;
+            text-align: center;
+            background-color: #2c333e;
+            color: #00ff99;
+            border: 1px solid #00ff99;
+        }
+
+        #submit-button {
+            padding: 10px 20px;
+            background-color: #00ff99;
+            color: #0d1117;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        #submit-button:hover:not(:disabled) {
+            background-color: #00cc88;
+        }
+        #submit-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <div id="terminal-display">
+        <h2>🚀 Cosmic Cipher</h2>
+        <div class="system-status">
+            &gt; **[SYSTEM BOOT: DEEP SPACE EXPLORER]**
+            &gt; **MISSION OBJECTIVE: Decrypt the Central Star Core password, find the correct 6-digit sequence.**
+            &gt; **NOTE: Input must be 6 digits from 1-9.**
+        </div>
+        <p id="current-prompt">**Your first attempt:**</p>
+        <div id="feedback-message"></div>
+    </div>
+
+    <div id="log-file">
+        <h3>[Exploration Log]</h3>
+    </div>
+
+    <div id="input-panel">
+        <label>Input Sequence:</label>
+        <input type="number" min="1" max="9" class="input-digit" id="d1" value="1">
+        <input type="number" min="1" max="9" class="input-digit" id="d2" value="2">
+        <input type="number" min="1" max="9" class="input-digit" id="d3" value="3">
+        <input type="number" min="1" max="9" class="input-digit" id="d4" value="4">
+        <input type="number" min="1" max="9" class="input-digit" id="d5" value="5">
+        <input type="number" min="1" max="9" class="input-digit" id="d6" value="6">
+
+        <button id="submit-button">Initiate Decryption</button>
+    </div>
+
+</div>
+
+<script>
+    const MAX_ATTEMPTS = 20;
+    let attemptCount = 0;
+    const submitButton = document.getElementById('submit-button');
+    const digitInputs = document.querySelectorAll('.input-digit');
+    const feedbackMessage = document.getElementById('feedback-message');
+    const logFile = document.getElementById('log-file');
+    const logContainer = logFile;
+
+    // --- Generate random secret code (6 digits, each 1-9) ---
+    const SECRET_CODE = [];
+    for (let i = 0; i < 6; i++) {
+        SECRET_CODE.push(Math.floor(Math.random() * 9) + 1);
+    }
+    console.log('[SYSTEM] Correct code (backend only):', SECRET_CODE.join(''));
+
+    // --- Backend data collection ---
+    const SESSION_ID = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    let sessionData = [];
+    let gameStartTime = Date.now();
+    let lastAttemptTime = Date.now();
+    let lastGuess = '';
+    let isGameEnded = false;
+
+    // Compare two inputs to find changed positions
+    function getChanges(currentGuess, previousGuess) {
+        if (!previousGuess || previousGuess.length !== 6) {
+            return 'First input, no change comparison';
+        }
+
+        const changes = [];
+        for (let i = 0; i < 6; i++) {
+            if (currentGuess[i] !== previousGuess[i]) {
+                changes.push(`Position ${i + 1}: ${previousGuess[i]} → ${currentGuess[i]}`);
+            }
+        }
+
+        if (changes.length === 0) {
+            return 'No positions adjusted';
+        }
+        return changes.join('; ');
+    }
+
+    // Save data to local array
+    function saveToBackend(guess, feedbackText) {
+        const currentTime = Date.now();
+        const timeSinceLastAttempt = Math.floor((currentTime - lastAttemptTime) / 1000);
+        const totalTime = Math.floor((currentTime - gameStartTime) / 1000);
+
+        const record = {
+            sessionId: SESSION_ID,
+            timestamp: new Date().toLocaleString('en-US'),
+            attemptNumber: attemptCount,
+            guess: guess,
+            result: feedbackText,
+            timeElapsedSec: timeSinceLastAttempt,
+            totalTimeSec: totalTime,
+            adjustments: getChanges(guess, lastGuess)
+        };
+
+        sessionData.push(record);
+        console.log('[Backend Record]', record);
+
+        lastAttemptTime = currentTime;
+        lastGuess = guess;
+
+        return record;
+    }
+
+    // Export final report
+    function exportFinalReport() {
+        const gameEndTime = Date.now();
+        const totalTimeSeconds = Math.floor((gameEndTime - gameStartTime) / 1000);
+        const minutes = Math.floor(totalTimeSeconds / 60);
+        const seconds = totalTimeSeconds % 60;
+
+        const avgTime = attemptCount > 0 ? (totalTimeSeconds / attemptCount).toFixed(1) : 0;
+
+        const report = {
+            sessionID: SESSION_ID,
+            gameStartTime: new Date(gameStartTime).toLocaleString('en-US'),
+            gameEndTime: new Date(gameEndTime).toLocaleString('en-US'),
+            totalTime: `${minutes}m ${seconds}s`,
+            totalAttempts: attemptCount,
+            avgTimePerAttemptSec: avgTime,
+            attemptRecords: sessionData
+        };
+
+        const dataStr = JSON.stringify(report, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Cipher_Report_${SESSION_ID.slice(-6)}_${new Date().toLocaleDateString('en-US')}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log('=== Final Report Exported ===', report);
+    }
+
+    // --- Accurate feedback: only two types (wrong position + not exist) ---
+    function getAccurateFeedback(guessArray) {
+        let wrongPositions = [];
+        let notExistPositions = [];
+
+        const secretCopy = [...SECRET_CODE];
+        const guessCopy = [...guessArray];
+
+        const secretMatched = new Array(6).fill(false);
+
+        for (let i = 0; i < 6; i++) {
+            let foundIndex = -1;
+            for (let j = 0; j < 6; j++) {
+                if (!secretMatched[j] && guessArray[i] === SECRET_CODE[j]) {
+                    foundIndex = j;
+                    break;
+                }
+            }
+
+            if (foundIndex !== -1) {
+                if (i === foundIndex) {
+                    secretMatched[foundIndex] = true;
+                } else {
+                    wrongPositions.push(i + 1);
+                    secretMatched[foundIndex] = true;
+                }
+            }
+        }
+
+        for (let i = 0; i < 6; i++) {
+            let exists = false;
+            for (let j = 0; j < 6; j++) {
+                if (guessArray[i] === SECRET_CODE[j]) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                notExistPositions.push(i + 1);
+            } else {
+                if (wrongPositions.indexOf(i + 1) === -1) {
+                    // Digit correct and position correct - silent
+                }
+            }
+        }
+
+        let feedbackHtml = '';
+
+        if (wrongPositions.length > 0) {
+            feedbackHtml += `<div class="feedback-wrong-position">⚠️ Position ${wrongPositions.join(', ')}: digit exists but wrong position</div>`;
+        }
+
+        if (notExistPositions.length > 0) {
+            feedbackHtml += `<div class="feedback-not-exist">❌ Position ${notExistPositions.join(', ')}: digit completely wrong</div>`;
+        }
+
+        if (wrongPositions.length === 0 && notExistPositions.length === 0) {
+            feedbackHtml = `<div style="color: #00ff99;">🔍 Scan complete, no abnormal signals detected</div>`;
+        }
+
+        const generalText = `Wrong Pos:${wrongPositions.length} Wrong Digits:${notExistPositions.length}`;
+
+        let correctCount = 0;
+        for (let i = 0; i < 6; i++) {
+            if (guessArray[i] === SECRET_CODE[i]) {
+                correctCount++;
+            }
+        }
+
+        return { feedbackHtml, generalText, correctCount };
+    }
+
+    // --- Core processing function ---
+    function processAttempt() {
+        if (isGameEnded || attemptCount >= MAX_ATTEMPTS) {
+            return;
+        }
+
+        const guess = Array.from(digitInputs).map(input => input.value).join('');
+        const guessArray = Array.from(digitInputs).map(input => parseInt(input.value));
+
+        attemptCount++;
+
+        const accurateFeedback = getAccurateFeedback(guessArray);
+
+        feedbackMessage.innerHTML = accurateFeedback.feedbackHtml;
+
+        saveToBackend(guess, accurateFeedback.generalText);
+
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+        logEntry.innerHTML = `[Attempt ${attemptCount}] Guess: ${guess} | Result: ${accurateFeedback.generalText}`;
+        logContainer.insertBefore(logEntry, logContainer.children[1]);
+        logContainer.scrollTop = 0;
+
+        if (accurateFeedback.correctCount === 6) {
+            feedbackMessage.innerHTML = `<div style="color: #00ff99; font-size: 1.3em;">🎉 Congratulations! Password Cracked! 🎉<br>All digits are in place!</div>`;
+            isGameEnded = true;
+            submitButton.disabled = true;
+            showQuestionnaire();
+            return;
+        }
+
+        if (attemptCount >= MAX_ATTEMPTS) {
+            endGameFailure();
+        } else {
+            askToContinue();
+        }
+    }
+
+    function askToContinue() {
+        submitButton.disabled = true;
+
+        const continueDiv = document.createElement('div');
+        continueDiv.id = 'continue-prompt';
+        continueDiv.style.cssText = 'margin-top: 15px; padding: 10px; border: 1px solid #00ff99; background: #1a2f23;';
+        continueDiv.innerHTML = `
+            <p style="color: #ffcc00; margin: 0 0 10px 0;">Attempt ${attemptCount} completed. Continue?</p>
+            <button id="continue-btn" style="padding: 8px 20px; margin-right: 10px; background: #00ff99; border: none; cursor: pointer;">Continue</button>
+            <button id="stop-btn" style="padding: 8px 20px; background: #ff5733; border: none; cursor: pointer; color: white;">Stop & Export Report</button>
+        `;
+
+        feedbackMessage.appendChild(continueDiv);
+
+        document.getElementById('continue-btn').addEventListener('click', () => {
+            document.getElementById('continue-prompt').remove();
+            submitButton.disabled = false;
+        });
+
+        document.getElementById('stop-btn').addEventListener('click', () => {
+            endGameByUserChoice();
+        });
+    }
+
+    function endGameByUserChoice() {
+        isGameEnded = true;
+        submitButton.disabled = true;
+        showQuestionnaire();
+    }
+
+    function endGameFailure() {
+        isGameEnded = true;
+        submitButton.disabled = true;
+        submitButton.textContent = 'System Locked';
+        showQuestionnaire();
+    }
+
+    function showQuestionnaire() {
+        isGameEnded = true;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Stopped';
+
+        feedbackMessage.innerHTML = `
+            <div style="color: #00ff99; font-size: 1em; margin-top: 20px; text-align: left;">
+                <p style="color: #ffcc00; font-size: 1.1em; font-weight: bold;">Game Over! Please answer the following questions:</p>
+
+                <div style="margin: 15px 0; padding: 10px; border: 1px solid #00ff99; background: #1a2f23;">
+                    <p style="margin: 0 0 10px 0;"><strong>Question 1 (Voice Input):</strong> Did you find this game difficult? If you had another chance to start over, would you use the same strategy?</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button id="start-record" style="padding: 8px 15px; background: #ff5733; color: white; border: none; cursor: pointer;">🎤 Start Recording</button>
+                        <button id="stop-record" style="padding: 8px 15px; background: #555; color: white; border: none; cursor: not-allowed;" disabled>⏹ Stop Recording</button>
+                        <span id="recording-status" style="color: #ffcc00; line-height: 32px;"></span>
+                    </div>
+                    <textarea id="q1-answer" rows="4" style="width: 100%; background: #2c333e; color: #00ff99; border: 1px solid #00ff99; padding: 8px; box-sizing: border-box; resize: vertical;" placeholder="Click Start Recording and speak your answer..."></textarea>
+                </div>
+
+                <div style="margin: 15px 0; padding: 10px; border: 1px solid #00ff99; background: #1a2f23;">
+                    <p style="margin: 0 0 10px 0;"><strong>Question 2:</strong> If you had another chance, how many attempts would you be willing to try?</p>
+                    <input type="number" id="q2-answer" min="1" max="100" value="20" style="width: 100px; background: #2c333e; color: #00ff99; border: 1px solid #00ff99; padding: 8px; font-size: 1em;"> attempts
+                </div>
+
+                <button id="submit-questionnaire" style="padding: 10px 30px; background: #00ff99; color: #0d1117; border: none; cursor: pointer; font-weight: bold; font-size: 1em; margin-top: 10px;">Submit & Complete</button>
+            </div>
+        `;
+
+        initSpeechRecognition();
+
+        document.getElementById('submit-questionnaire').addEventListener('click', () => {
+            const q1Answer = document.getElementById('q1-answer').value;
+            const q2Answer = document.getElementById('q2-answer').value;
+            exportFinalReportWithQuestions(q1Answer, q2Answer);
+
+            feedbackMessage.innerHTML = `
+                <div style="color: #00ff99; font-size: 1.2em; font-weight: bold; margin-top: 20px;">
+                    <p>Thank you for your participation!</p>
+                    <p>Full report (with questionnaire) has been automatically downloaded to your computer.</p>
+                    <p style="color: #ffcc00; font-size: 0.9em; margin-top: 10px;">Total attempts: ${attemptCount}</p>
+                </div>
+            `;
+        });
+    }
+
+    function initSpeechRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            document.getElementById('recording-status').textContent = 'Your browser does not support speech recognition, please type manually';
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        let finalTranscript = '';
+
+        const startBtn = document.getElementById('start-record');
+        const stopBtn = document.getElementById('stop-record');
+        const status = document.getElementById('recording-status');
+        const textarea = document.getElementById('q1-answer');
+
+        startBtn.addEventListener('click', async () => {
+            finalTranscript = textarea.value ? textarea.value + ' ' : '';
+
+            startBtn.disabled = true;
+            status.textContent = '⏳ Starting microphone, please wait...';
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(track => track.stop());
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                recognition.start();
+
+                status.textContent = '⏳ Speech recognition preparing, please wait...';
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                startBtn.style.background = '#555';
+                startBtn.style.cursor = 'not-allowed';
+                stopBtn.disabled = false;
+                stopBtn.style.background = '#ff5733';
+                stopBtn.style.cursor = 'pointer';
+                status.innerHTML = '🔴 <b>Recording, please speak...</b>';
+
+                textarea.placeholder = 'Recording started, speak your answer...';
+
+            } catch (err) {
+                status.textContent = '❌ Cannot access microphone: ' + err.message;
+                startBtn.disabled = false;
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            recognition.stop();
+            startBtn.disabled = false;
+            startBtn.style.background = '#ff5733';
+            startBtn.style.cursor = 'pointer';
+            stopBtn.disabled = true;
+            stopBtn.style.background = '#555';
+            stopBtn.style.cursor = 'not-allowed';
+            status.textContent = '✓ Recording stopped';
+        });
+
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+
+            textarea.value = finalTranscript + interimTranscript;
+        };
+
+        recognition.onerror = (event) => {
+            status.textContent = 'Recording error: ' + event.error;
+            startBtn.disabled = false;
+            startBtn.style.background = '#ff5733';
+            stopBtn.disabled = true;
+            stopBtn.style.background = '#555';
+        };
+
+        recognition.onend = () => {
+            if (stopBtn.disabled === false) {
+                recognition.start();
+            }
+        };
+    }
+
+    function exportFinalReportWithQuestions(q1, q2) {
+        const gameEndTime = Date.now();
+        const totalTimeSeconds = Math.floor((gameEndTime - gameStartTime) / 1000);
+        const minutes = Math.floor(totalTimeSeconds / 60);
+        const seconds = totalTimeSeconds % 60;
+
+        const avgTime = attemptCount > 0 ? (totalTimeSeconds / attemptCount).toFixed(1) : 0;
+
+        const report = {
+            sessionID: SESSION_ID,
+            gameStartTime: new Date(gameStartTime).toLocaleString('en-US'),
+            gameEndTime: new Date(gameEndTime).toLocaleString('en-US'),
+            totalTime: `${minutes}m ${seconds}s`,
+            totalAttempts: attemptCount,
+            avgTimePerAttemptSec: avgTime,
+            questionnaireAnswers: {
+                question1_strategyReflection: q1,
+                question2_willingAttempts: q2 + ' attempts'
+            },
+            attemptRecords: sessionData
+        };
+
+        const dataStr = JSON.stringify(report, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Cipher_Report_${SESSION_ID.slice(-6)}_${new Date().toLocaleDateString('en-US')}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log('=== Final Report (with questionnaire) exported ===', report);
+    }
+
+    // --- Event Listeners ---
+    submitButton.addEventListener('click', processAttempt);
+
+    gameStartTime = Date.now();
+    lastAttemptTime = Date.now();
+    console.log('=== Cosmic Cipher Backend System ===');
+    console.log('Current Session ID:', SESSION_ID);
+    console.log('Game Start Time:', new Date(gameStartTime).toLocaleString('en-US'));
+
+    digitInputs.forEach(input => {
+        input.addEventListener('input', (e) => {
+            let val = parseInt(e.target.value);
+            if (val < 1) e.target.value = 1;
+            if (val > 9) e.target.value = 9;
+        });
+    });
+
+</script>
+
+</body>
+</html>

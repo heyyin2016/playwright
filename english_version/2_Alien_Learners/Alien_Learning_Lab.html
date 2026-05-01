@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alien Learning Lab</title>
+    <style>
+        /* --- Cyberpunk Style Definition --- */
+        :root {
+            --bg-color: #050505;
+            --neon-green: #39ff14;
+            --neon-dim: rgba(57, 255, 20, 0.15);
+            --text-color: #39ff14;
+            --card-bg: #111;
+            --white: #fff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            /* Limit overall page height */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            /* Prevent background scrolling */
+        }
+
+        /* Main container optimization: fixed max height, internal scrolling */
+        .container {
+            width: 95%;
+            max-width: 600px;
+            /* Slightly narrower for more elegance */
+            max-height: 95vh;
+            /* Window height does not exceed 95% of screen */
+            background: var(--card-bg);
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-dim);
+            border-radius: 15px;
+            padding: 20px;
+            /* Reduce padding */
+            position: relative;
+            overflow-y: auto;
+            /* Show scrollbar when content overflows */
+            display: flex;
+            flex-direction: column;
+
+            /* Hide scrollbar but retain functionality (compatible style) */
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-green) #111;
+        }
+
+        /* Webkit scrollbar style */
+        .container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: #111;
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: var(--neon-green);
+            border-radius: 3px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            margin: 5px 0;
+            text-align: center;
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        h2 {
+            font-size: 1.4em;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        /* Button style */
+        .btn {
+            background: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            border-radius: 50px;
+            box-shadow: 0 0 5px var(--neon-dim);
+            flex-shrink: 0;
+        }
+
+        .btn:hover {
+            background: var(--neon-green);
+            color: black;
+            box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        /* Progress bar */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #222;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--neon-green);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        /* Result page */
+        .result-box {
+            text-align: center;
+            padding: 10px;
+        }
+
+        /* Audio button style */
+        .audio-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+            z-index: 100;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            opacity: 1;
+        }
+
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sound-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        .sound-waves {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-btn.playing .sound-waves {
+            opacity: 1;
+        }
+
+        .sound-wave {
+            width: 3px;
+            height: 8px;
+            background: white;
+            border-radius: 2px;
+            animation: soundWave 0.5s ease-in-out infinite;
+        }
+
+        .sound-wave:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .sound-wave:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 12px;
+        }
+
+        .sound-wave:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 16px;
+        }
+
+        @keyframes soundWave {
+
+            0%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(0.5);
+            }
+        }
+
+        .audio-btn.playing .sound-icon {
+            animation: speakerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes speakerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Option card new layout: image on top, text below */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-card {
+            border: 2px solid #333;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s;
+            text-align: center;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .option-card:hover {
+            border-color: var(--neon-green);
+            background: var(--neon-dim);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(57, 255, 20, 0.3);
+        }
+
+        .option-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-bottom: 2px solid #333;
+            transition: transform 0.3s;
+        }
+
+        .option-card:hover .option-img {
+            transform: scale(1.05);
+        }
+
+        .option-content {
+            padding: 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .opt-title {
+            font-size: 1em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--white);
+        }
+
+        .opt-desc {
+            font-size: 0.8em;
+            color: #aaa;
+            line-height: 1.3;
+        }
+
+        /* Responsive: single column on small screens */
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .option-img {
+                height: 180px;
+            }
+        }
+
+        /* Recording control area */
+        .recording-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(57, 255, 20, 0.05);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .record-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid var(--neon-green);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .record-btn:hover {
+            background: rgba(57, 255, 20, 0.1);
+            transform: scale(1.05);
+        }
+
+        .record-btn.recording {
+            background: #ff3333;
+            border-color: #ff3333;
+            animation: recordPulse 1s infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(255, 51, 51, 0);
+            }
+        }
+
+        .record-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--neon-green);
+        }
+
+        .record-btn.recording .record-icon {
+            background: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .recording-status {
+            flex-grow: 1;
+            color: #aaa;
+            font-size: 0.95em;
+        }
+
+        .recording-status.active {
+            color: #ff3333;
+            font-weight: bold;
+        }
+
+        .recording-timer {
+            color: var(--neon-green);
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+
+        .play-recording-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-green);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .play-recording-btn:hover {
+            background: rgba(57, 255, 20, 0.2);
+        }
+
+        .play-recording-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-left: 12px solid var(--neon-green);
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            margin-left: 3px;
+        }
+
+        .play-recording-btn.playing .play-icon {
+            border-left: none;
+            width: 12px;
+            height: 12px;
+            border-left: 4px solid var(--neon-green);
+            border-right: 4px solid var(--neon-green);
+            margin-left: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div id="screen-intro" style="position: relative;">
+            <button class="audio-btn" id="intro-audio-btn" onclick="toggleAudio('intro')" title="Play/Pause Audio">
+                <svg class="sound-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </button>
+            <h1>🌌 Alien Learning Lab</h1>
+            <p style="text-align: center; color:#aaa; font-size: 0.9em; margin-bottom: 20px;">Discover Your Teaching Style</p>
+            <div
+                style="line-height: 1.6; color: #ccc; background: #1a1a1a; padding: 15px; border-radius: 10px; font-size: 0.95em;">
+                <p>Hello, <b>"Little Learning Coach"</b> from Earth! 👋</p>
+                <p>Today, 3 alien friends need to learn new skills.</p>
+                <p>In each level, please choose the <b>most effective</b> teaching method.</p>
+            </div>
+            <button class="btn" onclick="startGame()">🚀 Start Portal</button>
+        </div>
+
+        <div id="screen-game" class="hidden" style="position: relative;">
+            <button class="audio-btn" id="mission-audio-btn" onclick="toggleAudio('mission')" title="Play/Pause Audio">
+                <svg class="sound-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </button>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress"></div>
+            </div>
+
+            <h2 id="mission-title" style="margin-top:0;">Mission 1</h2>
+
+            <p id="mission-desc" style="color: #ddd; font-size: 0.95em; line-height: 1.5; margin-bottom: 15px;">...</p>
+
+            <div class="options-grid" id="options-container">
+            </div>
+        </div>
+
+        <div id="screen-reflection" class="hidden" style="position: relative;">
+            <button class="audio-btn" id="reflection-audio-btn" onclick="toggleAudio('reflection')" title="Play/Pause Audio">
+                <svg class="sound-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </button>
+            <h2 style="text-align: center; color: var(--neon-green); margin-bottom: 20px;">🤔 Reflection Moment</h2>
+            <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <p style="color: #fff; font-size: 1.1em; text-align: center; line-height: 1.6; margin-bottom: 15px;">
+                    Why did you choose this way to teach the alien?
+                </p>
+                <textarea id="reflection-input" placeholder="Enter your thoughts..."
+                    style="width: 100%; min-height: 120px; padding: 15px; background: #0a0a0a; border: 2px solid #333; border-radius: 8px; color: #fff; font-size: 1em; resize: vertical; font-family: inherit; line-height: 1.5;box-sizing: border-box; margin-bottom: 10px;"
+                    onfocus="this.style.borderColor='var(--neon-green)'"
+                    onblur="this.style.borderColor='#333'"></textarea>
+                <div class="recording-controls">
+                    <button class="record-btn" id="record-btn" onclick="toggleRecording()" title="Record Answer">
+                        <div class="record-icon"></div>
+                    </button>
+                    <div class="recording-status" id="recording-status">Click record button to start recording your answer</div>
+                    <div class="recording-timer" id="recording-timer">0:00</div>
+                    <button class="play-recording-btn" id="play-recording-btn" onclick="togglePlayRecording()" disabled
+                        title="Play Recording">
+                        <div class="play-icon"></div>
+                    </button>
+                </div>
+            </div>
+            <button class="btn" onclick="continueGame()">💭 Continue to Next Level</button>
+        </div>
+
+        <div id="screen-result" class="hidden">
+            <h1>📊 Coaching Style Report</h1>
+            <div class="result-box">
+                <p style="color:#aaa; font-size: 0.9em;">System analysis shows that your best teaching style is:</p>
+                <h2 style="font-size: 2em; margin: 20px 0; color: #fff;" id="result-type">...</h2>
+                <div id="result-details"
+                    style="text-align: left; color: #ccc; line-height: 1.5; font-size: 0.95em; background: #1a1a1a; padding: 15px; border-radius: 10px;">
+                </div>
+            </div>
+            <button class="btn" onclick="saveSessionRecordDocument()">💾 Save Learning Record</button>
+            <p id="save-status" style="color:#aaa; font-size:0.9em; min-height:1.3em; margin-top:8px;"></p>
+            <button class="btn" onclick="location.reload()">🔄 Retake Test</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Audio configuration
+        const AUDIO_BASE = 'music/';
+        const audioFiles = {
+            intro: AUDIO_BASE + 'alien_learning_1.m4a',
+            mission1: AUDIO_BASE + 'alien_learning_2.m4a',
+            mission2: AUDIO_BASE + 'alien_learning_3.m4a',
+            mission3: AUDIO_BASE + 'alien_learning_4.m4a'
+        };
+
+        // Audio control
+        let currentAudio = null;
+        let currentAudioType = null;
+
+        function toggleAudio(type) {
+            const audioFile = type === 'intro' ? audioFiles.intro : audioFiles[`mission${currentStep + 1}`];
+            const btnId = type === 'intro' ? 'intro-audio-btn' : 'mission-audio-btn';
+            const btn = document.getElementById(btnId);
+
+            if (!btn) return;
+
+            // If switching to different audio source, stop current playback
+            if (currentAudioType !== type && currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtn = document.getElementById(currentAudioType === 'intro' ? 'intro-audio-btn' : 'mission-audio-btn');
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+
+            // If same audio
+            if (currentAudioType === type && currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                    btn.classList.add('playing');
+                } else {
+                    currentAudio.pause();
+                    btn.classList.remove('playing');
+                }
+                return;
+            }
+
+            // Create new audio
+            currentAudio = new Audio(audioFile);
+            currentAudioType = type;
+
+            currentAudio.addEventListener('ended', function () {
+                btn.classList.remove('playing');
+            });
+
+            currentAudio.play();
+            btn.classList.add('playing');
+        }
+
+        // Game data
+        const missions = [
+            {
+                id: 1,
+                title: "Mission 1: Teach Aliens to Play Board Games",
+                desc: "An alien friend is visiting Earth for the first time and doesn't know anything about board games. How would you teach them to learn quickly?",
+                options: [
+                    { type: "Visual", title: "🧩 Demonstrate with Pieces", desc: "Drag pieces, draw arrows to show 'whose turn' and 'how to move'.", img: "img/rw1/a.png" },
+                    { type: "ReadWrite", title: "📜 Write Rule Cards", desc: "Write short steps: ① Draw card ② Match numbers ③ Play card...", img: "img/rw1/b.png" },
+                    { type: "Auditory", title: "🎙️ Commentate Like a Sports Announcer", desc: "Use a microphone to verbally explain step by step how to play.", img: "img/rw1/c.png" },
+                    { type: "Kinesthetic", title: "🖐️ Play a Round Together", desc: "Handle the cards and guide them through a complete round, learning by doing.", img: "img/rw1/d.png" }
+                ]
+            },
+            {
+                id: 2,
+                title: "Mission 2: Sandwich Making Lesson",
+                desc: "An alien wants to learn how to make a sandwich. Which method would you use to teach them?",
+                options: [
+                    { type: "Visual", title: "🎨 Draw Step-by-Step Diagrams", desc: "Draw it out: Bread → Spread sauce → Add veggies → Top with bread.", img: "img/rw2/a.png" },
+                    { type: "ReadWrite", title: "📋 Write a Step List", desc: "List in text: 1. Get bread 2. Spread sauce 3. Add fillings...", img: "img/rw2/b.png" },
+                    { type: "Auditory", title: "🔊 Verbal Instructions", desc: "Like a phone call, tell them the steps verbally.", img: "img/rw2/c.png" },
+                    { type: "Kinesthetic", title: "🎥 Silent Action Demo", desc: "Don't speak, just demonstrate: take, spread, place, close, and have them follow along.", img: "img/rw2/d.png" }
+                ]
+            },
+            {
+                id: 3,
+                title: "Mission 3: Maze Rescue",
+                desc: "A robot is trapped in a maze and doesn't know how to get out. How would you help it reach the exit?",
+                options: [
+                    { type: "Visual", title: "🧭 Draw Path on the Ground", desc: "Draw arrow paths on the ground for it to follow.", img: "img/rw3/a.png" },
+                    { type: "ReadWrite", title: "🪧 Write Instruction Cards", desc: "Write cards: 'Go forward 3 steps', 'Turn left', arrange them in order.", img: "img/rw3/b.png" },
+                    { type: "Auditory", title: "📣 Voice Navigation", desc: "Stand nearby and call out: 'Go straight 2 squares! Turn left! Keep going!'", img: "img/rw3/c.png" },
+                    { type: "Kinesthetic", title: "🤖 Drag and Guide", desc: "Directly pull the robot, step by step, dragging it toward the exit.", img: "img/rw3/d.png" }
+                ]
+            }
+        ];
+
+        let currentStep = 0;
+        let scores = { Visual: 0, Auditory: 0, ReadWrite: 0, Kinesthetic: 0 };
+        let pendingChoiceRecord = null;
+        let sessionRecordEntries = [];
+        let finalResultLabel = '';
+        let selectedRootDirHandle = null;
+        const RECORD_SUBFOLDER = 'learning_records';
+        const RECORD_FILENAME_PREFIX = 'alien_learning_record';
+
+        function formatFileTimestamp(dateObj = new Date()) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const hour = String(dateObj.getHours()).padStart(2, '0');
+            const minute = String(dateObj.getMinutes()).padStart(2, '0');
+            const second = String(dateObj.getSeconds()).padStart(2, '0');
+            return `${year}${month}${day}-${hour}${minute}${second}`;
+        }
+
+        function buildSessionRecordMarkdown() {
+            const lines = [];
+            lines.push('# Alien Learning Lab Record');
+            lines.push('');
+            lines.push(`- Generated: ${new Date().toLocaleString('en-US')}`);
+            lines.push(`- Coaching Style Result: ${finalResultLabel || 'Not generated'}`);
+            lines.push('');
+            lines.push('## Answer Details');
+            lines.push('');
+
+            sessionRecordEntries.forEach((entry, index) => {
+                lines.push(`### Level ${index + 1}`);
+                lines.push(`- Mission: ${entry.missionTitle}`);
+                lines.push(`- Selected Option: ${entry.choiceTitle} (${entry.choiceType})`);
+                lines.push(`- Text Input: ${entry.reflectionText || '(None)'}`);
+                lines.push(`- Speech to Text: ${entry.transcriptText || '(None)'}`);
+                lines.push(`- Answer Time: ${new Date(entry.answeredAt).toLocaleString('en-US')}`);
+                lines.push('');
+            });
+
+            return lines.join('\n');
+        }
+
+        function downloadRecordFile(content, fileName) {
+            const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        async function saveSessionRecordDocument() {
+            const statusEl = document.getElementById('save-status');
+            if (!sessionRecordEntries.length) {
+                if (statusEl) statusEl.textContent = 'No records to save yet';
+                return;
+            }
+
+            const content = buildSessionRecordMarkdown();
+            const fileName = `${RECORD_FILENAME_PREFIX}_${formatFileTimestamp()}.md`;
+
+            try {
+                if (window.showDirectoryPicker && window.isSecureContext) {
+                    if (!selectedRootDirHandle) {
+                        selectedRootDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    }
+                    const subfolderHandle = await selectedRootDirHandle.getDirectoryHandle(RECORD_SUBFOLDER, { create: true });
+                    const fileHandle = await subfolderHandle.getFileHandle(fileName, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(content);
+                    await writable.close();
+                    if (statusEl) statusEl.textContent = `Saved successfully: ${RECORD_SUBFOLDER}/${fileName}`;
+                } else {
+                    downloadRecordFile(content, `${RECORD_SUBFOLDER}_${fileName}`);
+                    if (statusEl) statusEl.textContent = 'Current environment does not support direct folder access, record document downloaded automatically';
+                }
+                localStorage.setItem('alien-learning-last-record', content);
+            } catch (error) {
+                console.error('Failed to save record:', error);
+                if (statusEl) statusEl.textContent = 'Save failed, please retry or check browser permissions';
+            }
+        }
+
+        function startGame() {
+            document.getElementById('screen-intro').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            loadMission(0);
+        }
+
+        function loadMission(index) {
+            if (index >= missions.length) {
+                showResult();
+                return;
+            }
+
+            const data = missions[index];
+            currentStep = index;
+
+            // Stop current audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtn = document.getElementById(currentAudioType === 'intro' ? 'intro-audio-btn' : 'mission-audio-btn');
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+
+            // Update progress bar
+            const progress = ((index) / missions.length) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+
+            // Update content
+            document.getElementById('mission-title').innerHTML = data.title;
+            document.getElementById('mission-desc').innerHTML = data.desc;
+
+            // Generate option cards (image on top, text below)
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            data.options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.onclick = () => handleChoice(opt.type);
+                card.innerHTML = `
+                <img src="${opt.img}" alt="${opt.title}" class="option-img" onerror="this.style.display='none';">
+                <div class="option-content">
+                    <div class="opt-title">${opt.title}</div>
+                    <div class="opt-desc">${opt.desc}</div>
+                </div>
+            `;
+                container.appendChild(card);
+            });
+
+            // Auto-play current mission audio
+            setTimeout(() => {
+                playMissionAudio();
+            }, 300);
+        }
+
+        // Helper function to play mission audio
+        function playMissionAudio() {
+            const audioFile = audioFiles[`mission${currentStep + 1}`];
+            const btn = document.getElementById('mission-audio-btn');
+
+            if (!audioFile || !btn) return;
+
+            // Create and play new audio
+            currentAudio = new Audio(audioFile);
+            currentAudioType = 'mission';
+
+            currentAudio.addEventListener('ended', function () {
+                btn.classList.remove('playing');
+            });
+
+            currentAudio.play();
+            btn.classList.add('playing');
+        }
+
+        function handleChoice(type) {
+            scores[type]++;
+            const mission = missions[currentStep];
+            const selectedOption = mission.options.find(opt => opt.type === type);
+            pendingChoiceRecord = {
+                missionId: mission.id,
+                missionTitle: mission.title,
+                choiceType: type,
+                choiceTitle: selectedOption ? selectedOption.title : type
+            };
+            showReflection();
+        }
+
+        function showReflection() {
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-reflection').classList.remove('hidden');
+
+            // Stop current audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // Play reflection audio
+            currentAudio = new Audio('music/alien_learning_why.m4a');
+            currentAudio.play();
+            currentAudioType = 'reflection';
+
+            const btn = document.getElementById('reflection-audio-btn');
+            if (btn) btn.classList.add('playing');
+
+            // Reset recording state
+            resetRecordingState();
+        }
+
+        function continueGame() {
+            // Get user's reflection input
+            const reflection = document.getElementById('reflection-input').value.trim();
+            const transcript = speechTranscript.trim();
+
+            // Optional: verify user has entered content (at least one of text or recording)
+            if (!reflection && !currentRecordingAudio) {
+                alert('Please enter your thoughts or record your answer before continuing 😊');
+                return;
+            }
+
+            const reflectionText = reflection || (currentRecordingAudio ? '(Audio only, no transcript available)' : '');
+            const mergedRecord = {
+                missionId: pendingChoiceRecord ? pendingChoiceRecord.missionId : currentStep + 1,
+                missionTitle: pendingChoiceRecord ? pendingChoiceRecord.missionTitle : missions[currentStep].title,
+                choiceType: pendingChoiceRecord ? pendingChoiceRecord.choiceType : '',
+                choiceTitle: pendingChoiceRecord ? pendingChoiceRecord.choiceTitle : '',
+                reflectionText,
+                transcriptText: transcript,
+                answeredAt: new Date().toISOString()
+            };
+            sessionRecordEntries.push(mergedRecord);
+            pendingChoiceRecord = null;
+
+            // Stop reflection audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // Clear input field
+            document.getElementById('reflection-input').value = '';
+
+            document.getElementById('screen-reflection').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+
+            loadMission(currentStep + 1);
+        }
+
+        function showResult() {
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            // Stop audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // Calculate highest score
+            let maxScore = 0;
+            let bestType = '';
+            for (const [type, score] of Object.entries(scores)) {
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestType = type;
+                }
+            }
+
+            const resultTitles = {
+                "Visual": "👀 Visual Coach",
+                "Auditory": "👂 Auditory Coach",
+                "ReadWrite": "📝 Read/Write Coach",
+                "Kinesthetic": "👐 Kinesthetic Coach"
+            };
+
+            const resultDescs = {
+                "Visual": "You like to use <b>images, diagrams, and arrows</b> to explain things.<br>Your students find your teaching very intuitive and can understand at a glance!",
+                "Auditory": "You excel at using <b>language and sound</b> to convey information.<br>Your students find listening to your stories and explanations the best learning experience!",
+                "ReadWrite": "You like <b>clear lists, text, and rules</b>.<br>Your students find your teaching very organized and logically clear!",
+                "Kinesthetic": "You believe in <b>'learning by doing'</b>, and love hands-on demonstrations and operations.<br>Your students find that following your lead and moving together helps them learn fastest!"
+            };
+
+            if (maxScore < 2) {
+                document.getElementById('result-type').innerText = "🌟 Universal Master";
+                document.getElementById('result-details').innerHTML = "Wow! You don't have a fixed routine. You flexibly switch teaching methods based on different tasks.<br>In the eyes of aliens, you are the perfect 'Universal Coach'!";
+                finalResultLabel = "🌟 Universal Master";
+            } else {
+                document.getElementById('result-type').innerText = resultTitles[bestType];
+                document.getElementById('result-details').innerHTML = resultDescs[bestType];
+                finalResultLabel = resultTitles[bestType];
+            }
+        }
+
+        // --- Recording functionality ---
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingStartTime = null;
+        let recordingInterval = null;
+        let currentRecordingAudio = null;
+        let speechRecognition = null;
+        let speechTranscript = '';
+        let speechTranscriptRaw = '';
+        let microphoneStream = null;
+        let isStartingRecording = false;
+        let pendingSpeechRecognitionStopResolver = null;
+        let pendingMediaRecorderStopResolver = null;
+        let mediaRecorderStopPromise = Promise.resolve();
+        let speechInputPrefix = '';
+        let speechInterimTranscript = '';
+        let speechInterimTranscriptRaw = '';
+
+        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const supportsSpeechRecognition = !!SpeechRecognitionAPI;
+
+        function startSpeechRecognition(statusEl) {
+            speechTranscript = '';
+            speechTranscriptRaw = '';
+            speechInterimTranscript = '';
+            speechInterimTranscriptRaw = '';
+            if (!supportsSpeechRecognition) return Promise.resolve(false);
+
+            return new Promise((resolve) => {
+                let settled = false;
+                const settle = (isReady) => {
+                    if (settled) return;
+                    settled = true;
+                    resolve(isReady);
+                };
+
+                speechRecognition = new SpeechRecognitionAPI();
+                speechRecognition.lang = 'en-US';
+                speechRecognition.continuous = true;
+                speechRecognition.interimResults = true;
+                speechRecognition.maxAlternatives = 1;
+
+                speechRecognition.onstart = () => {
+                    settle(true);
+                };
+
+                speechRecognition.onresult = (event) => {
+                    let finalText = '';
+                    let interimText = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const resultText = event.results[i][0].transcript || '';
+                        if (!resultText) continue;
+                        if (event.results[i].isFinal) {
+                            finalText += resultText;
+                        } else {
+                            interimText += resultText;
+                        }
+                    }
+                    if (finalText) {
+                        speechTranscriptRaw = `${speechTranscriptRaw}${finalText}`.trim();
+                    }
+                    speechInterimTranscriptRaw = interimText.trim();
+                    renderSpeechTranscript();
+                };
+
+                speechRecognition.onerror = (event) => {
+                    console.error('Speech recognition failed:', event.error);
+                    settle(false);
+                };
+
+                speechRecognition.onend = () => {
+                    if (pendingSpeechRecognitionStopResolver) {
+                        pendingSpeechRecognitionStopResolver();
+                        pendingSpeechRecognitionStopResolver = null;
+                    }
+                    speechRecognition = null;
+                };
+
+                try {
+                    speechRecognition.start();
+                    window.setTimeout(() => {
+                        if (!settled) {
+                            console.warn('Speech recognition startup timeout, falling back to audio-only mode');
+                            settle(false);
+                        }
+                    }, 3000);
+                } catch (error) {
+                    console.error('Speech recognition startup failed:', error);
+                    speechRecognition = null;
+                    if (statusEl) statusEl.textContent = 'Recording (speech-to-text failed to start)';
+                    settle(false);
+                }
+            });
+        }
+
+        function stopSpeechRecognition() {
+            if (!speechRecognition) return Promise.resolve();
+
+            return new Promise((resolve) => {
+                pendingSpeechRecognitionStopResolver = resolve;
+                try {
+                    speechRecognition.stop();
+                    window.setTimeout(() => {
+                        if (pendingSpeechRecognitionStopResolver === resolve) {
+                            pendingSpeechRecognitionStopResolver = null;
+                            resolve();
+                        }
+                    }, 1500);
+                } catch (error) {
+                    console.error('Failed to stop speech recognition:', error);
+                    pendingSpeechRecognitionStopResolver = null;
+                    resolve();
+                }
+            });
+        }
+
+        function fillReflectionWithTranscript(statusEl) {
+            if (!supportsSpeechRecognition) {
+                if (statusEl) statusEl.textContent = 'Recording complete (current browser does not support automatic speech-to-text)';
+                return;
+            }
+
+            renderSpeechTranscript({ finalize: true, statusEl });
+        }
+
+        function resetRecordingState() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            setMicrophoneTracksEnabled(false);
+            if (recordingInterval) {
+                clearInterval(recordingInterval);
+            }
+            mediaRecorder = null;
+            recordedChunks = [];
+            recordingStartTime = null;
+            recordingInterval = null;
+            speechTranscript = '';
+            speechTranscriptRaw = '';
+            speechInterimTranscript = '';
+            speechInterimTranscriptRaw = '';
+            speechInputPrefix = '';
+            stopSpeechRecognition();
+            speechRecognition = null;
+            pendingSpeechRecognitionStopResolver = null;
+            pendingMediaRecorderStopResolver = null;
+            mediaRecorderStopPromise = Promise.resolve();
+            isStartingRecording = false;
+            if (currentRecordingAudio) {
+                currentRecordingAudio.pause();
+                currentRecordingAudio = null;
+            }
+
+            // Reset UI
+            const recordBtn = document.getElementById('record-btn');
+            const statusEl = document.getElementById('recording-status');
+            const timerEl = document.getElementById('recording-timer');
+            const playBtn = document.getElementById('play-recording-btn');
+
+            if (recordBtn) {
+                recordBtn.classList.remove('recording');
+                recordBtn.disabled = false;
+            }
+            if (statusEl) {
+                statusEl.classList.remove('active');
+                statusEl.textContent = 'Click record button to start recording your answer';
+            }
+            if (timerEl) timerEl.textContent = '0:00';
+            if (playBtn) {
+                playBtn.disabled = true;
+                playBtn.classList.remove('playing');
+            }
+        }
+
+        async function getMicrophoneStream() {
+            if (microphoneStream) {
+                const hasActiveTrack = microphoneStream.getAudioTracks().some(track => track.readyState === 'live');
+                if (hasActiveTrack) return microphoneStream;
+            }
+            microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            microphoneStream.getAudioTracks().forEach(track => {
+                track.enabled = false;
+            });
+            return microphoneStream;
+        }
+
+        function setMicrophoneTracksEnabled(enabled) {
+            if (!microphoneStream) return;
+            microphoneStream.getAudioTracks().forEach(track => {
+                if (track.readyState === 'live') track.enabled = enabled;
+            });
+        }
+
+        async function toggleRecording() {
+            const recordBtn = document.getElementById('record-btn');
+            const statusEl = document.getElementById('recording-status');
+            const playBtn = document.getElementById('play-recording-btn');
+
+            if (isStartingRecording) return;
+
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                // Start recording
+                try {
+                    isStartingRecording = true;
+                    recordBtn.disabled = true;
+                    statusEl.classList.add('active');
+                    statusEl.textContent = supportsSpeechRecognition
+                        ? 'Preparing to record, please wait for prompt before speaking...'
+                        : 'Preparing to record...';
+
+                    const reflectionInput = document.getElementById('reflection-input');
+                    speechInputPrefix = reflectionInput ? reflectionInput.value.trim() : '';
+
+                    const stream = await getMicrophoneStream();
+                    const speechReady = await startSpeechRecognition(statusEl);
+                    recordedChunks = [];
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorderStopPromise = new Promise((resolve) => {
+                        pendingMediaRecorderStopResolver = resolve;
+                    });
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(blob);
+                        currentRecordingAudio = new Audio(audioUrl);
+                        playBtn.disabled = false;
+                        if (pendingMediaRecorderStopResolver) {
+                            pendingMediaRecorderStopResolver();
+                            pendingMediaRecorderStopResolver = null;
+                        }
+                    };
+
+                    setMicrophoneTracksEnabled(true);
+                    mediaRecorder.start();
+                    recordBtn.classList.add('recording');
+                    statusEl.textContent = speechReady
+                        ? 'Recording started, please begin speaking...'
+                        : 'Recording (speech-to-text is starting slowly, you can manually add text after finishing)...';
+                    playBtn.disabled = true;
+
+                    // Start timer
+                    recordingStartTime = Date.now();
+                    updateRecordingTimer();
+                    recordingInterval = setInterval(updateRecordingTimer, 1000);
+
+                } catch (error) {
+                    console.error('Recording failed:', error);
+                    statusEl.textContent = 'Unable to access microphone, please check permissions';
+                } finally {
+                    isStartingRecording = false;
+                    recordBtn.disabled = false;
+                }
+            } else {
+                // Stop recording
+                mediaRecorder.stop();
+                setMicrophoneTracksEnabled(false);
+                recordBtn.classList.remove('recording');
+                statusEl.classList.remove('active');
+                statusEl.textContent = supportsSpeechRecognition
+                    ? 'Recording complete, transcribing...'
+                    : 'Recording complete, you can play or re-record';
+                clearInterval(recordingInterval);
+                recordingInterval = null;
+                await Promise.all([mediaRecorderStopPromise, stopSpeechRecognition()]);
+                fillReflectionWithTranscript(statusEl);
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (!microphoneStream) return;
+            microphoneStream.getTracks().forEach(track => track.stop());
+            microphoneStream = null;
+        });
+
+        function updateRecordingTimer() {
+            const timerEl = document.getElementById('recording-timer');
+            if (recordingStartTime && timerEl) {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function togglePlayRecording() {
+            const playBtn = document.getElementById('play-recording-btn');
+
+            if (!currentRecordingAudio) return;
+
+            if (currentRecordingAudio.paused) {
+                currentRecordingAudio.play();
+                playBtn.classList.add('playing');
+
+                currentRecordingAudio.onended = () => {
+                    playBtn.classList.remove('playing');
+                };
+            } else {
+                currentRecordingAudio.pause();
+                currentRecordingAudio.currentTime = 0;
+                playBtn.classList.remove('playing');
+            }
+        }
+
+        function renderSpeechTranscript(options = {}) {
+            const { finalize = false, statusEl = null } = options;
+            const reflectionInput = document.getElementById('reflection-input');
+            if (!reflectionInput) return;
+
+            const finalText = speechTranscriptRaw;
+            const interimText = finalize ? '' : speechInterimTranscriptRaw;
+            const nextValue = composeReflectionText(speechInputPrefix, finalText, interimText);
+
+            reflectionInput.value = nextValue;
+            reflectionInput.focus();
+            reflectionInput.setSelectionRange(reflectionInput.value.length, reflectionInput.value.length);
+
+            speechTranscript = finalText;
+            speechInterimTranscript = interimText;
+
+            if (finalize) {
+                speechInterimTranscript = '';
+                speechInterimTranscriptRaw = '';
+                if (statusEl) {
+                    statusEl.textContent = speechTranscript
+                        ? 'Recording complete, text has been filled in the input box, you can continue editing'
+                        : 'Recording complete, no clear speech detected, you can enter manually';
+                }
+            }
+        }
+
+        function composeReflectionText(baseText, finalText, interimText = '') {
+            const sections = [];
+            const base = baseText.trim();
+            const finalPart = finalText.trim();
+            const interimPart = interimText.trim();
+
+            if (base) sections.push(base);
+            if (finalPart || interimPart) {
+                const speechPart = `${finalPart}${interimPart}`.trim();
+                if (speechPart) sections.push(speechPart);
+            }
+
+            return sections.join('\n');
+        }
+    </script>
+
+</body>
+
+</html>
