@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动物家庭探索</title>
+    <link rel="stylesheet" href="../shared/game-portal.css">
+    <style>
+        /* --- 核心风格 (黑 + 荧光绿) --- */
+        :root {
+            --bg-color: #000000;
+            --neon-green: #39ff14;
+            --neon-dim: rgba(57, 255, 20, 0.15);
+            --text-glow: 0 0 5px rgba(57, 255, 20, 0.8);
+            --box-glow: 0 0 15px rgba(57, 255, 20, 0.4);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--neon-green);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-transform: uppercase;
+            text-shadow: var(--text-glow);
+            margin: 20px 0;
+            flex-shrink: 0;
+        }
+
+        /* 通用布局容器 */
+        .stage {
+            display: none;
+            flex-grow: 1;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            height: 100%;
+            overflow-y: auto;
+            align-items: center;
+        }
+
+        .stage.active {
+            display: flex;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* 脚本提示框 (Story Mode) */
+        .story-container {
+            max-width: 800px;
+            width: 90%;
+            text-align: left;
+            font-size: 1.8em;
+            line-height: 1.8;
+            margin-top: 50px;
+        }
+
+        .story-line {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .story-line.visible {
+            opacity: 1;
+            transform: translateY(0);
+            display: block;
+        }
+
+        /* 按钮 */
+        .btn {
+            background: var(--neon-green);
+            color: black;
+            font-weight: bold;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px auto;
+            box-shadow: var(--box-glow);
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--neon-green);
+        }
+
+        .btn:disabled {
+            background: #333;
+            color: #555;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* 提示按空格 */
+        .space-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            font-size: 1.2em;
+            color: #666;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.4;
+            }
+        }
+
+        .key-icon {
+            border: 1px solid #666;
+            padding: 5px 20px;
+            border-radius: 5px;
+            margin: 0 10px;
+            font-family: monospace;
+        }
+
+        /* --- 动物网格 --- */
+        .zoo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .animal-card {
+            border: 1px solid #444;
+            background: #050505;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .animal-card:hover {
+            border-color: var(--neon-green);
+            transform: translateY(-3px);
+            background: #111;
+        }
+
+        /* 选中/标记样式 */
+        .animal-card.selected {
+            background: rgba(57, 255, 20, 0.2);
+            border: 2px solid var(--neon-green);
+            box-shadow: var(--box-glow);
+        }
+
+        .icon {
+            font-size: 2.5em;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .name {
+            font-size: 0.9em;
+            color: #fff;
+        }
+
+        /* 选人状态栏 */
+        .selection-status {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: var(--neon-green);
+            border-bottom: 2px solid var(--neon-green);
+            padding-bottom: 10px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* 访谈界面 */
+        .interview-box {
+            background: #111;
+            border: 1px solid var(--neon-green);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .interview-q {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #fff;
+        }
+
+        .highlight {
+            color: var(--neon-green);
+            font-weight: bold;
+            padding: 0 5px;
+            border-bottom: 1px dashed var(--neon-green);
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #000;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--neon-green);
+        }
+
+        /* 录音控制区域 */
+        .recording-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(57, 255, 20, 0.05);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .record-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid var(--neon-green);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .record-btn:hover {
+            background: rgba(57, 255, 20, 0.1);
+            transform: scale(1.05);
+        }
+
+        .record-btn.recording {
+            background: #ff3333;
+            border-color: #ff3333;
+            animation: recordPulse 1s infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 51, 51, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(255, 51, 51, 0);
+            }
+        }
+
+        .record-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--neon-green);
+        }
+
+        .record-btn.recording .record-icon {
+            background: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .recording-status {
+            flex-grow: 1;
+            color: #aaa;
+            font-size: 0.95em;
+        }
+
+        .recording-status.active {
+            color: #ff3333;
+            font-weight: bold;
+        }
+
+        .recording-timer {
+            color: var(--neon-green);
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+
+        .speech-error {
+            color: #ff4d4f;
+            font-size: 0.9em;
+            min-height: 1.2em;
+            max-width: 230px;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .play-recording-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-green);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .play-recording-btn:hover {
+            background: rgba(57, 255, 20, 0.2);
+        }
+
+        .play-recording-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-left: 12px solid var(--neon-green);
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            margin-left: 3px;
+        }
+
+        .play-recording-btn.playing .play-icon {
+            border-left: none;
+            width: 12px;
+            height: 12px;
+            border-left: 4px solid var(--neon-green);
+            border-right: 4px solid var(--neon-green);
+            margin-left: 0;
+        }
+
+        /* 音频按钮样式（右上角） */
+        .audio-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+            z-index: 100;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            opacity: 1;
+        }
+
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sound-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        .sound-waves {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-btn.playing .sound-waves {
+            opacity: 1;
+        }
+
+        .sound-wave {
+            width: 3px;
+            height: 8px;
+            background: white;
+            border-radius: 2px;
+            animation: soundWave 0.5s ease-in-out infinite;
+        }
+
+        .sound-wave:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .sound-wave:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 12px;
+        }
+
+        .sound-wave:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 16px;
+        }
+
+        @keyframes soundWave {
+            0%, 100% {
+                transform: scaleY(1);
+            }
+            50% {
+                transform: scaleY(0.5);
+            }
+        }
+
+        .audio-btn.playing .sound-icon {
+            animation: speakerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes speakerPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* 问题音频按钮（小型内联版本） */
+        .question-audio-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+            z-index: 100;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            opacity: 1;
+        }
+
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sound-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        .sound-waves {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-btn.playing .sound-waves {
+            opacity: 1;
+        }
+
+        .sound-wave {
+            width: 3px;
+            height: 8px;
+            background: white;
+            border-radius: 2px;
+            animation: soundWave 0.5s ease-in-out infinite;
+        }
+
+        .sound-wave:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .sound-wave:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 12px;
+        }
+
+        .sound-wave:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 16px;
+        }
+
+        @keyframes soundWave {
+
+            0%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(0.5);
+            }
+        }
+
+        .audio-btn.playing .sound-icon {
+            animation: speakerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes speakerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .portal-game-status {
+            border: 1px solid rgba(57, 255, 20, 0.42);
+            background: rgba(5, 10, 5, 0.9);
+            color: #e7ffe2;
+            box-shadow: 0 0 22px rgba(57, 255, 20, 0.15);
+        }
+
+        .portal-home-link {
+            color: var(--neon-green);
+            text-shadow: 0 0 8px rgba(57, 255, 20, 0.35);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="stage1" class="stage active" style="position: relative;">
+        <button class="audio-btn" id="stage1-audio-btn" onclick="toggleAudio('stage1')" title="播放/暂停音频">
+            <svg class="sound-icon" viewBox="0 0 24 24">
+                <path
+                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+            <div class="sound-waves">
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+            </div>
+        </button>
+        <h1>🔭 动物观察室</h1>
+        <div
+            style="background: #111; padding: 15px; border-radius: 10px; border: 1px dashed #444; margin-bottom: 10px;">
+            <p style="font-size: 1.2em; margin: 0; color: #fff;">
+                请在下面找一找：<br>
+                1. 哪些动物<b>性子很慢</b>？<br>
+                2. 哪些动物看起来<b>很善良</b>？<br>
+                <span style="font-size:0.8em; color:#888;">(你可以点击卡片标记它们，也可以直接看一看)</span>
+            </p>
+        </div>
+        <div class="zoo-grid" id="previewGrid"></div>
+        <button class="btn" onclick="nextStage(2)">我都看好了，下一步 >></button>
+    </div>
+
+    <div id="stage2" class="stage">
+        <h1>📐 家庭建立</h1>
+        <button class="audio-btn" id="stage2-audio-btn" onclick="toggleAudio('stage2')" title="播放/暂停音频">
+            <svg class="sound-icon" viewBox="0 0 24 24">
+                <path
+                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+            <div class="sound-waves">
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+            </div>
+        </button>
+        <div class="story-container" id="storyBox">
+        </div>
+        <div class="space-hint" id="storyHint">按 <span class="key-icon">空格 Space</span> 继续</div>
+        <button class="btn" id="startSelectBtn" style="display:none;" onclick="nextStage(3)">开始选择动物 >></button>
+    </div>
+
+    <div id="stage3" class="stage">
+        <h1>✨ 建立家庭档案</h1>
+        <button class="audio-btn" id="stage3-audio-btn" onclick="toggleAudio('stage3')" title="播放/暂停音频">
+            <svg class="sound-icon" viewBox="0 0 24 24">
+                <path
+                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+            <div class="sound-waves">
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+            </div>
+        </button>
+
+        <div class="selection-status" id="selectionPrompt">
+            请选择一个动物爸爸
+        </div>
+
+        <div class="zoo-grid" id="selectGrid"></div>
+    </div>
+
+    <div id="stage4" class="stage">
+        <h1>🎤 家庭访谈</h1>
+        <button class="audio-btn" id="stage4-audio-btn" onclick="toggleAudio('stage4')" title="播放/暂停音频">
+            <svg class="sound-icon" viewBox="0 0 24 24">
+                <path
+                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+            <div class="sound-waves">
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+                <div class="sound-wave"></div>
+            </div>
+        </button>
+        <div class="interview-box" id="interviewContainer">
+        </div>
+        <button class="btn" id="nextQuestionBtn" onclick="nextQuestion()">下一个问题 >></button>
+    </div>
+
+    <div id="stage5" class="stage" style="justify-content: center;">
+        <h1>🎉 任务完成</h1>
+        <p style="font-size: 1.5em; line-height: 1.6;">
+            感谢你分享了这个动物家庭的故事。<br>
+            这真是一个特别的家！
+        </p>
+        <div style="font-size: 4em; margin: 30px;">👪</div>
+        <div class="portal-cloud-panel" style="width:90%; max-width:700px;">
+            <h3>云端记录</h3>
+            <p>完成访谈后会自动上传到云端；你也可以手动点击按钮再次上传。</p>
+            <button class="portal-cloud-save-btn" type="button" onclick="saveResultToCloud()">☁️ 保存到云端</button>
+            <button class="portal-cloud-save-btn" type="button" onclick="goToNextGame()" style="margin-top:10px;">➡️ 返回起始页</button>
+            <p id="cloud-save-status" class="portal-cloud-status"></p>
+        </div>
+    </div>
+
+    <div id="portal-game-status"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/game-portal.js"></script>
+    <script>
+        // 音频配置
+        const AUDIO_BASE = 'music/';
+        const audioFiles = {
+            stage1: AUDIO_BASE + '动物1.m4a',
+            stage2: AUDIO_BASE + '动物2.m4a',
+            dad: AUDIO_BASE + '动物爸爸.m4a',
+            mom: AUDIO_BASE + '动物妈妈.m4a',
+            child: AUDIO_BASE + '动物宝宝.m4a',
+            q0: AUDIO_BASE + '这是一个什么样的妈妈.m4a',
+            q1: AUDIO_BASE + '她有什么特点呢？还有呢？.m4a',
+            q2: AUDIO_BASE + '这是一个什么样的爸爸呢？.m4a',
+            q3: AUDIO_BASE + '他有什么特点呢？还有呢.m4a',
+            q4: AUDIO_BASE + '喜欢和爸爸妈妈在一起做什么呢.m4a',
+            q5: AUDIO_BASE + '他们做的时候是什么样的呢.m4a',
+            q6: AUDIO_BASE + '不知道有什么事情，是动物爸爸妈妈做过的.m4a'
+        };
+
+        // 音频控制
+        let currentAudio = null;
+        let currentAudioType = null;
+
+        function toggleAudio(type) {
+            // 如果是访谈页面(stage4)，播放当前问题的录音
+            if (type === 'stage4') {
+                const audioKey = `q${questionIndex}`;
+                const audioFile = audioFiles[audioKey];
+                const btnId = `${type}-audio-btn`;
+                const btn = document.getElementById(btnId);
+
+                if (!btn || !audioFile) return;
+
+                // 如果当前是同一个音频
+                if (currentAudioType === type && currentAudio) {
+                    if (currentAudio.paused) {
+                        currentAudio.play();
+                        btn.classList.add('playing');
+                    } else {
+                        currentAudio.pause();
+                        btn.classList.remove('playing');
+                    }
+                    return;
+                }
+
+                // 停止其他音频
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+
+                // 创建新的音频
+                currentAudio = new Audio(audioFile);
+                currentAudioType = type;
+
+                currentAudio.addEventListener('ended', function () {
+                    btn.classList.remove('playing');
+                });
+
+                currentAudio.play();
+                btn.classList.add('playing');
+                return;
+            }
+
+            // 其他页面的音频处理
+            const audioFile = audioFiles[type];
+            const btnId = `${type}-audio-btn`;
+            const btn = document.getElementById(btnId);
+
+            if (!btn || !audioFile) return;
+
+            // 如果切换了不同的音频源，停止当前播放
+            if (currentAudioType !== type && currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtn = document.getElementById(`${currentAudioType}-audio-btn`);
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+
+            // 如果是同一个音频
+            if (currentAudioType === type && currentAudio) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                    btn.classList.add('playing');
+                } else {
+                    currentAudio.pause();
+                    btn.classList.remove('playing');
+                }
+                return;
+            }
+
+            // 创建新的音频
+            currentAudio = new Audio(audioFile);
+            currentAudioType = type;
+
+            currentAudio.addEventListener('ended', function () {
+                btn.classList.remove('playing');
+            });
+
+            currentAudio.play();
+            btn.classList.add('playing');
+        }
+
+        // --- 1. 20种常见动物数据 ---
+        const animals = [
+            { icon: '🦁', name: '狮子' }, { icon: '🐯', name: '老虎' },
+            { icon: '🐘', name: '大象' }, { icon: '🦒', name: '长颈鹿' },
+            { icon: '🦓', name: '斑马' }, { icon: '🐼', name: '熊猫' },
+            { icon: '🐻', name: '熊' }, { icon: '🐵', name: '猴子' },
+            { icon: '🐺', name: '狼' }, { icon: '🦊', name: '狐狸' },
+            { icon: '🐶', name: '狗' }, { icon: '🐱', name: '猫' },
+            { icon: '🐰', name: '兔子' }, { icon: '🐢', name: '乌龟' },
+            { icon: '🦅', name: '老鹰' }, { icon: '🦉', name: '猫头鹰' },
+            { icon: '🐬', name: '海豚' }, { icon: '🦈', name: '鲨鱼' },
+            { icon: '🐊', name: '鳄鱼' }, { icon: '🐍', name: '蛇' }
+        ];
+
+        // --- 2. 故事脚本（修改后） ---
+        const storyLines = [
+            { text: "在这个游戏里，我们要建立一个动物家庭。", action: null },
+            { text: "我会选择一个动物作为爸爸，一个动物作为妈妈。", action: null },
+            { text: "爸爸妈妈相亲相爱之后有了一个动物宝宝，就好像你们家里一样，有爸爸、妈妈，还有你。", action: null },
+            { text: "现在请你选择一个动物作为爸爸。", action: "prepare_select_dad" },
+        ];
+
+        // --- 状态变量 ---
+        let currentStoryIndex = -1;
+        let currentStageId = 1;
+        let selections = { dad: null, mom: null, child: null };
+        let selectionStep = 0; // 0=dad, 1=mom, 2=child
+        let questionIndex = 0;
+        let questions = [];
+        let interviewAnswers = [];
+        let hasAutoUploadedRecord = false;
+        let hasScheduledNextGame = false;
+        function goToNextGame() {
+            if (window.GamePortal) {
+                window.GamePortal.goToNextGame('animal-family');
+            }
+        }
+        const MIC_PERMISSION_KEY = 'MIC_PERMISSION_KEY';
+        let sharedMicStream = null;
+        let speechRecognition = null;
+
+        // --- 初始化 ---
+        window.onload = function () {
+            renderZoo('previewGrid', true); // 允许点击标记
+            renderZoo('selectGrid', false); // 选择模式后续处理
+            document.addEventListener('keyup', handleKeyPress);
+            setTimeout(() => {
+                toggleAudio('stage1');
+            }, 250);
+        };
+
+        function renderZoo(elementId, isToggleMode) {
+            const grid = document.getElementById(elementId);
+            grid.innerHTML = "";
+            animals.forEach(ani => {
+                let div = document.createElement('div');
+                div.className = 'animal-card';
+                div.innerHTML = `
+                    <span class="icon">${ani.icon}</span>
+                    <div class="name">${ani.name}</div>
+                `;
+                if (isToggleMode) {
+                    // 第一页：点击切换选中状态（视觉标记）
+                    div.onclick = () => div.classList.toggle('selected');
+                } else {
+                    // 第三页：点击确认选择
+                    div.onclick = () => confirmSelection(ani);
+                }
+                grid.appendChild(div);
+            });
+        }
+
+        function nextStage(n) {
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                const oldBtn = document.getElementById(`${currentAudioType}-audio-btn`);
+                if (oldBtn) oldBtn.classList.remove('playing');
+            }
+            currentAudioType = null;
+
+            document.querySelectorAll('.stage').forEach(el => el.classList.remove('active'));
+            document.getElementById('stage' + n).classList.add('active');
+            currentStageId = n;
+
+            if (n === 2) {
+                // 进入故事模式
+                currentStoryIndex = -1;
+                document.getElementById('storyBox').innerHTML = "";
+                setTimeout(() => {
+                    toggleAudio('stage2');
+                }, 250);
+                advanceStory();
+            } else if (n === 3) {
+                // 自动播放选择音频
+                updateSelectionAudio();
+            } else if (n === 4) {
+                // 进入访谈模式，初始化问题
+                initQuestions();
+                showQuestion();
+            }
+        }
+
+        // --- 故事推进逻辑 ---
+        function handleKeyPress(e) {
+            if (currentStageId === 2 && e.code === 'Space') {
+                e.preventDefault();
+                advanceStory();
+            }
+        }
+
+        function advanceStory() {
+            currentStoryIndex++;
+
+            if (currentStoryIndex < storyLines.length) {
+                const lineData = storyLines[currentStoryIndex];
+
+                if (lineData.action === "prepare_select_dad") {
+                    const p = document.createElement('p');
+                    p.className = 'story-line visible';
+                    p.innerHTML = lineData.text;
+                    document.getElementById('storyBox').appendChild(p);
+                    document.getElementById('storyHint').style.display = 'none';
+                    document.getElementById('startSelectBtn').style.display = 'inline-block';
+                } else {
+                    const p = document.createElement('p');
+                    p.className = 'story-line visible';
+                    p.innerHTML = lineData.text;
+                    document.getElementById('storyBox').appendChild(p);
+                    const container = document.getElementById('stage2');
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+        }
+
+        // --- 选择逻辑（修改后） ---
+        function confirmSelection(animal) {
+            if (selectionStep === 0) {
+                // 选择爸爸
+                selections.dad = animal;
+                selectionStep++;
+                updateSelectionPrompt("请选择一个动物妈妈");
+                updateSelectionAudio();
+            } else if (selectionStep === 1) {
+                // 选择妈妈
+                selections.mom = animal;
+                selectionStep++;
+                updateSelectionPrompt("请选择一个特性很像动物宝宝的动物");
+                updateSelectionAudio();
+            } else if (selectionStep === 2) {
+                // 选择宝宝
+                selections.child = animal;
+                nextStage(4); // 直接进入访谈
+            }
+        }
+
+        function updateSelectionPrompt(text) {
+            const prompt = document.getElementById('selectionPrompt');
+            prompt.style.opacity = 0;
+            setTimeout(() => {
+                prompt.innerHTML = text;
+                prompt.style.opacity = 1;
+            }, 300);
+        }
+
+        function updateSelectionAudio() {
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // 根据选择步骤播放对应音频
+            let audioType = selectionStep === 0 ? 'dad' : (selectionStep === 1 ? 'mom' : 'child');
+
+            // 更新按钮ID映射
+            currentAudioType = 'stage3';
+
+            const audioFile = audioFiles[audioType];
+            if (!audioFile) return;
+
+            currentAudio = new Audio(audioFile);
+            const btn = document.getElementById('stage3-audio-btn');
+
+            currentAudio.addEventListener('ended', function () {
+                if (btn) btn.classList.remove('playing');
+            });
+
+            // 自动播放
+            currentAudio.play();
+            if (btn) btn.classList.add('playing');
+        }
+
+        // --- 访谈逻辑 (重写：按照您的新要求) ---
+        function initQuestions() {
+            const d = selections.dad;
+            const m = selections.mom;
+            const c = selections.child;
+
+            questions = [
+                // 1. 妈妈特点
+                {
+                    q: `你选了 <span class="highlight">${m.icon} ${m.name}</span>。<br>这是一个什么样的妈妈？`,
+                    placeholder: "这是一个..."
+                },
+                {
+                    q: `她有什么特点呢？还有呢？`,
+                    placeholder: "特点是..."
+                },
+                // 2. 爸爸特点
+                {
+                    q: `你选了 <span class="highlight">${d.icon} ${d.name}</span>。<br>这是一个什么样的爸爸呢？`,
+                    placeholder: "这是一个..."
+                },
+                {
+                    q: `他有什么特点呢？还有呢？`,
+                    placeholder: "特点是..."
+                },
+                // 3. 互动与喜好
+                {
+                    q: `平常 <span class="highlight">${c.name}宝宝</span> 喜欢和爸爸妈妈在一起做什么呢？<br>经常做吗？`,
+                    placeholder: "喜欢做..."
+                },
+                {
+                    q: `他们做的时候是什么样的呢？`,
+                    placeholder: "当时..."
+                },
+                // 4. 冲突/不开心
+                {
+                    q: `不知道有什么事情，是动物爸爸妈妈做过的，让 <span class="highlight">${c.name}宝宝</span> 觉得不开心的吗？`,
+                    placeholder: "有一次..."
+                }
+            ];
+            questionIndex = 0;
+            interviewAnswers = new Array(questions.length).fill('');
+        }
+
+        function showQuestion() {
+            if (questionIndex >= questions.length) {
+                nextStage(5); // 结束
+                if (!hasAutoUploadedRecord) {
+                    saveResultToCloud();
+                }
+                if (window.GamePortal && !hasScheduledNextGame) {
+                    hasScheduledNextGame = true;
+                    window.GamePortal.scheduleNextGame('animal-family', { statusTarget: '#cloud-save-status', delayMs: 5000 });
+                }
+                return;
+            }
+
+            const data = questions[questionIndex];
+            const container = document.getElementById('interviewContainer');
+
+            container.innerHTML = `
+                <div class="interview-q">${data.q}</div>
+                <textarea id="answer-textarea" placeholder="${data.placeholder}"></textarea>
+                <div class="recording-controls">
+                    <button class="record-btn" id="record-btn" onclick="toggleRecording()" title="开始语音输入">
+                        <div class="record-icon"></div>
+                    </button>
+                    <div class="speech-error" id="speech-error"></div>
+                    <div class="recording-status" id="recording-status">点击录音按钮开始语音输入</div>
+                    <div class="recording-timer" id="recording-timer">0:00</div>
+                    <button class="play-recording-btn" id="play-recording-btn" onclick="togglePlayRecording()" disabled title="播放录音">
+                        <div class="play-icon"></div>
+                    </button>
+                </div>
+            `;
+
+            // 更新按钮文字
+            const btn = document.getElementById('nextQuestionBtn');
+            if (questionIndex === questions.length - 1) {
+                btn.innerText = "完成访谈";
+            } else {
+                btn.innerText = "下一个问题 >>";
+            }
+
+            // 重置录音状态
+            resetRecordingState();
+
+            // 播放当前问题的录音
+            playQuestionAudio();
+        }
+
+        function playQuestionAudio() {
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            const audioKey = `q${questionIndex}`;
+            const audioFile = audioFiles[audioKey];
+
+            if (!audioFile) return;
+
+            currentAudioType = 'stage4';
+            currentAudio = new Audio(audioFile);
+
+            const btn = document.getElementById('stage4-audio-btn');
+
+            currentAudio.addEventListener('ended', function () {
+                if (btn) btn.classList.remove('playing');
+            });
+
+            // 自动播放
+            currentAudio.play();
+            if (btn) btn.classList.add('playing');
+        }
+
+        function nextQuestion() {
+            saveCurrentAnswer();
+            questionIndex++;
+            showQuestion();
+        }
+
+        function saveCurrentAnswer() {
+            const answerEl = document.getElementById('answer-textarea');
+            if (!answerEl || questionIndex >= questions.length) return;
+            interviewAnswers[questionIndex] = answerEl.value.trim();
+        }
+
+        // --- 录音功能 ---
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingStartTime = null;
+        let recordingInterval = null;
+        let currentRecordingAudio = null;
+        let speechSessionBaseText = '';
+        let speechSessionFinalText = '';
+        let speechSessionInterimText = '';
+
+        function resetRecordingState() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            if (recordingInterval) {
+                clearInterval(recordingInterval);
+            }
+            mediaRecorder = null;
+            recordedChunks = [];
+            recordingStartTime = null;
+            recordingInterval = null;
+            speechSessionBaseText = '';
+            speechSessionFinalText = '';
+            speechSessionInterimText = '';
+            if (currentRecordingAudio) {
+                currentRecordingAudio.pause();
+                currentRecordingAudio = null;
+            }
+            stopSpeechRecognition();
+        }
+
+        function clearSpeechError() {
+            const errorEl = document.getElementById('speech-error');
+            if (errorEl) errorEl.textContent = '';
+        }
+
+        function setSpeechError(message) {
+            const errorEl = document.getElementById('speech-error');
+            if (errorEl) errorEl.textContent = message;
+        }
+
+        function punctuateLongChineseSegment(segment, options = {}) {
+            if (!segment || /[，。！？；：\n]/.test(segment) || segment.length < 14) {
+                return segment;
+            }
+
+            const boundaryRules = [
+                { regex: /(的时候|之后|以后|以前|然后|后来|结果|所以|但是|不过|而且|并且|于是|接着|还有|最后)(?=[\u4e00-\u9fa5])/g, punct: '，' },
+                { regex: /(有一次|那个时候|那时候|当时)(?=[\u4e00-\u9fa5])/g, punct: '，' },
+                { regex: /(了|啦|呢|呀|吧|吗|过|完|到)(?=(我|我们|爸爸|妈妈|他|她|爷爷|奶奶|老师|然后|后来|结果|所以|但是|不过|而且|并且|于是|接着|还有))/g, punct: options.ensureSentenceEnd ? '。' : '，' }
+            ];
+
+            let remaining = segment;
+            let result = '';
+
+            while (remaining.length > 18) {
+                const searchText = remaining.slice(0, 22);
+                let splitAt = -1;
+                let punct = '，';
+
+                boundaryRules.forEach(rule => {
+                    let match;
+                    while ((match = rule.regex.exec(searchText)) !== null) {
+                        const candidate = match.index + match[0].length - 1;
+                        if (candidate >= 7 && candidate > splitAt) {
+                            splitAt = candidate;
+                            punct = rule.punct;
+                        }
+                    }
+                    rule.regex.lastIndex = 0;
+                });
+
+                if (splitAt === -1) {
+                    splitAt = Math.min(11, remaining.length - 2);
+                    punct = options.ensureSentenceEnd && remaining.length > 24 ? '。' : '，';
+                }
+
+                result += remaining.slice(0, splitAt + 1) + punct;
+                remaining = remaining.slice(splitAt + 1);
+            }
+
+            return result + remaining;
+        }
+
+        function punctuateSpeechClauses(text, options = {}) {
+            return text
+                .split('\n')
+                .map(line => {
+                    if (!line) return line;
+
+                    const parts = line.split(/([，。！？；：])/);
+                    for (let i = 0; i < parts.length; i += 2) {
+                        parts[i] = punctuateLongChineseSegment(parts[i], options);
+                    }
+                    return parts.join('');
+                })
+                .join('\n');
+        }
+
+        function normalizeSpeechText(text, options = {}) {
+            if (!text) return '';
+
+            let normalized = text
+                .replace(/\r\n/g, '\n')
+                .replace(/\s+([,.;:!?])/g, '$1')
+                .replace(/,/g, '，')
+                .replace(/\./g, '。')
+                .replace(/;/g, '；')
+                .replace(/:/g, '：')
+                .replace(/\?/g, '？')
+                .replace(/!/g, '！')
+                .replace(/\(/g, '（')
+                .replace(/\)/g, '）')
+                .replace(/\[/g, '【')
+                .replace(/\]/g, '】')
+                .replace(/[ \t]+\n/g, '\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+
+            if (!normalized) return '';
+
+            // 轻量断句：利用识别中的空格停顿、常见连接词和时间短语补逗号/句号
+            normalized = normalized
+                .replace(/([\u4e00-\u9fa5])\s+([\u4e00-\u9fa5])/g, '$1，$2')
+                .replace(/([\u4e00-\u9fa5])(?=(然后|后来|结果|所以|但是|不过|而且|并且|于是|接着|还有))/g, '$1，')
+                .replace(/(有一次|那个时候|那时候|当时)(?=[\u4e00-\u9fa5])/g, '$1，')
+                .replace(/(我记得|我觉得|我发现|我看到|我听到|我最喜欢|我最开心|我最难过)(?=[\u4e00-\u9fa5]{4,})/g, '$1，')
+                .replace(/(的时候|之后|以后|以前|之前|的话)(?=[\u4e00-\u9fa5])/g, '$1，')
+                .replace(/(因为|如果|虽然|要是)(?=[\u4e00-\u9fa5]{6,})/g, '$1，')
+                .replace(/(可是|不过|但是|所以|然后|后来|于是|接着|还有)(?=[\u4e00-\u9fa5])/g, '$1，')
+                .replace(/(特别|非常|真的)(?=[\u4e00-\u9fa5]{5,})/g, '$1，')
+                .replace(/，{2,}/g, '，')
+                .replace(/([，；：])([。！？])/g, '$2');
+
+            if (options.ensureSentenceEnd) {
+                normalized = normalized
+                    .replace(/(然后|后来|还有|接着)(?=[\u4e00-\u9fa5])/g, '$1，')
+                    .replace(/(就是|比如|例如)(?=[\u4e00-\u9fa5])/g, '$1，')
+                    .replace(/([^\n，。！？]{18,}?)(然后|后来|但是|不过|所以|而且|并且|于是)/g, '$1，$2')
+                    .replace(/(了|啦|呢|呀|吗)(?=[\u4e00-\u9fa5]{6,})/g, '$1。');
+            }
+
+            normalized = punctuateSpeechClauses(normalized, options)
+                .replace(/，(?=(，|。|！|？))/g, '')
+                .replace(/。(?=，)/g, '。');
+
+            if (options.ensureSentenceEnd && !/[。！？…]$/.test(normalized)) {
+                normalized += '。';
+            }
+
+            return normalized;
+        }
+
+        function getSpeechCombinedText() {
+            const speechText = [speechSessionFinalText, speechSessionInterimText]
+                .filter(Boolean)
+                .join('');
+            if (!speechText) return speechSessionBaseText;
+
+            const separator = speechSessionBaseText && !speechSessionBaseText.endsWith('\n') ? '\n' : '';
+            return `${speechSessionBaseText}${separator}${speechText}`;
+        }
+
+        function renderSpeechText() {
+            const answerEl = document.getElementById('answer-textarea');
+            if (!answerEl) return;
+            answerEl.value = getSpeechCombinedText();
+            answerEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        function beginSpeechSession() {
+            const answerEl = document.getElementById('answer-textarea');
+            speechSessionBaseText = answerEl ? answerEl.value || '' : '';
+            speechSessionFinalText = '';
+            speechSessionInterimText = '';
+        }
+
+        function finalizeSpeechSession() {
+            if (speechSessionInterimText) {
+                const normalizedInterim = normalizeSpeechText(speechSessionInterimText, { ensureSentenceEnd: true });
+                speechSessionFinalText += normalizedInterim;
+                speechSessionInterimText = '';
+            }
+            renderSpeechText();
+        }
+
+        function stopSpeechRecognition() {
+            if (!speechRecognition) return;
+            try {
+                speechRecognition.onresult = null;
+                speechRecognition.onerror = null;
+                speechRecognition.onend = null;
+                speechRecognition.stop();
+            } catch (e) {
+                // 忽略停止时的状态异常
+            }
+            speechRecognition = null;
+        }
+
+        async function ensureMicrophonePermission() {
+            if (localStorage.getItem(MIC_PERMISSION_KEY) === 'granted') {
+                return true;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setSpeechError('当前浏览器不支持麦克风权限检查');
+                return false;
+            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                if (!sharedMicStream) {
+                    sharedMicStream = stream;
+                } else {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                localStorage.setItem(MIC_PERMISSION_KEY, 'granted');
+                return true;
+            } catch (error) {
+                if (error && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError')) {
+                    setSpeechError('麦克风权限被拒绝');
+                } else {
+                    setSpeechError('语音识别启动失败');
+                }
+                return false;
+            }
+        }
+
+        function startSpeechRecognition() {
+            const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognitionClass) {
+                setSpeechError('浏览器不支持语音识别');
+                return Promise.resolve(false);
+            }
+
+            return new Promise((resolve) => {
+                let hasResolved = false;
+                const startTimeout = setTimeout(() => {
+                    setSpeechError('语音识别启动超时，请重试');
+                    try {
+                        if (speechRecognition) {
+                            speechRecognition.stop();
+                        }
+                    } catch (e) {
+                        // 忽略超时关闭时的状态异常
+                    }
+                    speechRecognition = null;
+                    resolveOnce(false);
+                }, 4000);
+                speechRecognition = new SpeechRecognitionClass();
+                speechRecognition.lang = 'zh-CN';
+                speechRecognition.continuous = true;
+                speechRecognition.interimResults = true;
+
+                const resolveOnce = (value) => {
+                    if (!hasResolved) {
+                        hasResolved = true;
+                        clearTimeout(startTimeout);
+                        resolve(value);
+                    }
+                };
+
+                speechRecognition.onstart = () => {
+                    resolveOnce(true);
+                };
+
+                speechRecognition.onresult = (event) => {
+                    let finalText = '';
+                    let interimText = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            finalText += event.results[i][0].transcript;
+                        } else {
+                            interimText += event.results[i][0].transcript;
+                        }
+                    }
+                    if (finalText.trim()) {
+                        speechSessionFinalText += normalizeSpeechText(finalText, { ensureSentenceEnd: true });
+                    }
+                    speechSessionInterimText = normalizeSpeechText(interimText);
+                    renderSpeechText();
+                };
+
+                speechRecognition.onerror = (event) => {
+                    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                        setSpeechError('麦克风权限被拒绝');
+                    } else {
+                        setSpeechError('识别过程中发生错误');
+                    }
+                    resolveOnce(false);
+                };
+
+                speechRecognition.onend = () => {
+                    resolveOnce(false);
+                    speechRecognition = null;
+                };
+
+                try {
+                    speechRecognition.start();
+                } catch (error) {
+                    setSpeechError('语音识别启动失败');
+                    speechRecognition = null;
+                    resolveOnce(false);
+                }
+            });
+        }
+
+        async function toggleRecording() {
+            const recordBtn = document.getElementById('record-btn');
+            const statusEl = document.getElementById('recording-status');
+            const playBtn = document.getElementById('play-recording-btn');
+            clearSpeechError();
+
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                // 开始录音
+                try {
+                    const permissionGranted = await ensureMicrophonePermission();
+                    if (!permissionGranted) {
+                        statusEl.textContent = '无法开始语音输入';
+                        return;
+                    }
+
+                    if (!sharedMicStream) {
+                        sharedMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    }
+
+                    statusEl.classList.add('active');
+                    statusEl.textContent = '正在准备语音输入，请稍等一下再开始说话...';
+                    recordBtn.disabled = true;
+                    beginSpeechSession();
+
+                    const speechStarted = await startSpeechRecognition();
+                    if (!speechStarted) {
+                        recordBtn.disabled = false;
+                        statusEl.classList.remove('active');
+                        statusEl.textContent = '无法开始语音输入';
+                        return;
+                    }
+
+                    recordedChunks = [];
+                    mediaRecorder = new MediaRecorder(sharedMicStream);
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(blob);
+                        currentRecordingAudio = new Audio(audioUrl);
+                        playBtn.disabled = false;
+                    };
+
+                    mediaRecorder.start();
+                    recordBtn.classList.add('recording');
+                    recordBtn.disabled = false;
+                    statusEl.textContent = '语音输入已就绪，请开始说话...';
+                    playBtn.disabled = true;
+
+                    // 开始计时
+                    recordingStartTime = Date.now();
+                    updateRecordingTimer();
+                    recordingInterval = setInterval(updateRecordingTimer, 1000);
+
+                } catch (error) {
+                    console.error('录音失败:', error);
+                    setSpeechError('语音识别启动失败');
+                    recordBtn.disabled = false;
+                    statusEl.classList.remove('active');
+                    statusEl.textContent = '无法开始语音输入';
+                }
+            } else {
+                // 停止录音
+                mediaRecorder.stop();
+                finalizeSpeechSession();
+                stopSpeechRecognition();
+                recordBtn.disabled = false;
+                recordBtn.classList.remove('recording');
+                statusEl.classList.remove('active');
+                statusEl.textContent = '语音输入完成，可继续补充或下一题';
+                clearInterval(recordingInterval);
+            }
+        }
+
+        function updateRecordingTimer() {
+            const timerEl = document.getElementById('recording-timer');
+            if (recordingStartTime) {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function togglePlayRecording() {
+            const playBtn = document.getElementById('play-recording-btn');
+
+            if (!currentRecordingAudio) return;
+
+            if (currentRecordingAudio.paused) {
+                currentRecordingAudio.play();
+                playBtn.classList.add('playing');
+
+                currentRecordingAudio.onended = () => {
+                    playBtn.classList.remove('playing');
+                };
+            } else {
+                currentRecordingAudio.pause();
+                currentRecordingAudio.currentTime = 0;
+                playBtn.classList.remove('playing');
+            }
+        }
+
+        function stripHtml(htmlText) {
+            const temp = document.createElement('div');
+            temp.innerHTML = htmlText;
+            return (temp.textContent || temp.innerText || '').replace(/\s+/g, ' ').trim();
+        }
+
+        function buildResultText() {
+            const now = new Date();
+            const lines = [];
+            lines.push(`生成时间: ${now.toLocaleString('zh-CN')}`);
+            lines.push('最终测试结果: 动物家庭访谈已完成');
+            lines.push('');
+            lines.push('家庭选择结果:');
+            lines.push(`爸爸: ${selections.dad ? `${selections.dad.icon} ${selections.dad.name}` : '未选择'}`);
+            lines.push(`妈妈: ${selections.mom ? `${selections.mom.icon} ${selections.mom.name}` : '未选择'}`);
+            lines.push(`宝宝: ${selections.child ? `${selections.child.icon} ${selections.child.name}` : '未选择'}`);
+            lines.push('');
+            lines.push('访谈输入内容:');
+
+            questions.forEach((item, idx) => {
+                const questionText = stripHtml(item.q);
+                const answerText = (interviewAnswers[idx] || '').trim() || '（未填写）';
+                lines.push(`${idx + 1}. 问题: ${questionText}`);
+                lines.push(`   回答: ${answerText}`);
+            });
+
+            return lines.join('\n');
+        }
+
+        function buildAnimalFamilyDetailJson() {
+            return {
+                selections: {
+                    dad: selections.dad ? { name: selections.dad.name, icon: selections.dad.icon } : null,
+                    mom: selections.mom ? { name: selections.mom.name, icon: selections.mom.icon } : null,
+                    child: selections.child ? { name: selections.child.name, icon: selections.child.icon } : null
+                },
+                questions: questions.map((item, idx) => ({
+                    question: stripHtml(item.q),
+                    answer: (interviewAnswers[idx] || '').trim()
+                }))
+            };
+        }
+
+        async function saveResultToCloud() {
+            const statusEl = document.getElementById('cloud-save-status');
+            if (!window.GamePortal) {
+                if (statusEl) statusEl.textContent = '公共云端模块未加载成功';
+                return;
+            }
+            statusEl.textContent = '正在保存到云端...';
+            try {
+                saveCurrentAnswer();
+                const content = buildResultText();
+                const detailJson = buildAnimalFamilyDetailJson();
+                const summary = `家庭组合：${selections.dad ? selections.dad.name : '未选'} / ${selections.mom ? selections.mom.name : '未选'} / ${selections.child ? selections.child.name : '未选'}`;
+                const result = await window.GamePortal.saveRecord({
+                    gameKey: 'animal-family',
+                    gameTitle: '星际动物家庭',
+                    recordType: 'assessment',
+                    resultType: '动物家庭访谈已完成',
+                    summary,
+                    recordMarkdown: content,
+                    detailJson
+                });
+                statusEl.textContent = result.message;
+                hasAutoUploadedRecord = true;
+            } catch (error) {
+                statusEl.textContent = `保存失败：${error.message || '请稍后重试'}`;
+            }
+        }
+
+        if (window.GamePortal) {
+            window.GamePortal.renderGameStatus('#portal-game-status', { homeHref: '../home.html' });
+        }
+
+    </script>
+</body>
+
+</html>
