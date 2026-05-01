@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成长游戏起始页</title>
+    <link rel="stylesheet" href="shared/game-portal.css">
+    <style>
+        :root {
+            --bg: #030403;
+            --panel: rgba(8, 12, 8, 0.9);
+            --panel-soft: rgba(12, 18, 12, 0.86);
+            --line: rgba(57, 255, 20, 0.18);
+            --line-strong: rgba(57, 255, 20, 0.38);
+            --accent: #39ff14;
+            --accent-soft: rgba(57, 255, 20, 0.12);
+            --text: #efffe9;
+            --muted: #aac6a5;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 20% 0%, rgba(57, 255, 20, 0.12), transparent 24%),
+                radial-gradient(circle at 100% 30%, rgba(57, 255, 20, 0.08), transparent 18%),
+                linear-gradient(rgba(57, 255, 20, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57, 255, 20, 0.04) 1px, transparent 1px),
+                linear-gradient(180deg, #010201 0%, #050805 55%, #030403 100%);
+            background-size: auto, auto, 34px 34px, 34px 34px, auto;
+        }
+        .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 30px 0 48px; }
+        .hero {
+            position: relative; overflow: hidden; padding: 34px 32px; border-radius: 28px;
+            border: 1px solid var(--line-strong);
+            background: linear-gradient(135deg, rgba(57, 255, 20, 0.08), rgba(57, 255, 20, 0.02)), var(--panel);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42), 0 0 26px rgba(57, 255, 20, 0.1);
+        }
+        .hero::after { content: ""; position: absolute; right: -20px; bottom: -40px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(57, 255, 20, 0.16), transparent 68%); pointer-events: none; }
+        .hero h1 { margin: 0; font-size: clamp(2.2rem, 4vw, 3.8rem); line-height: 1.05; color: var(--accent); text-shadow: 0 0 16px rgba(57, 255, 20, 0.34); }
+        .layout { display: grid; grid-template-columns: 1.2fr 0.95fr; gap: 20px; margin-top: 22px; }
+        .games-panel, .side-panel { border-radius: 24px; border: 1px solid var(--line); background: var(--panel); padding: 22px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34), 0 0 20px rgba(57, 255, 20, 0.06); backdrop-filter: blur(6px); }
+        .side-stack { display: grid; gap: 20px; }
+        .section-title { margin: 0 0 14px; font-size: 1.12rem; color: var(--accent); text-shadow: 0 0 10px rgba(57, 255, 20, 0.24); }
+        .games-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .game-card {
+            position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 10px; min-height: 176px; padding: 18px;
+            border-radius: 20px; border: 1px solid rgba(57, 255, 20, 0.14);
+            background: linear-gradient(160deg, rgba(57, 255, 20, 0.08), rgba(57, 255, 20, 0.02)), var(--panel-soft);
+            text-decoration: none; color: inherit; transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+        }
+        .game-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(57, 255, 20, 0.08), transparent 46%); pointer-events: none; }
+        .game-card:hover { transform: translateY(-4px); border-color: rgba(57, 255, 20, 0.34); box-shadow: 0 20px 44px rgba(0, 0, 0, 0.34), 0 0 22px rgba(57, 255, 20, 0.12); }
+        .game-index { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 999px; background: rgba(57, 255, 20, 0.14); color: var(--accent); font-weight: 700; box-shadow: inset 0 0 0 1px rgba(57, 255, 20, 0.22); }
+        .game-card h3 { margin: 4px 0 0; font-size: 1.1rem; color: #e4ffd9; }
+        .game-card p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 0.95rem; }
+        .game-enter { margin-top: auto; color: var(--accent); font-weight: 700; text-shadow: 0 0 12px rgba(57, 255, 20, 0.2); }
+        .portal-auth-card, .portal-history-card { background: rgba(57, 255, 20, 0.03); border-color: rgba(57, 255, 20, 0.14); }
+        .portal-auth-card h3, .portal-history-card h3, .portal-auth-summary, .portal-history-status, .portal-auth-status, .portal-history-item-top p, .portal-history-item-top span, .portal-history-preview, .portal-history-detail { color: var(--text); }
+        .portal-auth-actions button, .portal-history-actions button, .portal-history-refresh { background: linear-gradient(135deg, #39ff14, #b8ff9f); color: #041002; font-weight: 700; box-shadow: 0 0 18px rgba(57, 255, 20, 0.16); }
+        .portal-auth-form input, .portal-history-filters select { background: rgba(0, 0, 0, 0.34); border-color: rgba(57, 255, 20, 0.2); color: var(--text); }
+        @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) {
+            .shell { width: min(100% - 20px, 1180px); padding-top: 18px; }
+            .hero, .games-panel, .side-panel { padding: 18px; border-radius: 20px; }
+            .games-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <section class="hero">
+            <h1>心灵探索传送门</h1>
+        </section>
+        <section class="layout">
+            <div class="games-panel">
+                <h2 class="section-title">选择一个游戏开始</h2>
+                <div class="games-grid">
+                    <a class="game-card" href="./气象站/1情绪气象站.html">
+                        <span class="game-index">01</span>
+                        <h3>情绪气象站</h3>
+                        <p>选择你的情绪天气，整理能量和心愿 — 帮助你了解自己的情绪状态。</p>
+                        <span class="game-enter">进入游戏</span>
+                    </a>
+                    <a class="game-card" href="./2外星学习者/index.html">
+                        <span class="game-index">02</span>
+                        <h3>外星学习实验室</h3>
+                        <p>用文字或语音表达你的学习方式 — 帮助你了解自己喜欢怎么学习。</p>
+                        <span class="game-enter">进入游戏</span>
+                    </a>
+                    <a class="game-card" href="./17职业岛屿/17职业岛屿.html">
+                        <span class="game-index">03</span>
+                        <h3>职业岛屿</h3>
+                        <p>探索职业岛并给喜欢的工作排排名 — 帮助你找到你的兴趣密码。</p>
+                        <span class="game-enter">进入游戏</span>
+                    </a>
+                    <a class="game-card" href="./魔法市场/13魔法市场.html">
+                        <span class="game-index">04</span>
+                        <h3>魔法市场</h3>
+                        <p>每轮做决定并花魔法币 — 帮助你了解自己的紧张感和快乐感。</p>
+                        <span class="game-enter">进入游戏</span>
+                    </a>
+                    <a class="game-card" href="./星际动物家庭/5星际动物家庭.html">
+                        <span class="game-index">05</span>
+                        <h3>星际动物家庭</h3>
+                        <p>选出星动物家人并回答问题 — 帮助你了解你的家庭角色。</p>
+                        <span class="game-enter">进入游戏</span>
+                    </a>
+                    <a class="game-card" href="./职业体验馆/7 职业体验馆.html">
+                        <span class="game-index">06</span>
+                        <h3>星际探索者·兴趣宇宙大冒险</h3>
+                        <p>探索不同的任务和职业方向 — 帮助你了解你的职业偏好。</p>
+                        <span class="game-enter">进入游戏</span>
+                    </a>
+                    <a class="game-card" href="./12密码破译游戏.html">
+                        <span class="game-index">07</span>
+                        <h3>星际密码破译</h3>
+                        <p>猜密码并记录你的推理过程 — 帮助你了解你的思考方式。</p>
+                        <span class="game-enter">进入游戏</span>
+                    </a>
+                    <a class="game-card" href="./13外星分工游戏.html">
+                        <span class="game-index">08</span>
+                        <h3>银河探索学院·危机指挥官</h3>
+                        <p>扮演指挥官做出危机决策 — 帮助你了解你的领导风格。</p>
+                        <span class="game-enter">进入游戏</span>
+                    </a>
+                </div>
+            </div>
+            <div class="side-stack">
+                <div class="side-panel">
+                    <div id="auth-root"></div>
+                </div>
+                <div class="side-panel">
+                    <div id="history-root"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="./shared/i18n.js"></script>
+    <script>
+        // home 页词典（不动 HTML，文本由 i18n.js 按 index 选择的语言替换）
+        window.I18N.registerDict({
+            "心灵探索传送门": "Mind Exploration Portal",
+            "选择一个游戏开始": "Pick a game to start",
+            "情绪气象站": "Emotion Weather Station",
+            "选择你的情绪天气，整理能量和心愿 — 帮助你了解自己的情绪状态。": "Choose your emotion weather and organize your energy & wishes — helps you understand your moods.",
+            "外星学习实验室": "Alien Learning Lab",
+            "用文字或语音表达你的学习方式 — 帮助你了解自己喜欢怎么学习。": "Express your learning style by text or voice — helps you understand how you learn best.",
+            "职业岛屿": "Career Islands",
+            "探索职业岛并给喜欢的工作排排名 — 帮助你找到你的兴趣密码。": "Explore career islands and rank your favorite jobs — helps you find your interest code.",
+            "魔法市场": "Magic Market",
+            "每轮做决定并花魔法币 — 帮助你了解自己的紧张感和快乐感。": "Make decisions and spend magic coins each round — helps you understand your tension and fun.",
+            "星际动物家庭": "Star Animal Family",
+            "选出星动物家人并回答问题 — 帮助你了解你的家庭角色。": "Pick star animal family members and answer questions — helps you understand your family role.",
+            "星际探索者·兴趣宇宙大冒险": "Star Explorer · Interest Universe Adventure",
+            "探索不同的任务和职业方向 — 帮助你了解你的职业偏好。": "Explore different tasks and career paths — helps you understand your career preferences.",
+            "星际密码破译": "Cosmic Cipher",
+            "猜密码并记录你的推理过程 — 帮助你了解你的思考方式。": "Crack the code and track your reasoning — helps you understand how you think.",
+            "银河探索学院·危机指挥官": "Galaxy Academy · Crisis Commander",
+            "扮演指挥官做出危机决策 — 帮助你了解你的领导风格。": "Play as a commander making crisis decisions — helps you understand your leadership style.",
+            "进入游戏": "Enter game",
+            "中文": "中文",
+            "English": "English"
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./shared/game-portal.js"></script>
+    <script>
+        GamePortal.renderAuthCard('#auth-root');
+        GamePortal.renderHistoryCard('#history-root', { limit: 40, collapsedCount: 4 });
+    </script>
+</body>
+</html>
