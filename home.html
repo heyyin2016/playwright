@@ -72,7 +72,10 @@
 <body>
     <main class="shell">
         <section class="hero">
-            <h1>心灵探索传送门</h1>
+            <h1>👋 Hello, 星际探索者！</h1>
+            <p style="margin-top:10px; color:#bff5c8; font-size:1.05rem; line-height:1.7;">
+                欢迎来到玩悟星际成长测评。下面 8 个游戏，请按顺序依次完成。
+            </p>
         </section>
         <section class="layout">
             <div class="games-panel">
@@ -81,49 +84,49 @@
                     <a class="game-card" href="./气象站/1情绪气象站.html">
                         <span class="game-index">01</span>
                         <h3>情绪气象站</h3>
-                        <p>整理情绪天气、能量状态、耗电原因和心愿背包。</p>
+                        <p>选择你的情绪天气，整理能量和心愿 — 帮助你了解自己的情绪状态。</p>
                         <span class="game-enter">进入游戏</span>
                     </a>
                     <a class="game-card" href="./2外星学习者/index.html">
                         <span class="game-index">02</span>
                         <h3>外星学习实验室</h3>
-                        <p>识别偏好的学习方式，并记录文字与语音反思。</p>
+                        <p>用文字或语音表达你的学习方式 — 帮助你了解自己喜欢怎么学习。</p>
                         <span class="game-enter">进入游戏</span>
                     </a>
                     <a class="game-card" href="./17职业岛屿/17职业岛屿.html">
                         <span class="game-index">03</span>
                         <h3>职业岛屿</h3>
-                        <p>保留完整的选择理由、排序结果和霍兰德代码。</p>
+                        <p>探索职业岛并给喜欢的工作排排名 — 帮助你找到你的兴趣密码。</p>
                         <span class="game-enter">进入游戏</span>
                     </a>
                     <a class="game-card" href="./魔法市场/13魔法市场.html">
                         <span class="game-index">04</span>
                         <h3>魔法市场</h3>
-                        <p>记录每轮决策、花费变化、紧张度和好玩度评分。</p>
+                        <p>每轮做决定并花魔法币 — 帮助你了解自己的紧张感和快乐感。</p>
                         <span class="game-enter">进入游戏</span>
                     </a>
                     <a class="game-card" href="./星际动物家庭/5星际动物家庭.html">
                         <span class="game-index">05</span>
                         <h3>星际动物家庭</h3>
-                        <p>挑选动物家庭成员并完成访谈，保存完整问答过程。</p>
+                        <p>选出星动物家人并回答问题 — 帮助你了解你的家庭角色。</p>
                         <span class="game-enter">进入游戏</span>
                     </a>
                     <a class="game-card" href="./职业体验馆/7 职业体验馆.html">
                         <span class="game-index">06</span>
                         <h3>星际探索者·兴趣宇宙大冒险</h3>
-                        <p>记录兴趣选择与文字反思，沉浸式职业兴趣探索。</p>
+                        <p>探索不同的任务和职业方向 — 帮助你了解你的职业偏好。</p>
                         <span class="game-enter">进入游戏</span>
                     </a>
                     <a class="game-card" href="./12密码破译游戏.html">
                         <span class="game-index">07</span>
                         <h3>星际密码破译</h3>
-                        <p>每次猜解都记录本次/累计用时与调整逻辑。</p>
+                        <p>猜密码并记录你的推理过程 — 帮助你了解你的思考方式。</p>
                         <span class="game-enter">进入游戏</span>
                     </a>
                     <a class="game-card" href="./13外星分工游戏.html">
                         <span class="game-index">08</span>
                         <h3>银河探索学院·危机指挥官</h3>
-                        <p>角色扮演式危机决策，记录每一次抉择与反思。</p>
+                        <p>扮演指挥官做出危机决策 — 帮助你了解你的领导风格。</p>
                         <span class="game-enter">进入游戏</span>
                     </a>
                 </div>
@@ -138,6 +141,35 @@
             </div>
         </section>
     </main>
+    <script src="./shared/i18n.js"></script>
+    <script>
+        // home 页词典（不动 HTML，文本由 i18n.js 按 index 选择的语言替换）
+        window.I18N.registerDict({
+            "心灵探索传送门": "Mind Exploration Portal",
+            "👋 Hello, 星际探索者！": "👋 Hello, Star Explorer!",
+            "欢迎来到玩悟星际成长测评。下面 8 个游戏，请按顺序依次完成。": "Welcome to the Wanwu Star Growth Assessment. Please complete the 8 games below in order.",
+            "选择一个游戏开始": "Pick a game to start",
+            "情绪气象站": "Emotion Weather Station",
+            "选择你的情绪天气，整理能量和心愿 — 帮助你了解自己的情绪状态。": "Choose your emotion weather and organize your energy & wishes — helps you understand your moods.",
+            "外星学习实验室": "Alien Learning Lab",
+            "用文字或语音表达你的学习方式 — 帮助你了解自己喜欢怎么学习。": "Express your learning style by text or voice — helps you understand how you learn best.",
+            "职业岛屿": "Career Islands",
+            "探索职业岛并给喜欢的工作排排名 — 帮助你找到你的兴趣密码。": "Explore career islands and rank your favorite jobs — helps you find your interest code.",
+            "魔法市场": "Magic Market",
+            "每轮做决定并花魔法币 — 帮助你了解自己的紧张感和快乐感。": "Make decisions and spend magic coins each round — helps you understand your tension and fun.",
+            "星际动物家庭": "Star Animal Family",
+            "选出星动物家人并回答问题 — 帮助你了解你的家庭角色。": "Pick star animal family members and answer questions — helps you understand your family role.",
+            "星际探索者·兴趣宇宙大冒险": "Star Explorer · Interest Universe Adventure",
+            "探索不同的任务和职业方向 — 帮助你了解你的职业偏好。": "Explore different tasks and career paths — helps you understand your career preferences.",
+            "星际密码破译": "Cosmic Cipher",
+            "猜密码并记录你的推理过程 — 帮助你了解你的思考方式。": "Crack the code and track your reasoning — helps you understand how you think.",
+            "银河探索学院·危机指挥官": "Galaxy Academy · Crisis Commander",
+            "扮演指挥官做出危机决策 — 帮助你了解你的领导风格。": "Play as a commander making crisis decisions — helps you understand your leadership style.",
+            "进入游戏": "Enter game",
+            "中文": "中文",
+            "English": "English"
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./shared/game-portal.js"></script>
     <script>

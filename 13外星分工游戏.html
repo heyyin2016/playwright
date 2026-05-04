@@ -14,8 +14,6 @@
             margin-top: 18px;
         }
         .portal-home-link { color: #00f3ff; text-shadow: 0 0 8px rgba(0,243,255,0.35); }
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+SC:wght@300;500;700&display=swap');
-
         :root {
             --neon-blue: #00f3ff;
             --neon-purple: #bc13fe;
@@ -23,32 +21,62 @@
             --neon-red: #ff3366;
             --neon-yellow: #ffee00;
             --bg-dark: #050b14;
-            --glass: rgba(16, 33, 60, 0.85);
+            --glass: rgba(16, 33, 60, 0.55);
         }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-dark);
-            color: #fff;
-            font-family: 'Noto Sans SC', sans-serif;
+            color: #e7f8ff;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-image:
-                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
-                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
-                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
-            background-size: 550px 550px, 350px 350px, 250px 250px;
-            background-position: 0 0, 40px 60px, 130px 270px;
+            background:
+                radial-gradient(ellipse at 18% 20%, rgba(0,243,255,0.18), transparent 42%),
+                radial-gradient(ellipse at 82% 80%, rgba(188,19,254,0.20), transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(0,200,255,0.06), transparent 60%),
+                linear-gradient(160deg, #03081a 0%, #050b18 55%, #02050d 100%),
+                radial-gradient(white, rgba(255,255,255,.16) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.10) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.06) 2px, transparent 3px);
+            background-size: auto, auto, auto, auto, 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 40px 60px, 130px 270px;
+            background-attachment: fixed;
             animation: starMove 100s linear infinite;
+            position: relative;
+        }
+        body::before {
+            content: '◢ ◯ ▱ ◭ ✦ ⬡ ◆ ✧';
+            position: fixed; inset: 0;
+            font-size: 22px; letter-spacing: 30px; line-height: 110px;
+            color: rgba(0, 243, 255, 0.05);
+            white-space: pre-wrap;
+            pointer-events: none; z-index: 0;
+            animation: floatHud 32s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(0,243,255,0) 0,
+                rgba(0,243,255,0) 3px,
+                rgba(0,243,255,0.035) 4px
+            );
+            pointer-events: none; z-index: 1;
+        }
+        @keyframes floatHud {
+            0%   { transform: translate(0, 0); }
+            50%  { transform: translate(-14px, -10px); }
+            100% { transform: translate(12px, 8px); }
         }
 
         @keyframes starMove {
-            from { background-position: 0 0, 40px 60px, 130px 270px; }
-            to { background-position: 550px 550px, 390px 410px, 380px 520px; }
+            from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 40px 60px, 130px 270px; }
+            to   { background-position: 0 0, 0 0, 0 0, 0 0, 550px 550px, 390px 410px, 380px 520px; }
         }
 
         .container {
@@ -60,19 +88,24 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            z-index: 2;
         }
 
         .hologram-panel {
-            background: var(--glass);
-            border: 1px solid var(--neon-blue);
-            box-shadow: 0 0 15px var(--neon-blue), inset 0 0 20px rgba(0, 243, 255, 0.1);
-            border-radius: 15px;
-            padding: 40px;
+            background: linear-gradient(135deg, rgba(0,243,255,0.08), rgba(189,0,255,0.05)), rgba(8, 16, 32, 0.55);
+            border: 1px solid rgba(0,243,255,0.36);
+            box-shadow:
+                0 24px 60px rgba(0,0,0,0.55),
+                0 0 36px rgba(0,243,255,0.22),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+            border-radius: 28px;
+            padding: 36px 30px;
             width: 100%;
             max-height: 85vh;
             overflow-y: auto;
             position: relative;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             transition: all 0.5s ease;
             opacity: 0;
             transform: scale(0.95);
@@ -115,11 +148,12 @@
         }
 
         h1, h2 {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
             color: var(--neon-blue);
             text-shadow: 0 0 10px var(--neon-blue);
             margin-top: 0;
             letter-spacing: 2px;
+            font-weight: 700;
         }
 
         .story-text {
@@ -147,7 +181,7 @@
             color: var(--neon-blue);
             padding: 15px 20px;
             font-size: 1rem;
-            font-family: 'Noto Sans SC', sans-serif;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
             cursor: pointer;
             position: relative;
             overflow: hidden;
@@ -328,10 +362,11 @@
         }
 
         .recording-time {
-            font-family: 'Orbitron', monospace;
+            font-family: 'Consolas', 'Menlo', monospace;
             color: var(--neon-yellow);
             font-size: 1.2rem;
             min-width: 80px;
+            letter-spacing: 1px;
         }
 
         .transcript-box {
@@ -402,7 +437,7 @@
             width: 100%;
             padding: 12px 15px;
             font-size: 1rem;
-            font-family: 'Noto Sans SC', sans-serif;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid var(--neon-blue);
             color: white;
@@ -429,7 +464,7 @@
             width: 100%;
             padding: 12px 15px;
             font-size: 1rem;
-            font-family: 'Noto Sans SC', sans-serif;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--neon-blue);
             color: white;
@@ -562,6 +597,8 @@
             box-shadow: none;
         }
     </style>
+    <script src="./shared/i18n.js"></script>
+    <script src="./i18n-dict-alien-division.js"></script>
 </head>
 <body>
 
@@ -570,7 +607,10 @@
             <div class="scan-line"></div>
             <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
 
-            <h2 id="title">银河探索学院 - 任务启动</h2>
+            <h2 id="title" style="background: linear-gradient(90deg, #00f3ff, #bd00ff);
+                       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                       text-align: center; font-size: 1.7em; margin: 0 0 12px;
+                       letter-spacing: 2px;">银河探索学院 — 任务启动</h2>
 
             <!-- 音频控制区域 -->
             <div class="audio-controls" id="audioControls">
@@ -649,7 +689,7 @@
                 recognition = new SpeechRecognition();
                 recognition.continuous = true;
                 recognition.interimResults = true;
-                recognition.lang = 'zh-CN';
+                recognition.lang = (window.I18N ? window.I18N.getSpeechLang() : 'zh-CN');
 
                 recognition.onresult = (event) => {
                     let finalTranscript = '';
@@ -922,7 +962,7 @@
                 <br>🧭 <b>C. 导航校准</b>（烧脑、决定生死方向）
                 <br><br><b>作为队长，你需要进行分工。</b>`,
                 hasRoleSelection: true,
-                recordingHint: "说明你为什么选择这个角色，以及你给其他两位伙伴的安排和理由...",
+                recordingHint: "🎤 请录下：你为什么这样分工？你给露露和波波各安排了什么角色？为什么这样安排？",
                 requireRecording: true
             },
             {
@@ -964,6 +1004,12 @@
 
         // 渲染当前步骤
         function renderStep() {
+            // 切到新场景，立刻滚到页面顶部
+            requestAnimationFrame(() => {
+                try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            });
             const panel = document.getElementById('gamePanel');
             const title = document.getElementById('title');
             const content = document.getElementById('content');
@@ -1282,6 +1328,12 @@
 
             currentStep++;
             renderStep();
+            // 切下一页后立刻滚到页面顶部（不靠 i18n 全局观察器，因为这游戏用 innerHTML 切换不是 .hidden）
+            requestAnimationFrame(() => {
+                try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            });
         }
 
         // 显示结果
@@ -1300,61 +1352,18 @@
 
             document.getElementById('progress').style.width = '100%';
 
-            title.innerHTML = "🚀 任务完成：指挥官评估报告";
+            title.innerHTML = "✅ 本关已完成";
 
-            // 计算分数
-            const maxScore = 12;
-
-            let html = `<p>飞船成功起飞！银河探索学院根据你在危机中的表现，生成了你的领导力雷达图：</p>`;
-            html += `<div class="result-chart">`;
-
-            const dimensions = [
-                { key: 'leadership', label: '领导力' },
-                { key: 'decision', label: '决策力' },
-                { key: 'communication', label: '沟通' },
-                { key: 'teamwork', label: '团队合作' },
-                { key: 'self_understanding', label: '理解自我' }
-            ];
-
-            dimensions.forEach(dim => {
-                let val = Math.max(0, scores[dim.key]);
-                let width = Math.min(100, Math.max(10, (val / maxScore) * 100 + 20));
-
-                html += `
-                <div class="bar-container">
-                    <div class="bar-label">${dim.label}</div>
-                    <div class="bar-bg">
-                        <div class="bar-val" style="width: ${width}%"></div>
-                    </div>
-                </div>`;
-            });
-            html += `</div>`;
-
-            html += `<br><p><i>"真正的领导者不是从不害怕，而是带着恐惧依然前行。"</i></p>`;
-
-            // 显示用户的选择摘要
-            html += `<div style="margin-top: 30px; padding: 15px; background: rgba(0,243,255,0.1); border-radius: 8px;">`;
-            html += `<h3 style="color: var(--neon-blue); margin-top: 0;">📋 你的决策记录</h3>`;
-
-            if (gameData.step1Choice) {
-                html += `<p><b>场景1：</b>${gameData.step1Choice.text}</p>`;
-            }
-            if (gameData.step2Choice) {
-                html += `<p><b>场景2：</b>${gameData.step2Choice.text}</p>`;
-            }
-            if (gameData.selectedRole) {
-                html += `<p><b>角色分配：</b>你选择扮演 ${gameData.selectedRole} 角色</p>`;
-            }
-            if (gameData.step4Choice) {
-                html += `<p><b>高危作业：</b>第一反应：${gameData.step4Choice.thought1 || ''} / 最终决定：${gameData.step4Choice.thought2 || ''}</p>`;
-            }
-            if (gameData.step5Choice) {
-                html += `<p><b>成员掉链子：</b>${gameData.step5Choice.text}</p>`;
-            }
-
-            html += `</div>`;
-
-            content.innerHTML = html;
+            // 不展示初步结果，直接显示通用完成提示。
+            content.innerHTML = `
+                <div style="padding: 30px 20px; text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 14px;">✅</div>
+                    <h3 style="color: var(--neon-green); margin: 0 0 12px;">本关已完成！</h3>
+                    <p style="color: var(--text-color); line-height: 1.7;">
+                        你的探索数据已经收集完成。<br>请进入下一段星际旅程。
+                    </p>
+                </div>
+            `;
 
             // 重玩按钮
             optionsDiv.innerHTML = '';
@@ -1424,11 +1433,14 @@
         }
 
         async function saveAlienDivisionToCloud() {
-            if (!window.GamePortal) return;
+            if (!window.GamePortal) {
+                alert('云端模块未加载，记录无法上传。');
+                return;
+            }
             if (hasAutoUploadedAlienDivision) return;
             try {
                 const detailJson = buildAlienDivisionDetailJson();
-                await window.GamePortal.saveRecord({
+                const result = await window.GamePortal.saveRecord({
                     gameKey: 'alien-division',
                     gameTitle: '银河探索学院·危机指挥官',
                     recordType: 'assessment',
@@ -1437,10 +1449,16 @@
                     recordMarkdown: buildAlienDivisionMarkdown(),
                     detailJson
                 });
-                hasAutoUploadedAlienDivision = true;
-                console.log('[云端] 外星分工记录已上传');
+                if (result && result.savedToCloud) {
+                    hasAutoUploadedAlienDivision = true;
+                    console.log('[云端] 外星分工记录已上传');
+                } else {
+                    console.warn('[云端] 未保存：', result && result.message);
+                    alert('记录未保存到云端：' + ((result && result.message) || '请先登录'));
+                }
             } catch (err) {
                 console.error('[云端] 保存失败：', err);
+                alert('保存失败：' + (err && err.message ? err.message : err));
             }
         }
 

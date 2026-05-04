@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玩悟星际成长测评系统 · 测评介绍</title>
+    <link rel="stylesheet" href="./shared/game-portal.css">
+    <!-- 强制中文：不加载 i18n -->
+    <script>
+        // 重置语言为中文，防止其他页面切换到英文影响本页
+        try { localStorage.setItem('app-lang', 'zh'); } catch (e) {}
+    </script>
+    <script>
+        // 旧的 i18n 字典已移除（本页固定中文）；保留空 stub 避免引用错误
+        window.I18N = window.I18N || { registerDict: function () {}, registerPatterns: function () {} };
+        window.I18N.registerDict({
+            "玩悟测评介绍": "About Wanwu Assessment",
+            "01 产品定位": "01 PRODUCT POSITIONING",
+            "留学规划最大的难题不是申请，而是「方向」。": "The biggest challenge in study-abroad planning isn't the application — it's direction.",
+            "在很多留学规划案例中，规划往往只能基于成绩、家长期望或顾问经验，却缺少一个关键的信息来源：": "In many cases, planning is based only on grades, parental expectations, or advisor experience — missing one key data source:",
+            "学生真实的兴趣结构、思维方式与行为特质。": "the student's real interest structure, way of thinking, and behavioral traits.",
+
+            "02 产品简介": "02 INTRODUCTION",
+            "玩悟是一套基于游戏行为数据分析的学生潜能测评工具。学生通过沉浸式互动游戏完成一系列探索任务，在游戏情境中自然展现：": "Wanwu is an assessment tool that analyzes student potential through gameplay behavior. Students complete a series of exploration tasks via immersive interactive games, naturally revealing:",
+            "学习方式": "Learning style",
+            "思维模式": "Thinking patterns",
+            "决策策略": "Decision-making",
+            "社交能力": "Social skills",
+            "抗压能力": "Stress resilience",
+            "潜在职业兴趣": "Potential career interests",
+            "系统通过分析游戏中的行为数据，生成一份多维成长潜能画像报告，帮助留学机构在规划早期回答三个关键问题：": "By analyzing in-game behavior, the system generates a multi-dimensional growth potential report — helping advisors answer three key questions early on:",
+            "学生真正的优势在哪里？": "Where do their real strengths lie?",
+            "适合走哪条专业赛道？": "Which academic / career track suits them?",
+            "未来申请故事的核心主题是什么？": "What is the core theme of their future application story?",
+
+            "03 产品亮点": "03 HIGHLIGHTS",
+            "真实行为测评": "Real-behavior assessment",
+            "传统问卷测评依赖学生主观回答，学生容易迎合或猜测答案。玩悟通过互动游戏行为数据分析，记录学生在任务中的真实选择与决策行为。这些行为数据可以更真实地反映学生的思维方式与兴趣结构。": "Traditional questionnaires rely on subjective answers — students tend to please or guess. Wanwu analyzes real choices and decisions made during gameplay, more accurately reflecting how a student thinks and what they're really drawn to.",
+            "国际模型支持": "International model support",
+            "测评系统基于多种国际心理学研究模型设计，包括：职业兴趣理论、学习风格模型、社会情感学习、执行功能研究。通过游戏任务将心理学模型转化为可观察的行为数据。": "The system is built on established psychology models — Career Interest Theory, Learning Style Models, Social-Emotional Learning, Executive Function Research — translating these into observable behavior through gameplay.",
+            "哈佛教育心理学团队研发": "Designed by a HARVARD education-psychology team",
+            "产品由哈佛教育心理学背景团队设计开发。团队长期从事儿童发展、学习科学与游戏化学习研究，致力于将心理学研究转化为更易理解、更易应用的教育工具。": "Built by a team with HARVARD education-psychology backgrounds, with deep expertise in child development, learning science and gamified learning — translating research into accessible, practical tools.",
+            "游戏化体验": "Gamified experience",
+            "测评过程通过沉浸式游戏任务完成。学生在完成探索任务、团队合作与决策挑战的过程中自然展现能力，而不是简单填写问卷。整个测评过程约 60-80 分钟，体验轻松、有趣。": "Assessment happens through immersive gameplay. Students reveal their abilities while completing exploration tasks, team collaboration and decision challenges — not by filling forms. The whole experience takes about 60-80 minutes and is light and fun.",
+            "可直接用于规划": "Directly useful for planning",
+            "测评报告不仅是分析结果，还可以直接用于：留学规划方向讨论、活动与科研规划、文书素材整理、家长沟通与解释。帮助顾问在规划早期更全面理解学生。": "The report isn't just analysis — it can be used immediately for: direction discussions, activity & research planning, application essay material, and explanations to parents. It helps advisors understand students fully and early.",
+
+            "04 测评方式": "04 EVALUATION METHOD",
+            "与传统测评的区别": "VS traditional assessments",
+            "传统测评": "Traditional",
+            "玩悟测评": "Wanwu",
+            "问卷填写": "Questionnaire",
+            "游戏互动": "Gameplay",
+            "学生主观回答": "Subjective answers",
+            "行为数据分析": "Behavior data",
+            "学生容易迎合答案": "Students tend to please",
+            "非防御性表达": "Non-defensive expression",
+            "单一能力维度": "Single dimension",
+            "多维潜能画像": "Multi-dim potential profile",
+            "在游戏情境中，学生的行为往往更加自然，也更接近真实状态。测评的内容更有趣，因此行为数据能够提供更有价值的参考信息。": "In a game context, student behavior is more natural and closer to reality. The content is also more enjoyable — so the data provides much more useful insight.",
+
+            "05 使用方法": "05 USAGE",
+            "学生完成约 60-80 分钟的互动游戏测评。在游戏任务中，学生通过选择、决策和合作行为自然展现自己的思维方式与兴趣偏好。": "The student completes ~60-80 min of interactive gameplay. Through choices, decisions and collaborations, they reveal their thinking style and interests naturally.",
+            "系统自动生成潜能画像报告。报告将对学生的行为数据进行分析，呈现学生的：": "The system automatically generates a potential profile report, surfacing the student's:",
+            "兴趣结构": "Interest structure",
+            "社交与团队特质": "Social / team traits",
+            "顾问给家长解读报告。": "The advisor walks parents through the report.",
+
+            "我已了解，进入家长资料": "Got it — go to Parent Profile",
+            "返回起始页": "Back to Home",
+            "💡 看完介绍后请填写家长资料，让外星探索者更懂你的孩子": "💡 Please fill in the parent profile next so the alien explorers can better understand your child.",
+            "📖 玩悟测评介绍": "📖 About Wanwu Assessment",
+            "玩悟测评介绍 / Wanwu Assessment": "About Wanwu Assessment",
+            "⬅ 返回起始页": "⬅ Back to Home",
+            "📝 我已了解，进入家长资料 ➡": "📝 Got it — go to Parent Profile ➡",
+            "产品定位": "PRODUCT POSITIONING",
+            "产品简介": "INTRODUCTION",
+            "产品亮点": "HIGHLIGHTS",
+            "测评方式": "EVALUATION METHOD",
+            "使用方法": "USAGE",
+            "测评系统基于多种国际心理学研究模型设计，包括：": "The system is built on established psychology models, including:",
+            "职业兴趣理论": "Career Interest Theory",
+            "学习风格模型": "Learning Style Models",
+            "社会情感学习": "Social-Emotional Learning",
+            "执行功能研究": "Executive Function Research",
+            "。通过游戏任务将心理学模型转化为可观察的行为数据。": ". Through gameplay tasks, we translate psychology models into observable behavior data.",
+            "哈佛": "Harvard",
+            "教育心理学团队研发": "education-psychology team",
+            "产品由": "Built by a",
+            "哈佛教育心理学背景团队": "team with Harvard education-psychology backgrounds",
+            "设计开发。团队长期从事": ". The team has long been working on",
+            "儿童发展": "child development",
+            "学习科学": "learning science",
+            "与": "and",
+            "游戏化学习": "gamified learning",
+            "研究，致力于将心理学研究转化为更易理解、更易应用的教育工具。": "research — translating psychology research into accessible, practical education tools.",
+            "测评过程通过沉浸式": "Assessment uses immersive",
+            "游戏化任务": "gamified tasks",
+            "完成。学生在完成探索任务、团队合作与决策挑战的过程中自然展现能力，而不是简单填写问卷。整个测评过程约": ". Students naturally reveal their abilities through exploration, collaboration and decision challenges — not by filling forms. The whole experience is about",
+            "60-80 分钟": "60-80 minutes",
+            "，体验轻松、有趣。": ", light and fun.",
+            "学生完成约": "The student completes about",
+            "的互动游戏测评。在游戏任务中，学生通过选择、决策和合作行为自然展现自己的思维方式与兴趣偏好。": "of interactive gameplay. Through choices, decisions and collaborations, they naturally show their thinking style and interests.",
+            "传统测评": "Traditional",
+            "玩悟测评": "Wanwu",
+            "与传统测评的区别": "VS Traditional Assessments",
+            "传统问卷测评依赖学生主观回答，学生容易迎合或猜测答案。玩悟通过互动游戏行为数据分析，记录学生在任务中的真实选择与决策行为。这些行为数据可以更真实地反映学生的思维方式与兴趣结构。": "Traditional questionnaires rely on subjective answers — students tend to please or guess. Wanwu analyzes real choices and decisions during gameplay, more accurately reflecting how a student thinks and what they're really drawn to.",
+            "兴趣结构": "Interest structure",
+            "决策策略": "Decision-making",
+            "单一能力维度": "Single dimension",
+            "可直接用于规划": "Directly useful for planning",
+            "国际模型支持": "International model support",
+            "在很多留学规划案例中，规划往往只能基于成绩、家长期望或顾问经验，却缺少一个关键的信息来源：": "In many study-abroad cases, planning relies only on grades, parental expectations, or advisor experience — missing one key data source:",
+            "在游戏情境中，学生的行为往往更加自然，也更接近真实状态。测评的内容更有趣，因此行为数据能够提供更有价值的参考信息。": "In a game context, student behavior is more natural and closer to reality. The content is also more enjoyable — so the data provides much more useful insight.",
+            "多维潜能画像": "Multi-dimensional potential profile",
+            "学习方式": "Learning style",
+            "学生主观回答": "Subjective answers",
+            "学生容易迎合答案": "Students tend to please",
+            "学生真实的兴趣结构、思维方式与行为特质。": "the student's real interest structure, way of thinking, and behavioral traits.",
+            "学生真正的优势在哪里？": "Where do their real strengths lie?",
+            "适合走哪条专业赛道？": "Which academic / career track suits them?",
+            "未来申请故事的核心主题是什么？": "What is the core theme of their future application story?",
+            "思维模式": "Thinking patterns",
+            "抗压能力": "Stress resilience",
+            "测评报告不仅是分析结果，还可以直接用于：留学规划方向讨论、活动与科研规划、文书素材整理、家长沟通与解释。帮助顾问在规划早期更全面理解学生。": "The report isn't just analysis — it can be used immediately for: study-abroad direction discussions, activity & research planning, application essay material, and explanations to parents. Helps advisors understand students fully and early.",
+            "游戏互动": "Gameplay",
+            "游戏化体验": "Gamified experience",
+            "潜在职业兴趣": "Potential career interests",
+            "玩悟是一套基于游戏行为数据分析的学生潜能测评工具。学生通过沉浸式互动游戏完成一系列探索任务，在游戏情境中自然展现：": "Wanwu is an assessment tool that analyzes student potential through gameplay behavior. Students complete a series of exploration tasks via immersive interactive games, naturally revealing:",
+            "留学规划最大的难题不是申请，而是「方向」。": "The biggest challenge in study-abroad planning isn't the application — it's direction.",
+            "真实行为测评": "Real-behavior assessment",
+            "社交能力": "Social skills",
+            "系统通过分析游戏中的行为数据，生成一份多维成长潜能画像报告，帮助留学机构在规划早期回答三个关键问题：": "By analyzing in-game behavior, the system generates a multi-dimensional growth potential report — helping advisors answer three key questions early on:",
+            "顾问给家长解读报告。": "The advisor walks parents through the report.",
+            "行为数据分析": "Behavior data",
+            "非防御性表达": "Non-defensive expression",
+            "问卷填写": "Questionnaire",
+            "系统自动生成潜能画像报告。报告将对学生的行为数据进行分析，呈现学生的：": "The system automatically generates a potential profile report, surfacing the student's:",
+            "社交与团队特质": "Social / team traits",
+            "玩悟": "Wanwu"
+        });
+    </script>
+    <style>
+        :root {
+            --brand-blue: #1a4ea0;
+            --brand-blue-2: #2e6cc9;
+            --brand-yellow: #ffd700;
+            --bg: #f5f8ff;
+            --card: #ffffff;
+            --text: #1f2c4a;
+            --muted: #5b6b85;
+            --line: #e2e9f5;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg); color: var(--text); padding-bottom: 100px;
+            font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+            line-height: 1.7;
+        }
+        .top-bar {
+            position: sticky; top: 0; z-index: 10;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 22px; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--line);
+        }
+        .top-bar h1 { font-size: 1.15rem; color: var(--brand-blue); }
+        .btn-back {
+            font-size: 0.9rem; color: var(--muted); text-decoration: none;
+            border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;
+            background: white;
+        }
+        .container { max-width: 980px; margin: 0 auto; padding: 28px 22px 60px; }
+        .section { background: var(--card); border-radius: 18px; padding: 28px 26px; margin-bottom: 22px;
+                   border: 1px solid var(--line); box-shadow: 0 4px 18px rgba(20,40,80,0.05); }
+        .section-num {
+            display: inline-flex; align-items: baseline; gap: 10px; margin-bottom: 14px;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+        }
+        .section-num .num {
+            font-size: 2.2rem; font-weight: 800; color: var(--brand-blue);
+        }
+        .section-num .zh {
+            font-size: 1.4rem; font-weight: 700; color: var(--brand-blue);
+        }
+        .section-num .en {
+            margin-left: 8px; font-size: 0.85rem; color: var(--brand-blue-2); letter-spacing: 1.5px;
+            border-bottom: 2px solid var(--brand-yellow); padding-bottom: 2px;
+        }
+        .lead { color: var(--text); font-size: 1.02rem; margin-bottom: 12px; }
+        .lead strong { color: var(--brand-blue); }
+        ul.bullet-list { list-style: none; padding: 0; margin: 12px 0; }
+        ul.bullet-list li {
+            position: relative; padding: 6px 0 6px 22px; color: var(--text);
+        }
+        ul.bullet-list li::before {
+            content: ''; position: absolute; left: 4px; top: 14px;
+            width: 8px; height: 8px; background: var(--brand-blue); border-radius: 50%;
+        }
+        .pill-title {
+            display: inline-block; background: var(--brand-blue); color: white;
+            padding: 6px 18px; border-radius: 999px; font-weight: 700; margin: 14px 0 8px;
+            font-size: 0.95rem;
+        }
+        /* 高亮关键词：哈佛 / 心理学模型名 */
+        .hl-harvard {
+            background: linear-gradient(120deg, rgba(255,215,0,0.65) 0%, rgba(255,215,0,0.4) 100%);
+            color: var(--brand-blue);
+            font-weight: 800;
+            padding: 1px 8px;
+            border-radius: 6px;
+            border-bottom: 2px solid var(--brand-yellow);
+        }
+        .hl-theory {
+            background: rgba(46,108,201,0.12);
+            color: var(--brand-blue);
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            border-bottom: 2px dashed var(--brand-blue-2);
+        }
+        .compare-table {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            margin-top: 14px; border-radius: 14px; overflow: hidden;
+            border: 1px solid var(--line);
+        }
+        .compare-head {
+            background: var(--brand-blue); color: white;
+            text-align: center; padding: 12px; font-weight: 700;
+        }
+        .compare-cell {
+            padding: 14px; text-align: center; background: white; border-top: 1px solid var(--line);
+        }
+        .compare-cell.left { color: var(--muted); }
+        .compare-cell.right { color: var(--brand-blue); font-weight: 700; }
+        .compare-spans-2 { grid-column: 1 / -1; }
+        .step-row {
+            display: flex; align-items: flex-start; gap: 16px; margin: 14px 0;
+            padding: 14px; border-radius: 12px; background: #f1f5fc;
+        }
+        .step-num-box {
+            flex-shrink: 0; width: 50px; height: 50px;
+            background: var(--brand-blue); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.3rem;
+            transform: rotate(45deg); border-radius: 8px;
+        }
+        .step-num-box span { transform: rotate(-45deg); }
+        .actions {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+            padding: 16px 22px;
+            background: rgba(255,255,255,0.96); backdrop-filter: blur(8px);
+            border-top: 1px solid var(--line);
+            display: flex; gap: 12px; justify-content: center;
+        }
+        .btn-primary, .btn-secondary {
+            padding: 12px 26px; border: none; border-radius: 999px;
+            font-weight: 700; cursor: pointer; font-size: 1rem;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-2));
+            color: white; box-shadow: 0 6px 16px rgba(20,40,120,0.25);
+        }
+        .btn-primary:hover { transform: translateY(-1px); }
+        .btn-secondary {
+            background: white; color: var(--brand-blue); border: 1px solid var(--line);
+        }
+        .hint { color: var(--muted); font-size: 0.92rem; margin-top: 6px; text-align: center; }
+        @media (max-width: 640px) {
+            .compare-table { grid-template-columns: 1fr; }
+            .actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; border-radius:9px;
+                        background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-2));
+                        color:#fff; display:flex; align-items:center; justify-content:center;
+                        font-size:1.2rem; font-weight:800;
+                        box-shadow:0 4px 14px rgba(20,40,120,0.25);">玩</div>
+            <div>
+                <h1 style="font-size:1.05rem; font-weight:700; color:var(--brand-blue); letter-spacing:0.5px; margin:0;">玩悟星际成长测评系统</h1>
+                <div style="font-size:0.78rem; color:var(--muted); margin-top:1px; letter-spacing:1px;">测评介绍 · ASSESSMENT INTRODUCTION</div>
+            </div>
+        </div>
+        <a class="btn-back" href="home.html">⬅ 返回首页</a>
+    </div>
+
+    <div class="container">
+
+        <!-- 01 产品定位 -->
+        <section class="section">
+            <div class="section-num">
+                <span class="num">01</span>
+                <span class="zh">产品定位</span>
+            </div>
+            <p class="lead">留学规划最大的难题不是申请，而是「方向」。</p>
+            <p class="lead">在很多留学规划案例中，规划往往只能基于成绩、家长期望或顾问经验，却缺少一个关键的信息来源：</p>
+            <p class="lead"><strong>学生真实的兴趣结构、思维方式与行为特质。</strong></p>
+        </section>
+
+        <!-- 02 产品简介 -->
+        <section class="section">
+            <div class="section-num">
+                <span class="num">02</span>
+                <span class="zh">产品简介</span>
+            </div>
+            <p class="lead">玩悟是一套基于游戏行为数据分析的学生潜能测评工具。学生通过沉浸式互动游戏完成一系列探索任务，在游戏情境中自然展现：</p>
+            <ul class="bullet-list">
+                <li>学习方式</li>
+                <li>思维模式</li>
+                <li>决策策略</li>
+                <li>社交能力</li>
+                <li>抗压能力</li>
+                <li>潜在职业兴趣</li>
+            </ul>
+            <p class="lead">系统通过分析游戏中的行为数据，生成一份多维成长潜能画像报告，帮助留学机构在规划早期回答三个关键问题：</p>
+            <ul class="bullet-list">
+                <li>学生真正的优势在哪里？</li>
+                <li>适合走哪条专业赛道？</li>
+                <li>未来申请故事的核心主题是什么？</li>
+            </ul>
+        </section>
+
+        <!-- 03 产品亮点 -->
+        <section class="section">
+            <div class="section-num">
+                <span class="num">03</span>
+                <span class="zh">产品亮点</span>
+            </div>
+
+            <div class="pill-title">真实行为测评</div>
+            <p class="lead">传统问卷测评依赖学生主观回答，学生容易迎合或猜测答案。玩悟通过互动游戏行为数据分析，记录学生在任务中的真实选择与决策行为。这些行为数据可以更真实地反映学生的思维方式与兴趣结构。</p>
+
+            <div class="pill-title">国际模型支持</div>
+            <p class="lead">测评系统基于多种国际心理学研究模型设计，包括：<span class="hl-theory">职业兴趣理论</span>、<span class="hl-theory">学习风格模型</span>、<span class="hl-theory">社会情感学习</span>、<span class="hl-theory">执行功能研究</span>。通过游戏任务将心理学模型转化为可观察的行为数据。</p>
+
+            <div class="pill-title">哈佛教育心理学团队研发</div>
+            <p class="lead">产品由 <span class="hl-harvard">哈佛教育心理学背景团队</span> 设计开发。团队长期从事 <span class="hl-theory">儿童发展</span>、<span class="hl-theory">学习科学</span> 与 <span class="hl-theory">游戏化学习</span> 研究，致力于将心理学研究转化为更易理解、更易应用的教育工具。</p>
+
+            <div class="pill-title">游戏化体验</div>
+            <p class="lead">测评过程通过沉浸式 <span class="hl-theory">游戏化任务</span> 完成。学生在完成探索任务、团队合作与决策挑战的过程中自然展现能力，而不是简单填写问卷。整个测评过程约 <strong style="color: var(--brand-blue);">60-80 分钟</strong>，体验轻松、有趣。</p>
+
+            <div class="pill-title">可直接用于规划</div>
+            <p class="lead">测评报告不仅是分析结果，还可以直接用于：留学规划方向讨论、活动与科研规划、文书素材整理、家长沟通与解释。帮助顾问在规划早期更全面理解学生。</p>
+        </section>
+
+        <!-- 04 测评方式 -->
+        <section class="section">
+            <div class="section-num">
+                <span class="num">04</span>
+                <span class="zh">测评方式</span>
+            </div>
+
+            <div class="compare-table">
+                <div class="compare-head compare-spans-2">与传统测评的区别</div>
+                <div class="compare-head">传统测评</div>
+                <div class="compare-head">玩悟测评</div>
+                <div class="compare-cell left">问卷填写</div>
+                <div class="compare-cell right">游戏互动</div>
+                <div class="compare-cell left">学生主观回答</div>
+                <div class="compare-cell right">行为数据分析</div>
+                <div class="compare-cell left">学生容易迎合答案</div>
+                <div class="compare-cell right">非防御性表达</div>
+                <div class="compare-cell left">单一能力维度</div>
+                <div class="compare-cell right">多维潜能画像</div>
+            </div>
+
+            <p class="lead" style="margin-top:18px;">在游戏情境中，学生的行为往往更加自然，也更接近真实状态。测评的内容更有趣，因此行为数据能够提供更有价值的参考信息。</p>
+        </section>
+
+        <!-- 05 使用方法 -->
+        <section class="section">
+            <div class="section-num">
+                <span class="num">05</span>
+                <span class="zh">使用方法</span>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num-box"><span>1</span></div>
+                <p>学生完成约 <strong style="color: var(--brand-blue);">60-80 分钟</strong> 的互动游戏测评。在游戏任务中，学生通过选择、决策和合作行为自然展现自己的思维方式与兴趣偏好。</p>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num-box"><span>2</span></div>
+                <div>
+                    <p>系统自动生成潜能画像报告。报告将对学生的行为数据进行分析，呈现学生的：</p>
+                    <ul class="bullet-list">
+                        <li>学习方式</li>
+                        <li>思维模式</li>
+                        <li>兴趣结构</li>
+                        <li>社交与团队特质</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-num-box"><span>3</span></div>
+                <p>顾问给家长解读报告。</p>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="actions">
+        <button class="btn-secondary" onclick="location.href='home.html'">⬅ 返回首页</button>
+        <button class="btn-primary" onclick="location.href='login.html'">🔐 我已了解，下一步：登录 ➡</button>
+    </div>
+
+</body>
+</html>

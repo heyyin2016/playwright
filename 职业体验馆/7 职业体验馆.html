@@ -24,22 +24,61 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-deep);
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
             color: var(--text-main);
             margin: 0;
             padding: 20px;
+            padding-bottom: 160px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-image: radial-gradient(circle at 50% 0, #1a2540 0%, #0b0f19 80%);
+            background:
+                radial-gradient(ellipse at 18% 20%, rgba(0,224,255,0.20), transparent 42%),
+                radial-gradient(ellipse at 82% 80%, rgba(255,215,0,0.16), transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(124,77,255,0.10), transparent 60%),
+                linear-gradient(160deg, #0b0f19 0%, #131a2c 55%, #060810 100%);
+            background-attachment: fixed;
+            position: relative;
         }
+        /* 浮动装饰星辉（仅首页可见，后续 #career-section 出现时被遮住）*/
+        body::before {
+            content: '✦ ◯ ⬡ ✧ ◆ ✺';
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            font-size: 2.2rem; opacity: 0.10; color: #00e0ff;
+            letter-spacing: 22vw; line-height: 30vh;
+            padding: 8vh 6vw; word-spacing: 16vw;
+            white-space: pre-wrap;
+            animation: floatStar 30s ease-in-out infinite alternate;
+            text-shadow: 0 0 18px rgba(255,215,0,0.35);
+        }
+        body::after {
+            content: ''; position: fixed; left: 0; right: 0; top: 0;
+            height: 2px; background: linear-gradient(90deg, transparent, rgba(0,224,255,0.5), rgba(255,215,0,0.4), transparent);
+            box-shadow: 0 0 14px rgba(0,224,255,0.4);
+            pointer-events: none; z-index: 5;
+            animation: scanY 8s linear infinite;
+        }
+        @keyframes floatStar {
+            from { transform: translate(0,0) rotate(0deg); }
+            to   { transform: translate(-26px, 18px) rotate(6deg); }
+        }
+        @keyframes scanY {
+            0%   { transform: translateY(0); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        @keyframes holoFadeIn {
+            0%   { opacity: 0; transform: translateY(16px) scale(0.985); filter: blur(6px); }
+            100% { opacity: 1; transform: translateY(0)    scale(1);     filter: blur(0); }
+        }
+        .container { position: relative; z-index: 2; }
 
         .container {
             max-width: 1100px;
             width: 100%;
-            padding-bottom: 120px; /* 为底部控制栏留空间 */
+            padding-bottom: 160px; /* 为底部控制栏 + portal 状态条留空间 */
         }
 
         h1 {
@@ -218,14 +257,18 @@
 
         /* --- 底部全局控制栏 --- */
         .control-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(10, 15, 30, 0.85);
-            border-top: 1px solid #2f3b5c;
-            padding: 15px 30px;
-            display: flex; justify-content: center; align-items: center; gap: 30px;
+            position: fixed; bottom: 76px; left: 50%;
+            transform: translateX(-50%);
+            width: min(calc(100% - 24px), 720px);
+            background: rgba(10, 15, 30, 0.92);
+            border: 1px solid rgba(0, 224, 255, 0.32);
+            padding: 12px 22px;
+            display: flex; justify-content: space-between; align-items: center; gap: 18px;
             backdrop-filter: blur(10px);
-            z-index: 90;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
+            z-index: 210;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.55), 0 0 22px rgba(0,224,255,0.18);
+            border-radius: 999px;
+            flex-wrap: wrap;
         }
 
         .status-text { font-size: 1.2em; color: var(--accent-blue); font-weight: bold; }
@@ -316,10 +359,13 @@
         /* --- 录音弹窗样式 --- */
         #record-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 4, 15, 0.95); z-index: 200;
+            background: rgba(2, 4, 15, 0.95); z-index: 1000;
             backdrop-filter: blur(8px);
             justify-content: center; align-items: center;
+            overflow-y: auto; padding: 24px 0;
         }
+        /* 弹窗打开时隐藏底部 portal 状态条，避免遮挡保存按钮 */
+        body.record-modal-open .portal-game-status { display: none !important; }
         .record-modal-content {
             background: linear-gradient(145deg, #1a2540, #0f1623);
             padding: 40px; border-radius: 32px;
@@ -419,26 +465,295 @@
         .record-skip-btn:hover { border-color: #889; color: #aab; }
 
     </style>
+    <script src="../shared/i18n.js"></script>
+    <script src="./i18n-dict.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <div class="page-header">
-        <h1>🪐 星际探索者</h1>
-        <button class="sound-btn" id="main-sound-btn" onclick="playAudio('main')" title="播放语音">
-            <svg class="sound-icon" viewBox="0 0 24 24">
-                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-            </svg>
-            <div class="sound-waves">
-                <div class="sound-wave"></div>
-                <div class="sound-wave"></div>
-                <div class="sound-wave"></div>
+    <!-- ========== 第一页：欢迎指令（暮光精灵风格） ========== -->
+    <div id="welcome-page" style="position:relative; max-width:720px; margin:0 auto; padding:6px 0 36px; isolation:isolate;">
+
+        <!-- 紫色魔法光晕背景 -->
+        <div aria-hidden="true" style="position:absolute; inset:-30px -20px 0; z-index:-1; pointer-events:none;
+                    background:
+                      radial-gradient(ellipse at 15% 8%, rgba(180,120,255,0.28) 0%, transparent 45%),
+                      radial-gradient(ellipse at 85% 25%, rgba(255,150,210,0.22) 0%, transparent 45%),
+                      radial-gradient(ellipse at 20% 75%, rgba(140,90,220,0.22) 0%, transparent 45%),
+                      radial-gradient(ellipse at 80% 90%, rgba(220,160,255,0.18) 0%, transparent 45%),
+                      linear-gradient(180deg, #1a0a2e 0%, #2d0f4a 50%, #1c0838 100%);
+                    border-radius: 32px;
+                    box-shadow: 0 0 80px rgba(150,100,220,0.25);"></div>
+
+        <!-- 边缘藤蔓装饰 -->
+        <div aria-hidden="true" style="position:absolute; inset:0; z-index:-1; pointer-events:none; overflow:hidden; border-radius:32px;
+                    font-size:22px; opacity:0.55; line-height:1;">
+            <span style="position:absolute; top:14px;  left:10px;  filter:drop-shadow(0 0 6px rgba(255,180,230,0.5));">🌿</span>
+            <span style="position:absolute; top:60px;  left:6px;   filter:drop-shadow(0 0 6px rgba(220,160,255,0.5));">🌸</span>
+            <span style="position:absolute; top:160px; left:12px;  font-size:18px; opacity:0.7;">✿</span>
+            <span style="position:absolute; top:280px; left:8px;   font-size:18px;">🍃</span>
+            <span style="position:absolute; top:430px; left:14px;  font-size:18px;">🌸</span>
+            <span style="position:absolute; bottom:200px; left:8px; font-size:18px;">🌿</span>
+            <span style="position:absolute; bottom:60px;  left:10px; font-size:20px;">🦋</span>
+            <span style="position:absolute; bottom:14px;  left:14px; font-size:18px;">🌸</span>
+
+            <span style="position:absolute; top:20px;  right:10px; filter:drop-shadow(0 0 6px rgba(255,180,230,0.5));">🌸</span>
+            <span style="position:absolute; top:80px;  right:8px;  font-size:18px;">🍃</span>
+            <span style="position:absolute; top:200px; right:12px; font-size:18px; opacity:0.7;">✿</span>
+            <span style="position:absolute; top:340px; right:6px;  font-size:18px;">🌿</span>
+            <span style="position:absolute; top:480px; right:10px; font-size:18px;">🌸</span>
+            <span style="position:absolute; bottom:230px; right:8px; font-size:18px;">🍃</span>
+            <span style="position:absolute; bottom:90px;  right:12px; font-size:20px;">🦋</span>
+            <span style="position:absolute; bottom:18px;  right:8px;  font-size:18px;">🌸</span>
+        </div>
+
+        <!-- 顶部蝴蝶 + 主标题区 -->
+        <div id="main-instructions" style="padding: 28px 24px 22px; text-align:center;
+                    position: relative; color: #f0e0ff;
+                    animation: holoFadeIn 0.7s ease-out;">
+
+            <!-- 声音按钮（右上角） -->
+            <button class="sound-btn" id="main-sound-btn" onclick="playAudio('main')" title="播放语音"
+                    style="position:absolute; top:14px; right:14px;
+                           background:rgba(180,120,255,0.18); border-color:rgba(220,180,255,0.4);">
+                <svg class="sound-icon" viewBox="0 0 24 24" style="fill:#f0d4ff;">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+                <div class="sound-waves">
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                    <div class="sound-wave"></div>
+                </div>
+            </button>
+
+            <!-- 顶部蝴蝶 -->
+            <div style="font-size:42px; line-height:1; margin-bottom:8px;
+                        filter: drop-shadow(0 0 14px rgba(255,180,230,0.7)) drop-shadow(0 0 26px rgba(220,150,255,0.5));">🦋</div>
+
+            <!-- 主标题 -->
+            <h1 style="text-align:center; font-size:2.6em; font-weight:800;
+                       background: linear-gradient(180deg, #ffe8fa 0%, #d4a5ff 60%, #b87dff 100%);
+                       -webkit-background-clip: text; background-clip: text;
+                       -webkit-text-fill-color: transparent;
+                       letter-spacing: 6px; margin: 0;
+                       filter: drop-shadow(0 0 20px rgba(212,165,255,0.5)); line-height: 1.2;">
+                心动星际任务
+            </h1>
+
+            <!-- 副标题：·欢迎指令· -->
+            <div style="display:inline-flex; align-items:center; gap:10px; margin-top:10px;
+                        font-size:13px; color:#e0c0ff; letter-spacing:6px;">
+                <span style="width:24px; height:1px; background:linear-gradient(90deg, transparent, rgba(220,180,255,0.7));"></span>
+                欢迎指令
+                <span style="width:24px; height:1px; background:linear-gradient(90deg, rgba(220,180,255,0.7), transparent);"></span>
             </div>
+        </div>
+
+        <!-- 欢迎语卡片 -->
+        <div style="margin: 0 18px 18px; padding: 20px 22px;
+                    background: linear-gradient(180deg, rgba(60,30,100,0.55) 0%, rgba(40,18,75,0.5) 100%);
+                    border: 1px solid rgba(220,180,255,0.28);
+                    border-radius: 20px;
+                    box-shadow: 0 0 28px rgba(180,120,255,0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+                    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+            <div style="display:flex; gap:12px; align-items:flex-start;">
+                <span style="font-size:22px; line-height:1.3; flex-shrink:0;
+                             filter: drop-shadow(0 0 8px rgba(255,180,230,0.6));">🦋</span>
+                <div style="flex:1;">
+                    <div style="font-size:18px; font-weight:600; color:#ffe8fa; margin-bottom:10px;
+                                text-shadow: 0 0 14px rgba(255,200,240,0.4);">欢迎你，探索者。</div>
+                    <p style="font-size:15.5px; line-height:1.85; color:#d8c4ed; margin:0;">
+                        你已抵达一颗全新的心动星球。<br>
+                        在这里，没有对错航线，没有必须完成的外力——<br>
+                        只有你内心真正亮起的信号。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 你的任务如下 卡片 -->
+        <div style="margin: 0 18px 18px; padding: 20px 22px;
+                    background: linear-gradient(180deg, rgba(60,30,100,0.55) 0%, rgba(40,18,75,0.5) 100%);
+                    border: 1px solid rgba(220,180,255,0.28);
+                    border-radius: 20px;
+                    box-shadow: 0 0 28px rgba(180,120,255,0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+                    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+                <span style="font-size:24px; filter: drop-shadow(0 0 8px rgba(180,255,180,0.4));">🌿</span>
+                <span style="font-size:18px; font-weight:600; color:#ffe8fa; letter-spacing:1px;">你的任务如下</span>
+            </div>
+
+            <!-- 任务1 -->
+            <div style="margin-bottom:14px; padding: 14px 16px; border-radius:14px;
+                        background: rgba(80,40,130,0.35); border: 1px solid rgba(220,180,255,0.18);">
+                <div style="display:flex; gap:14px; align-items:flex-start;">
+                    <div style="flex-shrink:0; width:30px; height:30px; border-radius:50%;
+                                background: linear-gradient(135deg, #ff9bd0 0%, #d65fb0 100%);
+                                color:#fff; font-size:14px; font-weight:700;
+                                display:flex; align-items:center; justify-content:center;
+                                box-shadow:0 0 14px rgba(255,140,200,0.55), inset 0 1px 0 rgba(255,255,255,0.3);
+                                margin-top:1px;">1</div>
+                    <div style="flex:1;">
+                        <div style="font-size:17px; font-weight:600; color:#ffe8fa; margin-bottom:6px;">扫描任务卡</div>
+                        <div style="font-size:15px; color:#c9b3e8; line-height:1.75;">
+                            在每个任务卡上，只选你真正感兴趣的事——不用管会不会做、做得好不好。喜欢，就点亮。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务2 -->
+            <div style="margin-bottom:14px; padding: 14px 16px; border-radius:14px;
+                        background: rgba(80,40,130,0.35); border: 1px solid rgba(220,180,255,0.18);">
+                <div style="display:flex; gap:14px; align-items:flex-start;">
+                    <div style="flex-shrink:0; width:30px; height:30px; border-radius:50%;
+                                background: linear-gradient(135deg, #ff9bd0 0%, #d65fb0 100%);
+                                color:#fff; font-size:14px; font-weight:700;
+                                display:flex; align-items:center; justify-content:center;
+                                box-shadow:0 0 14px rgba(255,140,200,0.55), inset 0 1px 0 rgba(255,255,255,0.3);
+                                margin-top:1px;">2</div>
+                    <div style="flex:1;">
+                        <div style="font-size:17px; font-weight:600; color:#ffe8fa; margin-bottom:6px;">点亮数量</div>
+                        <div style="font-size:15px; color:#ffb7e5; font-weight:600; line-height:1.75;">
+                            至少点亮 5 个任务，最多 7 个。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务3 -->
+            <div style="padding: 14px 16px; border-radius:14px;
+                        background: rgba(80,40,130,0.35); border: 1px solid rgba(220,180,255,0.18);">
+                <div style="display:flex; gap:14px; align-items:flex-start;">
+                    <div style="flex-shrink:0; width:30px; height:30px; border-radius:50%;
+                                background: linear-gradient(135deg, #ff9bd0 0%, #d65fb0 100%);
+                                color:#fff; font-size:14px; font-weight:700;
+                                display:flex; align-items:center; justify-content:center;
+                                box-shadow:0 0 14px rgba(255,140,200,0.55), inset 0 1px 0 rgba(255,255,255,0.3);
+                                margin-top:1px;">3</div>
+                    <div style="flex:1;">
+                        <div style="font-size:17px; font-weight:600; color:#ffe8fa; margin-bottom:6px;">记录心动信号</div>
+                        <div style="font-size:15px; color:#c9b3e8; line-height:1.75;">
+                            每点亮一个任务，请说出"为什么吸引你"，可以语音，也可以打字。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 任务终端阶段 卡片 -->
+        <div style="margin: 0 18px 24px; padding: 20px 22px;
+                    background: linear-gradient(180deg, rgba(60,30,100,0.55) 0%, rgba(40,18,75,0.5) 100%);
+                    border: 1px solid rgba(220,180,255,0.28);
+                    border-radius: 20px;
+                    box-shadow: 0 0 28px rgba(180,120,255,0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+                    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                <span style="font-size:24px; filter: drop-shadow(0 0 8px rgba(255,200,240,0.5));">✨</span>
+                <span style="font-size:18px; font-weight:600; color:#ffe8fa; letter-spacing:1px;">任务终端阶段</span>
+            </div>
+
+            <p style="font-size:15px; color:#c9b3e8; line-height:1.75; margin:0 0 14px; text-align:center;">
+                探索结束后，从你点亮的任务中挑出：
+            </p>
+
+            <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:12px;
+                        padding:14px; background:rgba(80,40,130,0.35);
+                        border:1px solid rgba(220,180,255,0.18); border-radius:14px;">
+                <div style="flex-shrink:0; width:26px; height:26px; border-radius:50%;
+                            background: linear-gradient(135deg, #ffd28c 0%, #ff9d4a 100%);
+                            color:#3a1a05; font-size:12px; font-weight:800;
+                            display:flex; align-items:center; justify-content:center;
+                            box-shadow:0 0 12px rgba(255,180,80,0.5); margin-top:2px;">①</div>
+                <div style="flex:1;">
+                    <div style="font-size:16px; font-weight:600; color:#ffe5b8; margin-bottom:4px;">最擅长的前 3</div>
+                    <div style="font-size:14.5px; color:#c9b3e8; line-height:1.7;">你做起来得心应手</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:14px; align-items:flex-start;
+                        padding:14px; background:rgba(80,40,130,0.35);
+                        border:1px solid rgba(220,180,255,0.18); border-radius:14px;">
+                <div style="flex-shrink:0; width:26px; height:26px; border-radius:50%;
+                            background: linear-gradient(135deg, #ffb0d8 0%, #e05fa8 100%);
+                            color:#3a0a20; font-size:12px; font-weight:800;
+                            display:flex; align-items:center; justify-content:center;
+                            box-shadow:0 0 12px rgba(255,160,210,0.55); margin-top:2px;">②</div>
+                <div style="flex:1;">
+                    <div style="font-size:16px; font-weight:600; color:#ffd4ec; margin-bottom:4px;">最喜欢的前 3</div>
+                    <div style="font-size:14.5px; color:#c9b3e8; line-height:1.7;">你最享受过程</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部进入按钮：完成指令，开启你的星际旅程 -->
+        <div style="text-align:center; margin: 8px 24px 12px;">
+            <button onclick="goToGallery()"
+                    style="display:inline-flex; align-items:center; gap:10px;
+                           padding: 16px 42px; font-size: 1.05rem; font-weight: 700;
+                           border: none; border-radius: 999px; cursor: pointer;
+                           background: linear-gradient(135deg, #ff9bd0 0%, #d65fb0 60%, #b87dff 100%);
+                           color: #fff; letter-spacing: 2px;
+                           box-shadow: 0 10px 28px rgba(214,95,176,0.5),
+                                       0 0 36px rgba(255,180,230,0.35),
+                                       inset 0 1px 0 rgba(255,255,255,0.35);
+                           transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 14px 34px rgba(214,95,176,0.65), 0 0 44px rgba(255,180,230,0.5), inset 0 1px 0 rgba(255,255,255,0.4)'; this.style.filter='brightness(1.08)';"
+                    onmouseout="this.style.transform=''; this.style.boxShadow='0 10px 28px rgba(214,95,176,0.5), 0 0 36px rgba(255,180,230,0.35), inset 0 1px 0 rgba(255,255,255,0.35)'; this.style.filter='';">
+                <span style="font-size:1.1em; line-height:1;">✨</span>
+                <span>完成指令，开启你的星际旅程</span>
+                <span style="font-size:1.1em; line-height:1;">→</span>
+            </button>
+        </div>
+    </div><!-- /#welcome-page -->
+
+    <!-- ========== 第二页：星际地图（6 个星球） ========== -->
+    <div id="gallery-page" style="display:none;">
+    <!-- 上一页 -->
+    <div style="max-width:980px; margin:0 auto 14px;">
+        <button onclick="goToWelcome()"
+                style="background: rgba(255,255,255,0.05); border: 1px solid rgba(120,160,255,0.3);
+                       color: #a8c8ff; cursor: pointer; font-size: 0.95em;
+                       display: inline-flex; align-items: center; gap: 6px;
+                       padding: 8px 16px; border-radius: 999px; transition: 0.2s;"
+                onmouseover="this.style.background='rgba(120,160,255,0.12)'; this.style.color='#fff';"
+                onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='#a8c8ff';">
+            ← 返回欢迎指令
         </button>
     </div>
-    <p class="subtitle" id="main-subtitle">欢迎来到兴趣宇宙！请自由参观 6 大维度星球，点亮你感兴趣的星际任务。</p>
+
+    <p class="subtitle" id="main-subtitle" style="border:none; padding:0; margin:0 0 30px;
+        color:#a8c8ff; font-size:1em; letter-spacing:1px;">
+        准备好了吗？点击任意星球开始探索 🚀
+    </p>
+
+    <!-- 主厅状态 banner：< 5 个橙色提醒，5-7 金色"下一步"-->
+    <div id="explore-done-banner" style="display:none; max-width: 980px; margin: 0 auto 24px;
+            padding: 22px 26px; border-radius: 18px;
+            border: 2px solid var(--accent-gold);
+            box-shadow: 0 0 30px rgba(255,215,0,0.25);
+            background: linear-gradient(135deg, rgba(255,215,0,0.18), rgba(0,224,255,0.08));
+            align-items: center; gap: 18px; flex-wrap: wrap; justify-content: space-between;">
+        <div style="flex: 1; min-width: 240px;">
+            <div id="banner-title" style="color: var(--accent-gold); font-weight: 800; font-size: 1.25em; letter-spacing: 1px;">
+                🌟 所有星球都可以探索啦！
+            </div>
+            <div id="banner-status" style="color: var(--text-main); margin-top: 4px;">
+                你已点亮 <span id="banner-count" style="color:var(--accent-gold); font-weight:700;">0</span> 个任务。
+            </div>
+        </div>
+        <button id="banner-action-btn" onclick="goToRanking()"
+                style="padding: 14px 28px; font-size: 1.1em; font-weight: 700;
+                       background: var(--accent-gold); color: #0a0c14; border: none;
+                       border-radius: 999px; cursor: pointer;
+                       box-shadow: 0 6px 18px rgba(255,215,0,0.4);
+                       white-space: nowrap;">
+            ➡️ 下一步：选前 3
+        </button>
+    </div>
 
     <div id="theme-gallery" class="theme-grid"></div>
+    </div><!-- /#gallery-page -->
 
     <div id="career-section">
         <button class="top-back-btn" onclick="goBack()">⬅ 返回星际地图</button>
@@ -464,17 +779,72 @@
 
 <div class="control-bar" id="control-bar">
     <div class="status-text" id="status-text">已点亮 0 个探索任务</div>
-    <button class="finish-btn" id="finish-btn" onclick="showResult()" style="display: none;">生成兴趣报告 🚀</button>
+    <button class="finish-btn" id="finish-btn" onclick="goToRanking()" style="display: none;">下一步：给任务排序 🚀</button>
+</div>
+
+<!-- 排序弹窗：选前 3 最擅长 + 前 3 最喜欢 -->
+<div id="rank-modal" style="display:none; position:fixed; inset:0; z-index:90; background:rgba(11,15,25,0.94); padding:24px; overflow:auto;">
+    <div style="max-width:840px; margin:0 auto; padding:28px 26px; border-radius:18px; background:#151a28; border:1px solid #2c3855;">
+        <h2 style="color:var(--accent-gold); margin:0 0 6px;">📊 选出你的 TOP 3</h2>
+        <p style="color:#aabfd9; line-height:1.7; margin:0 0 18px;">
+            从你点亮的任务中，分别挑出：<br>
+            ① <strong style="color:#ffd700;">你最擅长的前 3 个</strong>（按擅长程度从高到低）<br>
+            ② <strong style="color:#ff70a0;">你最喜欢的前 3 个</strong>（按喜欢程度从高到低）
+        </p>
+
+        <!-- 候选池（选中的任务） -->
+        <div style="margin-bottom: 18px;">
+            <div style="color:var(--text-main); font-weight: 600; margin-bottom: 8px;">🎯 候选任务（点击下方两栏内的"+"加入排行）</div>
+            <div id="rank-pool" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+        </div>
+
+        <!-- 两栏：擅长 + 喜欢 -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px;" id="rank-cols">
+            <div>
+                <div style="color:#ffd700; font-weight:700; font-size:1.05em; margin-bottom:8px;">🏆 最擅长 TOP 3</div>
+                <ol id="rank-good-at" style="list-style:none; padding:0; margin:0; min-height: 200px; background: rgba(255,215,0,0.05); border-radius:12px; padding:10px;"></ol>
+            </div>
+            <div>
+                <div style="color:#ff70a0; font-weight:700; font-size:1.05em; margin-bottom:8px;">💖 最喜欢 TOP 3</div>
+                <ol id="rank-liked" style="list-style:none; padding:0; margin:0; min-height: 200px; background: rgba(255,112,160,0.06); border-radius:12px; padding:10px;"></ol>
+            </div>
+        </div>
+
+        <p style="color:#aabfd9; line-height:1.6; margin: 0 0 8px;">说一说为什么这样排（可选）：</p>
+        <div style="background:#0f1420; border:1px solid #2c3855; border-radius:8px; padding:10px;">
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
+                <button id="rank-voice-btn" type="button" onclick="toggleRankVoice()"
+                    style="padding:8px 16px; border:none; border-radius:999px; background:linear-gradient(135deg,#00e0ff,#7e62ff); color:#0a0c14; cursor:pointer; font-weight:700;">
+                    🎤 开始语音输入
+                </button>
+                <span id="rank-voice-status" style="color:#aabfd9; font-size:0.9em; flex:1;"></span>
+            </div>
+            <textarea id="rank-rationale" rows="3" placeholder="例如：我把__排第一，因为... （可以语音输入或直接打字）"
+                style="width:100%; padding:8px; background:#0a0d18; color:#fff; border:1px solid #2c3855; border-radius:6px; font-family:inherit; resize:vertical;"></textarea>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top: 18px; flex-wrap:wrap;">
+            <button id="rank-submit-btn" onclick="submitRanking()"
+                style="flex:1; padding:14px 28px; border:none; border-radius:999px; background:var(--accent-gold); color:#0a0c14; cursor:pointer; font-weight:bold; font-size:1.05em;">
+                🚀 提交报告
+            </button>
+            <button onclick="document.getElementById('rank-modal').style.display='none';"
+                style="padding:14px 22px; border:1px solid #5f73a0; border-radius:999px; background:transparent; color:var(--text-main); cursor:pointer; font-family:inherit;">
+                返回
+            </button>
+        </div>
+    </div>
 </div>
 
 <div id="result-modal">
-    <div class="modal-content">
-        <h2 style="color:var(--accent-gold); font-size: 2.2em; margin-bottom: 10px;">🧬 兴趣宇宙 · 探索报告</h2>
-        <p style="color: #8899b3;">根据你的选择，解码出你最感兴趣的维度：</p>
+    <div class="modal-content" style="text-align:center;">
+        <div style="font-size: 3em; margin-bottom: 12px;">✅</div>
+        <h2 style="color:var(--accent-gold); font-size: 1.8em; margin-bottom: 14px;">本关已完成！</h2>
+        <p style="color: #cdd; line-height:1.7;">你的探索数据已经收集完成。<br>请进入下一段星际旅程。</p>
 
-        <div class="top-three-box" id="topThreeList"></div>
-
-        <div class="advice-box" id="interestAdvice"></div>
+        <!-- 隐藏的占位元素，保留供 JS 写入但不显示 -->
+        <div id="topThreeList" style="display:none;"></div>
+        <div id="interestAdvice" style="display:none;"></div>
 
         <div class="portal-cloud-panel" style="margin-top:18px;">
             <h3>云端记录</h3>
@@ -490,7 +860,7 @@
 <div id="record-modal">
     <div class="record-modal-content">
         <div class="record-modal-title">🎤 分享你的想法</div>
-        <div class="record-modal-subtitle">分享你过去的相关经历</div>
+        <div class="record-modal-subtitle">告诉我们这个任务为什么吸引你</div>
 
         <div class="record-task-display" id="record-task-display">
             <div class="record-task-emoji" id="record-task-emoji">⚡</div>
@@ -499,14 +869,10 @@
         </div>
 
         <div class="record-question">
-            💬 这个任务为什么吸引力你？
+            💬 这个任务为什么吸引你？
         </div>
 
-        <div class="record-question">
-            💬 在你过去的经历中，有没有做过和这个任务相关的事情？你觉得自己擅长吗？
-        </div>
-
-        <textarea class="record-textarea" id="record-textarea" placeholder="例如：我之前在学校参加过木工社团，做过一些小木盒，我觉得自己做手工活还挺擅长的..."></textarea>
+        <textarea class="record-textarea" id="record-textarea" placeholder="例如：我喜欢动手解决问题，看到电路接通的瞬间会觉得很有成就感..."></textarea>
 
         <div class="voice-input-controls">
             <button class="voice-input-btn" id="record-voice-btn" onclick="toggleVoiceInput()">
@@ -517,7 +883,7 @@
         <div class="voice-error" id="voice-error"></div>
 
         <div class="record-modal-buttons">
-            <button class="record-save-btn" onclick="saveRecord()">💾 保存</button>
+            <button class="record-save-btn" onclick="saveTaskReflection()">💾 保存</button>
             <button class="record-skip-btn" onclick="skipRecord()">⏭️ 跳过</button>
         </div>
     </div>
@@ -764,11 +1130,23 @@
         currentAudio = null;
     }
 
-    // 检查是否所有星球都已访问
+    // 检查是否所有星球都已访问 + 是否到达最少 5 个
     function checkAllPlanetsVisited() {
         const finishBtn = document.getElementById('finish-btn');
-        if (visitedPlanets.size >= 6) {
+        if (!finishBtn) return;
+        // 至少点亮 5 个才显示底部按钮
+        if (selectedTasks.size >= MIN_TASKS) {
             finishBtn.style.display = 'block';
+            finishBtn.style.opacity = '1';
+            finishBtn.disabled = false;
+            finishBtn.textContent = '下一步：选前 3 🚀';
+        } else if (selectedTasks.size > 0) {
+            finishBtn.style.display = 'block';
+            finishBtn.style.opacity = '0.5';
+            finishBtn.disabled = true;
+            finishBtn.textContent = `还差 ${MIN_TASKS - selectedTasks.size} 个`;
+        } else {
+            finishBtn.style.display = 'none';
         }
     }
 
@@ -864,12 +1242,35 @@
         currentPlanetId = null;
 
         document.getElementById('career-section').style.display = 'none';
+        // 从星球详情返回 → 进入星际地图（第二页），而不是回到欢迎页
+        document.getElementById('welcome-page').style.display = 'none';
+        document.getElementById('gallery-page').style.display = 'block';
         document.getElementById('theme-gallery').style.display = 'grid';
         document.getElementById('main-subtitle').style.display = 'block';
         window.scrollTo(0,0);
     }
 
+    // --- 第一页 → 第二页 ---
+    function goToGallery() {
+        stopAllAudio();
+        document.getElementById('welcome-page').style.display = 'none';
+        document.getElementById('gallery-page').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    // --- 第二页 → 第一页 ---
+    function goToWelcome() {
+        stopAllAudio();
+        document.getElementById('gallery-page').style.display = 'none';
+        document.getElementById('welcome-page').style.display = 'block';
+        window.scrollTo(0,0);
+        // 重新播放欢迎语音
+        setTimeout(() => playAudio('main'), 300);
+    }
+
     // --- 选中/取消选中任务 ---
+    const MAX_TASKS = 7;
+
     function toggleTask(card, planetId, taskId, task) {
         if (selectedTasks.has(taskId)) {
             // 如果已选中，取消选中
@@ -879,21 +1280,81 @@
             // 删除记录
             delete taskRecords[taskId];
         } else {
-            // 如果未选中，先选中
+            // 上限：最多 7 个任务
+            if (selectedTasks.size >= MAX_TASKS) {
+                alert(`最多只能选 ${MAX_TASKS} 个任务哦，再选会太多啦！如果想换，请先取消一个再选。`);
+                return;
+            }
             selectedTasks.add(taskId);
             dimensionScores[planetId] += 1;
             card.classList.add('selected');
 
-            // 弹出录音弹窗
+            // 弹出录音弹窗（阶段 A：只录"为什么吸引你"）
             openRecordModal(taskId, task, planetId);
         }
         updateControlBar();
     }
 
-    // --- 更新底部计分板 ---
+    const MIN_TASKS = 5;
+    // --- 更新底部计分板 + 主厅 banner ---
     function updateControlBar() {
-        document.getElementById('status-text').innerText = `已点亮 ${selectedTasks.size} 个探索任务`;
+        document.getElementById('status-text').innerText = `已点亮 ${selectedTasks.size} / ${MAX_TASKS} 个探索任务（至少 ${MIN_TASKS} 个）`;
+        // 同步刷新底部 finish-btn 状态
+        try { checkAllPlanetsVisited(); } catch(e) {}
+        const banner = document.getElementById('explore-done-banner');
+        const cntEl = document.getElementById('banner-count');
+        const titleEl = document.getElementById('banner-title');
+        const statusEl = document.getElementById('banner-status');
+        const btnEl = document.getElementById('banner-action-btn');
+        const careerSection = document.getElementById('career-section');
+        const onMainHall = (careerSection && getComputedStyle(careerSection).display === 'none');
+        const n = selectedTasks.size;
+        if (cntEl) cntEl.textContent = n;
+
+        if (!banner) return;
+        if (!onMainHall || n === 0) {
+            banner.style.display = 'none';
+            return;
+        }
+        banner.style.display = 'flex';
+        if (n < MIN_TASKS) {
+            // 橙色提醒
+            banner.style.background = 'linear-gradient(135deg, rgba(255,159,74,0.20), rgba(255,159,74,0.04))';
+            banner.style.borderColor = '#ff9f4a';
+            banner.style.boxShadow = '0 0 28px rgba(255,159,74,0.25)';
+            if (titleEl) { titleEl.textContent = '⏳ 还没点够任务'; titleEl.style.color = '#ff9f4a'; }
+            if (statusEl) statusEl.innerHTML = `已点亮 <span style="color:#ff9f4a; font-weight:700;">${n}</span> 个，至少要点亮 <strong>${MIN_TASKS}</strong> 个才能进入下一步。`;
+            if (btnEl) {
+                btnEl.style.opacity = '0.5';
+                btnEl.style.cursor = 'not-allowed';
+                btnEl.disabled = true;
+                btnEl.textContent = `还差 ${MIN_TASKS - n} 个`;
+            }
+        } else {
+            // 金色"探索完毕"
+            banner.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.18), rgba(0,224,255,0.08))';
+            banner.style.borderColor = 'var(--accent-gold)';
+            banner.style.boxShadow = '0 0 30px rgba(255,215,0,0.25)';
+            if (titleEl) { titleEl.textContent = '🌟 所有星球都可以探索啦！'; titleEl.style.color = 'var(--accent-gold)'; }
+            if (statusEl) statusEl.innerHTML = `你已点亮 <span style="color:var(--accent-gold); font-weight:700;">${n}</span> 个任务，<strong>点击右侧进入下一步</strong>，给它们排前三。`;
+            if (btnEl) {
+                btnEl.style.opacity = '1';
+                btnEl.style.cursor = 'pointer';
+                btnEl.disabled = false;
+                btnEl.textContent = '➡️ 下一步：选前 3';
+            }
+        }
     }
+
+    // 进/出星球时也刷新 banner（goBack / 切到 career-section 时）
+    document.addEventListener('DOMContentLoaded', () => {
+        // 监听 career-section 显示变化以触发 banner 重算
+        const cs = document.getElementById('career-section');
+        if (cs) {
+            const obs = new MutationObserver(() => updateControlBar());
+            obs.observe(cs, { attributes: true, attributeFilter: ['style'] });
+        }
+    });
 
     // --- 录音弹窗相关变量和函数 ---
     let currentRecordingTask = null;
@@ -924,6 +1385,7 @@
 
         // 显示弹窗
         document.getElementById('record-modal').style.display = 'flex';
+        document.body.classList.add('record-modal-open');
 
         // 停止背景音频
         stopAllAudio();
@@ -945,6 +1407,7 @@
     // 关闭录音弹窗
     function closeRecordModal() {
         document.getElementById('record-modal').style.display = 'none';
+        document.body.classList.remove('record-modal-open');
 
         // 停止语音识别
         if (recordRecognition && isRecordRecognizing) {
@@ -954,8 +1417,8 @@
         currentRecordingTask = null;
     }
 
-    // 保存录音记录
-    function saveRecord() {
+    // 保存当前任务的反思（本地内存，非云端）
+    function saveTaskReflection() {
         if (!currentRecordingTask) return;
 
         const text = document.getElementById('record-textarea').value.trim();
@@ -1020,7 +1483,7 @@
         errorEl.textContent = '';
 
         recordRecognition = new SpeechRecognitionAPI();
-        recordRecognition.lang = 'zh-CN';
+        recordRecognition.lang = (window.I18N ? window.I18N.getSpeechLang() : 'zh-CN');
         recordRecognition.interimResults = true;
         recordRecognition.continuous = true;
         recordRecognition.maxAlternatives = 1;
@@ -1103,6 +1566,217 @@
         }
     }
 
+    // --- 排序阶段：选 Top 3 最擅长 + Top 3 最喜欢 ---
+    let topGoodAt = []; // [taskId, ...] 长度 0-3
+    let topLiked = [];  // [taskId, ...] 长度 0-3
+
+    function goToRanking() {
+        if (selectedTasks.size === 0) {
+            showResult();
+            return;
+        }
+        if (selectedTasks.size < MIN_TASKS) {
+            alert(`至少要点亮 ${MIN_TASKS} 个任务哦，再多探索几个吧！`);
+            return;
+        }
+        topGoodAt = [];
+        topLiked = [];
+        renderRankUI();
+        document.getElementById('rank-modal').style.display = 'block';
+        // 提前保存一份云端快照（即使用户后续没提交排序，也已经记录到任务选择）
+        saveCareerEarly();
+    }
+
+    // 提前保存：即使用户在排序阶段离开，也能保存到云端
+    async function saveCareerEarly() {
+        if (hasEarlySavedRecord) return;
+        try {
+            if (!window.GamePortal) {
+                console.warn('[职业体验馆] GamePortal 未加载，跳过提前保存');
+                return;
+            }
+            const record = buildCareerExperienceRecord();
+            const result = await window.GamePortal.saveRecord({
+                gameKey: 'career-experience',
+                gameTitle: '星际探索者·兴趣宇宙大冒险',
+                recordType: 'assessment-partial',
+                resultType: '兴趣探索（中途快照）',
+                summary: record.summary,
+                recordMarkdown: record.markdown,
+                detailJson: record.detailJson
+            });
+            if (result && result.savedToCloud) {
+                hasEarlySavedRecord = true;
+                console.log('[职业体验馆] 中途快照已保存到云端');
+            } else {
+                console.warn('[职业体验馆] 中途快照保存失败：', result && result.message);
+            }
+        } catch (err) {
+            console.error('[职业体验馆] 中途快照保存异常：', err);
+        }
+    }
+
+    function taskMeta(taskId) {
+        const rec = taskRecords[taskId];
+        return {
+            taskName: rec && rec.task ? rec.task.task : '未命名任务',
+            earth: rec && rec.task ? rec.task.earth : '',
+            emoji: rec && rec.task ? rec.task.emoji : '⭐'
+        };
+    }
+
+    function renderRankUI() {
+        renderRankPool();
+        renderRankColumn('good-at', topGoodAt, '#ffd700');
+        renderRankColumn('liked', topLiked, '#ff70a0');
+    }
+
+    function renderRankPool() {
+        const pool = document.getElementById('rank-pool');
+        pool.innerHTML = '';
+        Array.from(selectedTasks).forEach(taskId => {
+            const m = taskMeta(taskId);
+            const inGoodAt = topGoodAt.includes(taskId);
+            const inLiked = topLiked.includes(taskId);
+            const chip = document.createElement('div');
+            chip.style.cssText = `display:flex; align-items:center; gap:6px; padding:8px 12px; background:#1a2235; border:1px solid #2c3855; border-radius:999px; color:#fff; font-size:0.92em;`;
+            chip.innerHTML = `
+                <span style="font-size:1.1em;">${m.emoji}</span>
+                <span>${m.taskName}</span>
+                <button onclick="addToColumn('good-at', '${taskId}')" ${inGoodAt || topGoodAt.length >= 3 ? 'disabled' : ''}
+                        style="margin-left:6px; padding:3px 8px; border-radius:999px; border:none; background:rgba(255,215,0,0.25); color:#ffd700; cursor:pointer; font-weight:700;">＋擅长</button>
+                <button onclick="addToColumn('liked', '${taskId}')" ${inLiked || topLiked.length >= 3 ? 'disabled' : ''}
+                        style="padding:3px 8px; border-radius:999px; border:none; background:rgba(255,112,160,0.25); color:#ff70a0; cursor:pointer; font-weight:700;">＋喜欢</button>
+            `;
+            pool.appendChild(chip);
+        });
+    }
+
+    function renderRankColumn(kind, list, color) {
+        const elId = kind === 'good-at' ? 'rank-good-at' : 'rank-liked';
+        const ol = document.getElementById(elId);
+        ol.innerHTML = '';
+        if (list.length === 0) {
+            ol.innerHTML = `<div style="text-align:center; color:#7a8b9e; padding:30px 0;">点击上方"＋"按钮加入</div>`;
+            return;
+        }
+        list.forEach((taskId, idx) => {
+            const m = taskMeta(taskId);
+            const li = document.createElement('li');
+            li.style.cssText = `display:flex; align-items:center; gap:8px; padding:10px 12px; background:#0f1420; border-left: 3px solid ${color}; border-radius:6px; margin-bottom:6px;`;
+            li.innerHTML = `
+                <span style="color:${color}; font-weight:bold; font-size:1.1em; min-width:24px;">${idx + 1}.</span>
+                <span style="font-size:1.1em;">${m.emoji}</span>
+                <span style="flex:1; color:#fff;">${m.taskName}</span>
+                <div style="display:flex; gap:4px;">
+                    <button onclick="moveColumnItem('${kind}', ${idx}, -1)" ${idx===0?'disabled':''}
+                            style="padding:3px 8px; border-radius:6px; border:none; background:#2c3855; color:#fff; cursor:pointer;">⬆</button>
+                    <button onclick="moveColumnItem('${kind}', ${idx}, 1)" ${idx===list.length-1?'disabled':''}
+                            style="padding:3px 8px; border-radius:6px; border:none; background:#2c3855; color:#fff; cursor:pointer;">⬇</button>
+                    <button onclick="removeFromColumn('${kind}', ${idx})"
+                            style="padding:3px 8px; border-radius:6px; border:none; background:#5a2d3d; color:#ff9aa2; cursor:pointer;">×</button>
+                </div>
+            `;
+            ol.appendChild(li);
+        });
+    }
+
+    function addToColumn(kind, taskId) {
+        const list = kind === 'good-at' ? topGoodAt : topLiked;
+        if (list.length >= 3 || list.includes(taskId)) return;
+        list.push(taskId);
+        renderRankUI();
+    }
+
+    function removeFromColumn(kind, idx) {
+        const list = kind === 'good-at' ? topGoodAt : topLiked;
+        list.splice(idx, 1);
+        renderRankUI();
+    }
+
+    function moveColumnItem(kind, idx, dir) {
+        const list = kind === 'good-at' ? topGoodAt : topLiked;
+        const j = idx + dir;
+        if (j < 0 || j >= list.length) return;
+        const tmp = list[idx]; list[idx] = list[j]; list[j] = tmp;
+        renderRankUI();
+    }
+
+    // === 排序理由的语音输入（用 Web Speech API）===
+    let _rankRecognition = null;
+    let _rankRecognizing = false;
+    function toggleRankVoice() {
+        const btn = document.getElementById('rank-voice-btn');
+        const status = document.getElementById('rank-voice-status');
+        const ta = document.getElementById('rank-rationale');
+        if (_rankRecognizing && _rankRecognition) {
+            _rankRecognition.stop();
+            return;
+        }
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) {
+            status.textContent = '当前浏览器不支持语音识别，请直接打字';
+            return;
+        }
+        try {
+            _rankRecognition = new SR();
+            _rankRecognition.lang = (window.I18N ? window.I18N.getSpeechLang() : 'zh-CN');
+            _rankRecognition.continuous = true;
+            _rankRecognition.interimResults = true;
+            const isEn = _rankRecognition.lang === 'en-US';
+            const baseText = ta.value;
+            let interim = '';
+            _rankRecognition.onstart = () => {
+                _rankRecognizing = true;
+                if (btn) btn.textContent = '⏹ 停止';
+                if (status) status.textContent = '🎤 正在听...请说话';
+            };
+            _rankRecognition.onresult = (ev) => {
+                let finalText = '';
+                interim = '';
+                for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                    const t = ev.results[i][0].transcript || '';
+                    const sep = isEn && (interim || finalText) ? ' ' : '';
+                    if (ev.results[i].isFinal) finalText += sep + t;
+                    else interim += sep + t;
+                }
+                ta.value = (baseText + (baseText ? (isEn ? ' ' : '') : '') + finalText + (interim ? (isEn ? ' ' : '') + interim : '')).trim();
+            };
+            _rankRecognition.onerror = (ev) => {
+                if (status) status.textContent = '语音识别出错：' + ev.error;
+            };
+            _rankRecognition.onend = () => {
+                _rankRecognizing = false;
+                if (btn) btn.textContent = '🎤 开始语音输入';
+                if (status) status.textContent = '✓ 录音已停止';
+            };
+            _rankRecognition.start();
+        } catch (e) {
+            if (status) status.textContent = '语音识别启动失败：' + (e && e.message);
+        }
+    }
+
+    function submitRanking() {
+        // 把 topGoodAt / topLiked 写到 taskRecords 里
+        Array.from(selectedTasks).forEach(taskId => {
+            if (!taskRecords[taskId]) taskRecords[taskId] = {};
+            const gIdx = topGoodAt.indexOf(taskId);
+            const lIdx = topLiked.indexOf(taskId);
+            taskRecords[taskId].rankGoodAt = gIdx >= 0 ? gIdx + 1 : null;
+            taskRecords[taskId].rankLiked = lIdx >= 0 ? lIdx + 1 : null;
+        });
+        const rationaleEl = document.getElementById('rank-rationale');
+        window._rankRationale = rationaleEl ? rationaleEl.value.trim() : '';
+        document.getElementById('rank-modal').style.display = 'none';
+        showResult();
+    }
+
+    // 绑定提交按钮
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('rank-submit-btn');
+        if (btn) btn.addEventListener('click', submitRanking);
+    });
+
     // --- 显示最终报告 ---
     function showResult() {
         const topThreeDiv = document.getElementById('topThreeList');
@@ -1184,6 +1858,7 @@
     // ============== Portal 云端记录集成 ==============
     let hasAutoUploadedRecord = false;
     let hasScheduledNextGame = false;
+    let hasEarlySavedRecord = false;
 
     function goToNextGame() {
         if (window.GamePortal) {
@@ -1211,8 +1886,23 @@
             earthCareer: record.task && record.task.earth ? record.task.earth : '',
             emoji: record.task && record.task.emoji ? record.task.emoji : '',
             reflectionText: record.text || '',
-            answeredAt: record.timestamp || ''
+            answeredAt: record.timestamp || '',
+            rankGoodAt: record.rankGoodAt || null,  // 1-3 in 最擅长 list
+            rankLiked: record.rankLiked || null     // 1-3 in 最喜欢 list
         }));
+
+        // 排序：先按"任意上榜"，再按擅长名次
+        const inTop = (r) => r.rankGoodAt || r.rankLiked;
+        taskRecordList.sort((a, b) => {
+            const aTop = inTop(a) ? 1 : 0, bTop = inTop(b) ? 1 : 0;
+            if (aTop !== bTop) return bTop - aTop;
+            return (a.rankGoodAt || 99) - (b.rankGoodAt || 99);
+        });
+
+        // 单独抽 top3 用于报告头
+        const top3GoodAt = [...taskRecordList].filter(r => r.rankGoodAt).sort((a,b) => a.rankGoodAt - b.rankGoodAt);
+        const top3Liked  = [...taskRecordList].filter(r => r.rankLiked).sort((a,b) => a.rankLiked - b.rankLiked);
+        const rankRationale = window._rankRationale || '';
 
         const lines = [
             '# 职业体验馆记录',
@@ -1223,10 +1913,28 @@
             ''
         ];
         dims.forEach((d) => lines.push(`- ${d.label} 分数: ${d.score}`));
+
+        if (top3GoodAt.length) {
+            lines.push('', '## 🏆 最擅长 TOP 3');
+            top3GoodAt.forEach(r => lines.push(`${r.rankGoodAt}. ${r.emoji} ${r.taskName}（${r.earthCareer}）`));
+        }
+        if (top3Liked.length) {
+            lines.push('', '## 💖 最喜欢 TOP 3');
+            top3Liked.forEach(r => lines.push(`${r.rankLiked}. ${r.emoji} ${r.taskName}（${r.earthCareer}）`));
+        }
+        if (rankRationale) {
+            lines.push('', '## 排序理由');
+            lines.push(rankRationale);
+        }
         if (taskRecordList.length) {
-            lines.push('', '## 用户反思（语音/文字）');
+            lines.push('', '## 全部任务与反思');
             taskRecordList.forEach((r, i) => {
-                lines.push(`${i + 1}. ${r.emoji} ${r.taskName}（${r.earthCareer}）：${r.reflectionText || '（未填写）'}`);
+                const tags = [];
+                if (r.rankGoodAt) tags.push(`擅长第 ${r.rankGoodAt}`);
+                if (r.rankLiked) tags.push(`喜欢第 ${r.rankLiked}`);
+                const tagStr = tags.length ? ` [${tags.join(' / ')}]` : '';
+                lines.push(`${i + 1}. ${r.emoji} ${r.taskName}（${r.earthCareer}）${tagStr}`);
+                if (r.reflectionText) lines.push(`   - 吸引你的点：${r.reflectionText}`);
             });
         }
 
@@ -1247,12 +1955,19 @@
     async function saveResultToCloud() {
         const statusEl = document.getElementById('cloud-save-status');
         if (!window.GamePortal) {
-            if (statusEl) statusEl.textContent = '公共云端模块未加载成功';
+            const msg = '公共云端模块未加载成功（GamePortal 未就绪）';
+            console.error('[职业体验馆][saveResultToCloud]', msg);
+            if (statusEl) statusEl.textContent = msg;
+            alert(msg);
             return;
         }
         if (statusEl) statusEl.textContent = '正在保存到云端...';
         try {
             const record = buildCareerExperienceRecord();
+            console.log('[职业体验馆][saveResultToCloud] 准备上传：', {
+                summary: record.summary,
+                markdownLength: (record.markdown || '').length
+            });
             const result = await window.GamePortal.saveRecord({
                 gameKey: 'career-experience',
                 gameTitle: '星际探索者·兴趣宇宙大冒险',
@@ -1262,10 +1977,17 @@
                 recordMarkdown: record.markdown,
                 detailJson: record.detailJson
             });
+            console.log('[职业体验馆][saveResultToCloud] 返回结果：', result);
             if (statusEl) statusEl.textContent = result.message;
-            hasAutoUploadedRecord = true;
+            if (result && result.savedToCloud) {
+                hasAutoUploadedRecord = true;
+            } else {
+                alert('记录未保存到云端：' + ((result && result.message) || '请先登录'));
+            }
         } catch (error) {
+            console.error('[职业体验馆][saveResultToCloud] 异常：', error);
             if (statusEl) statusEl.textContent = `保存失败：${error.message || '请稍后重试'}`;
+            alert('保存失败：' + (error && error.message ? error.message : error));
         }
     }
 

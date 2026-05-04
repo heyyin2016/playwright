@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玩悟星际成长测评系统 · 登录</title>
+    <style>
+        :root {
+            --brand-blue: #1a4ea0;
+            --brand-blue-2: #2e6cc9;
+            --brand-yellow: #ffd700;
+            --bg: #f5f8ff;
+            --card: #ffffff;
+            --text: #1f2c4a;
+            --muted: #5b6b85;
+            --line: #e2e9f5;
+            --error: #c53030;
+            --success: #1f7a4d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background:
+                radial-gradient(ellipse at 12% 8%, rgba(26,78,160,0.08) 0%, transparent 45%),
+                radial-gradient(ellipse at 88% 92%, rgba(255,215,0,0.10) 0%, transparent 45%),
+                var(--bg);
+            color: var(--text);
+            font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+            min-height: 100vh; padding: 0 22px 60px;
+        }
+        .top-bar {
+            position: sticky; top: 0; z-index: 10;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px 0; background: transparent;
+            margin-bottom: 26px;
+        }
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .brand-logo {
+            width: 36px; height: 36px; border-radius: 9px;
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-2));
+            color: #fff; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: 800;
+            box-shadow: 0 4px 14px rgba(20,40,120,0.25);
+        }
+        .brand-name {
+            font-size: 1.05rem; font-weight: 700; color: var(--brand-blue);
+            letter-spacing: 0.5px;
+        }
+        .brand-sub { font-size: 0.78rem; color: var(--muted); margin-top: 1px; letter-spacing: 1px; }
+        .btn-back {
+            font-size: 0.9rem; color: var(--muted); text-decoration: none;
+            border: 1px solid var(--line); padding: 7px 14px; border-radius: 999px;
+            background: white; transition: 0.15s;
+        }
+        .btn-back:hover { color: var(--brand-blue); border-color: var(--brand-blue-2); }
+
+        .container { max-width: 460px; margin: 30px auto 0; }
+
+        .hero {
+            text-align: center; margin-bottom: 22px;
+        }
+        .hero-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 64px; height: 64px; border-radius: 18px;
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-2));
+            color: #fff; font-size: 1.8rem;
+            box-shadow: 0 10px 28px rgba(20,40,120,0.25);
+            margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-size: 1.55rem; color: var(--text);
+            font-weight: 800; margin-bottom: 6px;
+        }
+        .hero p { color: var(--muted); font-size: 0.95rem; line-height: 1.7; }
+
+        .card {
+            background: var(--card); border-radius: 18px;
+            padding: 28px 26px; border: 1px solid var(--line);
+            box-shadow: 0 8px 30px rgba(20,40,80,0.06);
+        }
+
+        .tabs {
+            display: grid; grid-template-columns: 1fr 1fr;
+            background: #f1f5fc; border-radius: 12px; padding: 4px;
+            margin-bottom: 22px;
+        }
+        .tab-btn {
+            padding: 10px; border: none; cursor: pointer;
+            background: transparent; color: var(--muted);
+            font-size: 0.95rem; font-weight: 600;
+            border-radius: 9px; font-family: inherit;
+            transition: 0.18s;
+        }
+        .tab-btn.active {
+            background: white; color: var(--brand-blue);
+            box-shadow: 0 2px 8px rgba(20,40,80,0.08);
+        }
+
+        .field { margin-bottom: 16px; }
+        .field label {
+            display: block; color: var(--text); font-size: 0.92rem; font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .field input {
+            width: 100%; padding: 12px 14px; font-size: 1rem;
+            background: #fafbff; border: 1px solid var(--line);
+            color: var(--text); border-radius: 10px;
+            font-family: inherit; transition: 0.15s;
+        }
+        .field input:focus {
+            outline: none; border-color: var(--brand-blue-2);
+            box-shadow: 0 0 0 3px rgba(46,108,201,0.12);
+            background: #fff;
+        }
+        .field-hint { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+
+        .submit-btn {
+            width: 100%; padding: 13px; font-size: 1rem; font-weight: 700;
+            border: none; border-radius: 10px; cursor: pointer; margin-top: 6px;
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-2));
+            color: white; box-shadow: 0 6px 16px rgba(20,40,120,0.25);
+            font-family: inherit; transition: 0.15s;
+        }
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(20,40,120,0.33);
+        }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .status {
+            margin-top: 14px; padding: 10px 14px; border-radius: 10px;
+            font-size: 0.92rem; min-height: 1.2em;
+            display: none;
+        }
+        .status.show { display: block; }
+        .status.error {
+            background: #ffeded; color: var(--error);
+            border: 1px solid #ffcaca;
+        }
+        .status.success {
+            background: #ebf9f1; color: var(--success);
+            border: 1px solid #c5e9d3;
+        }
+        .status.info {
+            background: #ecf2fc; color: var(--brand-blue);
+            border: 1px solid #c8d8ee;
+        }
+
+        /* 已登录状态卡片 */
+        .logged-in-banner {
+            display: none;
+            margin-bottom: 22px; padding: 16px 18px;
+            background: linear-gradient(135deg, rgba(26,78,160,0.06), rgba(255,215,0,0.08));
+            border: 1px solid rgba(26,78,160,0.18); border-radius: 14px;
+        }
+        .logged-in-banner.show { display: block; }
+        .logged-in-banner .row {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+        }
+        .logged-in-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-2));
+            color: #fff; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.1rem;
+        }
+        .logged-in-name { color: var(--brand-blue); font-weight: 700; font-size: 1rem; }
+        .logged-in-msg { color: var(--muted); font-size: 0.86rem; margin-top: 2px; }
+        .logged-in-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-continue {
+            flex: 1; padding: 11px; font-size: 0.95rem; font-weight: 700;
+            border: none; border-radius: 10px; cursor: pointer;
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-2));
+            color: white; font-family: inherit; transition: 0.15s;
+        }
+        .btn-continue:hover { transform: translateY(-1px); }
+        .btn-signout {
+            padding: 11px 16px; font-size: 0.92rem; font-weight: 600;
+            border: 1px solid var(--line); border-radius: 10px; cursor: pointer;
+            background: white; color: var(--muted); font-family: inherit;
+        }
+        .btn-signout:hover { color: var(--brand-blue); border-color: var(--brand-blue-2); }
+
+        .footer-note {
+            text-align: center; color: var(--muted);
+            font-size: 0.82rem; margin-top: 22px; line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="brand">
+            <div class="brand-logo">玩</div>
+            <div>
+                <div class="brand-name">玩悟星际成长测评系统</div>
+                <div class="brand-sub">WANWU STELLAR GROWTH ASSESSMENT</div>
+            </div>
+        </div>
+        <a class="btn-back" href="introduction.html">⬅ 测评介绍</a>
+    </div>
+
+    <div class="container">
+
+        <div class="hero">
+            <div class="hero-icon">🔐</div>
+            <h1>账号登录</h1>
+            <p>登录后填写家长资料，<br>测评数据将安全保存到云端档案。</p>
+        </div>
+
+        <!-- 已登录提示（如果检测到已登录用户） -->
+        <div id="logged-in-banner" class="logged-in-banner">
+            <div class="row">
+                <div id="logged-in-avatar" class="logged-in-avatar">U</div>
+                <div>
+                    <div class="logged-in-name" id="logged-in-name">用户</div>
+                    <div class="logged-in-msg">你已登录，可继续填写家长资料</div>
+                </div>
+            </div>
+            <div class="logged-in-actions">
+                <button class="btn-continue" onclick="location.href='parent.html'">📝 继续填写家长资料</button>
+                <button class="btn-signout" onclick="handleSignOut()">退出</button>
+            </div>
+        </div>
+
+        <div class="card" id="auth-card">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="signin" type="button">登录</button>
+                <button class="tab-btn" data-tab="signup" type="button">注册新账号</button>
+            </div>
+
+            <form id="auth-form" autocomplete="on">
+                <div class="field">
+                    <label for="username">账号</label>
+                    <input id="username" name="username" type="text" autocomplete="username"
+                           placeholder="3-20 位英文 / 数字 / 下划线" />
+                    <div class="field-hint">仅支持小写英文、数字、下划线或短横线</div>
+                </div>
+                <div class="field">
+                    <label for="password">密码</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password"
+                           placeholder="至少 6 位密码" />
+                </div>
+                <button id="submit-btn" type="submit" class="submit-btn">登录</button>
+            </form>
+
+            <div id="status" class="status"></div>
+        </div>
+
+        <p class="footer-note">
+            登录后将自动跳转到 <strong>家长资料</strong> 页面填写孩子基本情况，<br>
+            随后即可进入测评游戏。
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://sxtqkgtbalcwzewqfovp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4dHFrZ3RiYWxjd3pld3Fmb3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDQzNzAsImV4cCI6MjA5MDQyMDM3MH0.hS67yc5El6RaVb4nHb607H8SWge30GOS_grXVSQbXO4';
+        const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const NEXT_PAGE = 'parent.html';
+        const USERNAME_RE = /^[a-z0-9_-]{3,20}$/;
+
+        const tabs = document.querySelectorAll('.tab-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const form = document.getElementById('auth-form');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const statusEl = document.getElementById('status');
+        const authCard = document.getElementById('auth-card');
+        const banner = document.getElementById('logged-in-banner');
+        const bannerName = document.getElementById('logged-in-name');
+        const bannerAvatar = document.getElementById('logged-in-avatar');
+
+        let mode = 'signin'; // signin | signup
+
+        function setStatus(msg, type = 'info') {
+            statusEl.className = `status show ${type}`;
+            statusEl.textContent = msg;
+        }
+        function clearStatus() { statusEl.className = 'status'; statusEl.textContent = ''; }
+
+        function buildLoginEmail(username) {
+            return `${username.trim().toLowerCase()}@wanwu-local.auth`;
+        }
+
+        function setMode(newMode) {
+            mode = newMode;
+            tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === mode));
+            submitBtn.textContent = mode === 'signin' ? '登录' : '注册并登录';
+            passwordInput.autocomplete = mode === 'signin' ? 'current-password' : 'new-password';
+            passwordInput.placeholder = mode === 'signin' ? '输入你的密码' : '至少 6 位密码';
+            clearStatus();
+        }
+
+        tabs.forEach(t => t.addEventListener('click', () => setMode(t.dataset.tab)));
+
+        async function detectExisting() {
+            try {
+                const { data } = await supa.auth.getSession();
+                const user = data && data.session ? data.session.user : null;
+                if (user) {
+                    showLoggedIn(user);
+                }
+            } catch (e) {
+                // 忽略
+            }
+        }
+
+        function showLoggedIn(user) {
+            const username = (user.user_metadata && user.user_metadata.username) ||
+                             (user.email || '').replace(/@.*$/, '') || '已登录用户';
+            bannerName.textContent = username;
+            bannerAvatar.textContent = username[0] ? username[0].toUpperCase() : 'U';
+            banner.classList.add('show');
+            authCard.style.display = 'none';
+        }
+
+        async function handleSignOut() {
+            await supa.auth.signOut();
+            banner.classList.remove('show');
+            authCard.style.display = '';
+            clearStatus();
+            setStatus('已退出登录，请重新登录或注册账号。', 'info');
+        }
+        window.handleSignOut = handleSignOut;
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const username = usernameInput.value.trim().toLowerCase();
+            const password = passwordInput.value;
+
+            if (!USERNAME_RE.test(username)) {
+                setStatus('账号格式不对：只支持 3-20 位英文、数字、下划线或短横线。', 'error');
+                return;
+            }
+            if (!password || password.length < 6) {
+                setStatus('密码至少需要 6 位。', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = mode === 'signin' ? '正在登录...' : '正在注册...';
+            clearStatus();
+
+            try {
+                const email = buildLoginEmail(username);
+                if (mode === 'signin') {
+                    const { error } = await supa.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    setStatus('✅ 登录成功，正在跳转到家长资料...', 'success');
+                    setTimeout(() => location.href = NEXT_PAGE, 700);
+                } else {
+                    // signup
+                    const { data, error } = await supa.auth.signUp({
+                        email,
+                        password,
+                        options: { data: { username } }
+                    });
+                    if (error) throw error;
+                    if (!data.session) {
+                        // 邮箱确认开启时拿不到 session，直接尝试登录
+                        const { error: e2 } = await supa.auth.signInWithPassword({ email, password });
+                        if (e2) throw e2;
+                    }
+                    // 写入 user_profiles
+                    try {
+                        const { data: u } = await supa.auth.getUser();
+                        if (u && u.user) {
+                            await supa.from('user_profiles').upsert({
+                                id: u.user.id,
+                                username,
+                                login_email: email
+                            }, { onConflict: 'id' });
+                        }
+                    } catch (_) { /* 不阻塞主流程 */ }
+                    setStatus('✅ 账号创建成功，正在跳转到家长资料...', 'success');
+                    setTimeout(() => location.href = NEXT_PAGE, 800);
+                }
+            } catch (err) {
+                const msg = (err && err.message) || '请稍后重试';
+                let friendly = msg;
+                if (/invalid.*credentials/i.test(msg) || /invalid.*login/i.test(msg)) {
+                    friendly = '账号或密码错误，请重试。';
+                } else if (/already.*registered/i.test(msg) || /already.*exists/i.test(msg)) {
+                    friendly = '该账号已存在，请直接登录。';
+                } else if (/email.*confirm/i.test(msg)) {
+                    friendly = '账号已创建，请稍候再登录（如开启了邮箱确认）。';
+                }
+                setStatus('❌ ' + friendly, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        form.addEventListener('submit', handleSubmit);
+
+        // 启动
+        detectExisting();
+    </script>
+</body>
+</html>

@@ -1045,6 +1045,8 @@
             transition: all 0.3s ease;
         }
     </style>
+    <script src="../shared/i18n.js"></script>
+    <script src="./i18n-dict.js"></script>
 </head>
 
 <body>
@@ -1906,7 +1908,7 @@
             if (!permissionOk) return;
 
             recognition = new SpeechRecognitionAPI();
-            recognition.lang = 'zh-CN';
+            recognition.lang = (window.I18N ? window.I18N.getSpeechLang() : 'zh-CN');
             recognition.interimResults = true;
             recognition.continuous = true;
             activeVoiceSession = {
@@ -2036,7 +2038,14 @@
         function getSelectedOptionLabel(selectId) {
             const el = document.getElementById(selectId);
             if (!el) return '';
+            // 没真正选中（仍是占位项）则返回空，配合 || '未分类' 触发兜底
+            if (!el.value) return '';
             return (el.options[el.selectedIndex]?.text || el.value || '').trim();
+        }
+
+        function getSelectedOptionId(selectId) {
+            const el = document.getElementById(selectId);
+            return el && el.value ? el.value : '';
         }
 
         function buildEmotionWeatherRecord() {
@@ -2044,7 +2053,9 @@
             const happyDay = document.getElementById('g1-happy')?.value || '没填';
             const badDay = document.getElementById('g1-bad')?.value || '没填';
             const happyCategory = getSelectedOptionLabel('g1-happy-category') || '未分类';
+            const happyCategoryId = getSelectedOptionId('g1-happy-category');
             const badCategory = getSelectedOptionLabel('g1-bad-category') || '未分类';
+            const badCategoryId = getSelectedOptionId('g1-bad-category');
             const magicWish = document.getElementById('g2-wish')?.value || '无';
             const reportText = document.getElementById('report-content')?.innerText?.trim() || '暂无报告内容';
             const avgEn = (data.energy.reduce((a, b) => a + b, 0) / 3).toFixed(1);
@@ -2088,9 +2099,11 @@
                     generatedAt: now.toISOString(),
                     happyDay,
                     happyCategory,
+                    happyCategoryId,
                     happyFollowupReply,
                     badDay,
                     badCategory,
+                    badCategoryId,
                     badFollowupReply,
                     magicWish,
                     energy: data.energy.slice(),
@@ -2195,29 +2208,29 @@
 
         // 好事类别和问题库（完整版，孩子友好）
         const GOOD_CATEGORIES = [
-            { id: 'study', name: '📚 跟学习考试有关的好事', questions: ['这件事让你感觉怎么样？', '这种情况常见吗？'] },
-            { id: 'friend', name: '👥 跟朋友一起做了开心的事', questions: ['你们经常一起做这种事吗？', '你还有其他这样的朋友吗？'] },
-            { id: 'family', name: '🏠 跟爸妈做了开心的事 / 爸妈对我好', questions: ['你们平时相处多吗？', '你最喜欢和爸妈一起做什么？'] },
-            { id: 'teacher', name: '👨‍🏫 跟老师之间发生了好事', questions: ['是哪个科目的老师？', '你希望其他老师也这样吗？'] },
-            { id: 'want', name: '🎁 得到了喜欢的东西 / 吃到了好吃的', questions: ['是你期待了很久的吗？', '你当时什么感觉？'] },
-            { id: 'free', name: '🕊️ 没人管我 / 可以自己决定', questions: ['你喜欢这种感觉吗？', '你平时能自己决定的事多吗？'] },
-            { id: 'praise', name: '👏 被夸了 / 被认可了', questions: ['是谁夸你的？', '这种事经常发生吗？'] },
-            { id: 'health', name: '💪 身体舒服 / 休息好了', questions: ['你最近休息够吗？', '身体感觉怎么样？'] },
-            { id: 'luck', name: '🍀 运气好 / 遇到了好事', questions: ['是碰巧遇到的吗？', '你当时是不是有点惊喜？'] },
+            { id: 'study', name: '📚 跟学习考试有关的好事', questions: ['这件事让你感觉怎么样？', '你做了什么让它发生的？'] },
+            { id: 'friend', name: '👥 跟朋友一起做了开心的事', questions: ['你们一起做这件事的时候你最享受什么？', '这位朋友身上有什么是你欣赏的？'] },
+            { id: 'family', name: '🏠 跟爸妈做了开心的事 / 爸妈对我好', questions: ['这件事让你和爸妈的关系发生了什么变化吗？', '你最喜欢和爸妈一起做什么？'] },
+            { id: 'teacher', name: '👨‍🏫 跟老师之间发生了好事', questions: ['这件事让你对学习有什么新感受？', '你希望以后老师/同学怎样对你？'] },
+            { id: 'want', name: '🎁 得到了喜欢的东西 / 吃到了好吃的', questions: ['这个东西/这件事对你来说意味着什么？', '你打算怎么用它，或留住这种感觉？'] },
+            { id: 'free', name: '🕊️ 没人管我 / 可以自己决定', questions: ['你那时做了什么让你最开心？', '如果可以，你还想自己决定哪些事？'] },
+            { id: 'praise', name: '👏 被夸了 / 被认可了', questions: ['被夸的时候你心里在想什么？', '你觉得自己做对了什么？'] },
+            { id: 'health', name: '💪 身体舒服 / 休息好了', questions: ['身体舒服的时候你最想做什么？', '是什么让你今天状态比较好？'] },
+            { id: 'luck', name: '🍀 运气好 / 遇到了好事', questions: ['这件事让你想到了什么？', '你想把这份好运分给谁？'] },
             { id: 'other_good', name: '❓ 其他好事', questions: ['能再多说一点吗？', '这件事对你来说意味着什么？'] }
         ];
 
-        // 坏事类别和问题库（完整版，孩子友好）
+        // 坏事类别和问题库（开放性问题，BAD 类统一第一题"你是怎么处理它的？"）
         const BAD_CATEGORIES = [
-            { id: 'study_hard', name: '📚 跟学习考试有关的坏事', questions: ['是哪一科最让你头疼？', '你希望得到什么帮助？'] },
-            { id: 'friend_bad', name: '👥 跟朋友之间发生了不愉快', questions: ['是从什么时候开始的？', '你还有其他朋友吗？'] },
-            { id: 'family_bad', name: '🏠 跟爸妈之间发生了不愉快', questions: ['你希望他们换一种方式吗？', '你有跟他们说过你的感受吗？'] },
-            { id: 'teacher_bad', name: '👨‍🏫 跟老师之间发生了不愉快', questions: ['是哪个科目的老师？', '你当时怎么做的？'] },
-            { id: 'lost', name: '💔 东西丢了 / 坏了 / 没了', questions: ['那是什么东西？对你有多重要？', '还能补救吗？'] },
-            { id: 'controlled', name: '🔒 被管着 / 被催着 / 被骂了 / 被批评 / 被拿来比较', questions: ['你当时什么感觉？', '你有跟对方说过你的感受吗？'] },
-            { id: 'health_bad', name: '😷 身体不舒服 / 没睡好 / 累', questions: ['从什么时候开始的？', '你有告诉其他人吗？有做过改善的尝试吗？'] },
-            { id: 'luck_bad', name: '☔ 运气不好 / 遇到了倒霉事', questions: ['你本来期待什么？', '这种事经常发生吗？'] },
-            { id: 'other_bad', name: '❓ 其他坏事', questions: ['能再多说一点吗？', '这件事影响了你的心情多久？'] }
+            { id: 'study_hard', name: '📚 跟学习考试有关的坏事', questions: ['你是怎么处理它的？', '这件事让你看到了自己的什么？'] },
+            { id: 'friend_bad', name: '👥 跟朋友之间发生了不愉快', questions: ['你是怎么处理它的？', '你希望对方/自己当时怎么做会不一样？'] },
+            { id: 'family_bad', name: '🏠 跟爸妈之间发生了不愉快', questions: ['你是怎么处理它的？', '你最希望爸妈怎么了解你？'] },
+            { id: 'teacher_bad', name: '👨‍🏫 跟老师之间发生了不愉快', questions: ['你是怎么处理它的？', '在那个时刻你心里最想说什么？'] },
+            { id: 'lost', name: '💔 东西丢了 / 坏了 / 没了', questions: ['你是怎么处理它的？', '这件东西对你的特别意义是什么？'] },
+            { id: 'controlled', name: '🔒 被管着 / 被催着 / 被骂了 / 被批评 / 被拿来比较', questions: ['你是怎么处理它的？', '你希望对方怎么了解你？'] },
+            { id: 'health_bad', name: '😷 身体不舒服 / 没睡好 / 累', questions: ['你是怎么处理它的？', '你身体在告诉你什么？'] },
+            { id: 'luck_bad', name: '☔ 运气不好 / 遇到了倒霉事', questions: ['你是怎么处理它的？', '这件事如果再发生一次，你会做什么不同？'] },
+            { id: 'other_bad', name: '❓ 其他坏事', questions: ['你是怎么处理它的？', '你想对那时的自己说什么？'] }
         ];
 
         // 各维度关键词库
@@ -2618,7 +2631,7 @@
             if (!permissionOk) return;
 
             recognition = new SpeechRecognitionAPI();
-            recognition.lang = 'zh-CN';
+            recognition.lang = (window.I18N ? window.I18N.getSpeechLang() : 'zh-CN');
             recognition.interimResults = true;
             recognition.continuous = true;
 
@@ -2847,42 +2860,14 @@
         function finishGame() {
             nextScreen('result-screen');
             const box = document.getElementById('report-content');
-
-            const happyDay = document.getElementById('g1-happy').value || '没填';
-            const badDay = document.getElementById('g1-bad').value || '没填';
-            const badTag = getSelectedOptionLabel('g1-bad-category') || '未分类';
-            const magicWish = document.getElementById('g2-wish').value || '无';
-
-            // 获取问题中选择的天气
-            const happyWeather = data.questionWeather.happy || '未选择';
-            const badWeather = data.questionWeather.bad || '未选择';
-
-            // 计算平均能量 (0-10)
-            const avgEn = (data.energy.reduce((a, b) => a + b, 0) / 3).toFixed(1);
-
+            // 不再展示"初步结果"，避免误导。直接显示已完成提示。
             box.innerHTML = `
-            <div class="result-item" style="border-left-color: #28a745;">
-                <strong>😊 快乐源泉：</strong> ${happyDay} <br>
-                <strong>天气：</strong> ${happyWeather}
-            </div>
-            <div class="result-item" style="border-left-color: #e74c3c;">
-                <strong>🌧️ 压力时刻：</strong> ${badDay} <br>
-                <strong>天气：</strong> ${badWeather} <br>
-                <small>压力标签：${badTag}</small>
-            </div>
-            <div class="result-item" style="border-left-color: #f9cb28;">
-                <strong>🔋 平均能量：</strong> ${avgEn} / 10 <br>
-                <strong>⚡ 耗电原因：</strong> ${data.drainCards.join('、') || '无'} <br>
-                <small>魔法心愿：消除 "${magicWish}"</small>
-            </div>
-            <div class="result-item" style="border-left-color: #4facfe;">
-                <strong>🎒 责任背包：</strong><br> ${data.backpack.join('、') || '空'}
-            </div>
-            <div class="result-item" style="border-left-color: #333; background:#eaeaea;">
-                <strong>🗑️ 丢弃的烦恼：</strong><br>
-                <span style="text-decoration:line-through; color:#555;">${data.trash.join('、') || '空'}</span>
-            </div>
-        `;
+                <div style="padding: 30px 20px; text-align: center;">
+                    <div style="font-size: 2.5em; margin-bottom: 14px;">✅</div>
+                    <h3 style="color:#28a745; margin: 0 0 10px;">本关已完成！</h3>
+                    <p style="color:#555; line-height:1.7;">你的探索数据已经收集完成。<br>请进入下一段星际旅程。</p>
+                </div>
+            `;
             if (!hasAutoUploadedRecord) {
                 saveResultToCloud();
             }
