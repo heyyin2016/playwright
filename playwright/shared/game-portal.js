@@ -80,11 +80,13 @@
 
     function getNextGamePath(gameKey) {
         const currentIndex = GAME_SEQUENCE.indexOf(gameKey);
-        if (currentIndex === -1) return '../home.html';
-        const nextGameKey = GAME_SEQUENCE[currentIndex + 1];
         // 根据当前游戏所在层级决定相对路径前缀
         const fromRoot = (gameKey === 'cipher-decode' || gameKey === 'alien-division');
         const prefix = fromRoot ? './' : '../';
+        // 已经是最后一个 → 走庆祝页
+        if (currentIndex === -1) return `${prefix}home.html`;
+        if (currentIndex === GAME_SEQUENCE.length - 1) return `${prefix}congrats.html`;
+        const nextGameKey = GAME_SEQUENCE[currentIndex + 1];
         switch (nextGameKey) {
             case 'emotion-weather':
                 return `${prefix}气象站/1情绪气象站.html`;
@@ -117,10 +119,9 @@
 
     function getNextGameLabel(gameKey) {
         const currentIndex = GAME_SEQUENCE.indexOf(gameKey);
-        if (currentIndex === -1 || currentIndex === GAME_SEQUENCE.length - 1) {
-            return '返回起始页';
-        }
-        return `前往下一个游戏：${getGameTitle(GAME_SEQUENCE[currentIndex + 1])}`;
+        if (currentIndex === -1) return '返回起始页';
+        if (currentIndex === GAME_SEQUENCE.length - 1) return '🎉 完成全部任务';
+        return `➡️ 下一个游戏：${getGameTitle(GAME_SEQUENCE[currentIndex + 1])}`;
     }
 
     function normalizeMarkdown(text) {
@@ -618,26 +619,28 @@
 
     function scheduleNextGame(gameKey, options) {
         const config = options || {};
-        const delayMs = Number(config.delayMs) > 0 ? Number(config.delayMs) : 3000;
         const statusEl = config.statusTarget
             ? (typeof config.statusTarget === 'string' ? document.querySelector(config.statusTarget) : config.statusTarget)
             : null;
-        const nextMessage = createNextStepMessage(gameKey);
 
+        // 不再使用 confirm 弹窗，也不延迟跳转。
+        // 只在 statusEl 显示「记录已保存」+ 渲染一个直接跳转按钮。
         if (statusEl) {
-            statusEl.textContent = statusEl.textContent
-                ? `${statusEl.textContent} ${nextMessage}`.trim()
-                : nextMessage;
-        }
-
-        window.setTimeout(function () {
-            const confirmed = window.confirm('这个任务完成啦，要不要开启下一道传送门？');
-            if (confirmed) {
-                goToNextGame(gameKey);
-            } else if (statusEl) {
-                statusEl.textContent = '已取消自动跳转，你也可以点击页面按钮继续。';
+            // 简短提示
+            const statusLine = '记录已保存。';
+            statusEl.textContent = statusLine;
+            // 在 statusEl 后面加一个跳转按钮（避免重复添加）
+            const parent = statusEl.parentNode;
+            if (parent && !parent.querySelector('.portal-next-game-btn')) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'portal-next-game-btn';
+                btn.textContent = getNextGameLabel(gameKey);
+                btn.style.cssText = 'margin-top:10px; padding:10px 22px; background:linear-gradient(135deg,#39ff14,#b8ff9f); color:#041002; border:none; border-radius:999px; font-weight:700; cursor:pointer; box-shadow:0 0 14px rgba(57,255,20,0.3);';
+                btn.addEventListener('click', function () { goToNextGame(gameKey); });
+                parent.appendChild(btn);
             }
-        }, delayMs);
+        }
     }
 
     window.GamePortal = {

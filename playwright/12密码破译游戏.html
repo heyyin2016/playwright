@@ -16,31 +16,84 @@
         .portal-home-link { color: #00ff99; text-shadow: 0 0 8px rgba(0,255,153,0.35); }
         /* CSS 样式保持不变 */
         body {
-            font-family: 'Monospace', 'Consolas', monospace;
-            background-color: #0d1117;
-            color: #00ff99;
+            font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+            background:
+                radial-gradient(ellipse at 18% 20%, rgba(0,255,153,0.18), transparent 42%),
+                radial-gradient(ellipse at 82% 80%, rgba(0,200,255,0.14), transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(0,255,153,0.06), transparent 60%),
+                linear-gradient(160deg, #04120a 0%, #050a08 55%, #02060a 100%);
+            background-attachment: fixed;
+            color: #b8ffd9;
             margin: 0;
             padding: 20px;
+            padding-bottom: 80px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '01 10 ◤ ◢ 11 00 ▱ ◯ 10 01';
+            position: fixed; inset: 0;
+            font-family: 'Consolas', monospace;
+            font-size: 18px; letter-spacing: 22px; line-height: 80px;
+            color: rgba(0, 255, 153, 0.06);
+            white-space: pre-wrap;
+            pointer-events: none; z-index: 0;
+            animation: floatX 30s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(0,255,153,0) 0,
+                rgba(0,255,153,0) 3px,
+                rgba(0,255,153,0.04) 4px
+            );
+            pointer-events: none; z-index: 1;
+        }
+        @keyframes floatX {
+            0%   { transform: translate(0, 0); }
+            50%  { transform: translate(-12px, -10px); }
+            100% { transform: translate(10px, 8px); }
+        }
+        @keyframes scanY {
+            0%   { transform: translateY(0); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        @keyframes holoFadeIn {
+            0%   { opacity: 0; transform: translateY(16px) scale(0.985); filter: blur(6px); }
+            100% { opacity: 1; transform: translateY(0)    scale(1);     filter: blur(0); }
         }
 
         #game-container {
+            position: relative;
+            z-index: 2;
             width: 100%;
-            max-width: 800px;
-            border: 2px solid #00ff99;
-            box-shadow: 0 0 15px #00ff99;
-            padding: 20px;
+            max-width: 860px;
+            border: 1px solid rgba(0, 255, 153, 0.32);
+            border-radius: 28px;
+            box-shadow:
+                0 24px 60px rgba(0,0,0,0.55),
+                0 0 36px rgba(0,255,153,0.18),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+            padding: 26px 22px;
             box-sizing: border-box;
-            background-color: #161b22;
+            background: rgba(8, 16, 12, 0.55);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             display: grid;
             grid-template-areas:
                 "terminal log"
                 "input input";
             grid-template-columns: 2fr 1fr;
             gap: 20px;
+            animation: holoFadeIn 0.7s ease-out;
         }
 
         #terminal-display {
@@ -124,14 +177,30 @@
 
 <div id="game-container">
 
-    <div id="terminal-display">
-        <h2>🚀 星际密码破译 (Cosmic Cipher)</h2>
-        <div class="system-status">
-            &gt; **[系统启动：深空探险号]**
-            &gt; **任务目标：破译中央星核密码，寻找 6 位数字的正确序列。**
-            &gt; **请注意：输入必须为 6 个 1-9 的数字。**
+    <div id="terminal-display" style="border-radius:22px; padding: 26px 22px;
+              background: linear-gradient(135deg, rgba(0,255,153,0.07), rgba(0,255,153,0.02)), rgba(13,17,23,0.92);
+              border: 1px solid rgba(0,255,153,0.32);
+              box-shadow: 0 18px 50px rgba(0,0,0,0.45), 0 0 26px rgba(0,255,153,0.14);
+              backdrop-filter: blur(8px);">
+        <h2 style="background: linear-gradient(90deg, #00ff99, #00cc88);
+                  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                  text-align: center; font-size: 1.7em; margin: 0 0 18px;
+                  letter-spacing: 2px; text-shadow: none;">🚀 星际密码破译 (Cosmic Cipher)</h2>
+
+        <div style="background: rgba(0,255,153,0.06); border-radius: 14px; padding: 14px 18px; margin-bottom: 12px; border-left: 3px solid #00ff99;">
+            <p style="margin: 0 0 6px;">📡 <strong>[系统启动：深空探险号]</strong></p>
+            <p style="margin: 0 0 4px;">你是一名星际特工！中央星核的密码被加密了，由 <strong style="color:#00ff99;">6 位数字（每位 1-9）</strong> 组成。</p>
+            <p style="margin: 0;">只有破译正确，才能解锁飞船的下一段航程。</p>
         </div>
-        <p id="current-prompt">**你的第一次尝试：**</p>
+
+        <div style="background: rgba(0,255,153,0.06); border-radius: 14px; padding: 14px 18px; margin-bottom: 12px; border-left: 3px solid #ffcc00;">
+            <p style="margin: 0 0 6px;">📋 <strong style="color:#ffcc00;">反馈规则</strong></p>
+            <p style="margin: 0 0 4px;">⚠️ <strong>位置错误</strong> = 这个数字密码里有，但你放错了位置</p>
+            <p style="margin: 0 0 4px;">❌ <strong>完全错误</strong> = 这个数字密码里根本没有</p>
+            <p style="margin: 0; color:#aaffd6; font-size: 0.92em;">没标注的位 = 它可能完全正确（也可能是其他位置错），系统不会告诉你。</p>
+        </div>
+
+        <p id="current-prompt" style="margin-top:14px;"></p>
         <div id="feedback-message"></div>
     </div>
 
@@ -325,20 +394,18 @@
             }
         }
 
-        // 构建反馈文本（只显示两类）
+        // 构建反馈文本：每次都明确告诉学生位置错 / 完全错。
+        // ⚠️ = 数字密码里有但位置错；❌ = 数字密码里根本没有。
         let feedbackHtml = '';
-        
+
         if (wrongPositions.length > 0) {
             feedbackHtml += `<div class="feedback-wrong-position">⚠️ 第 ${wrongPositions.join('、')} 位数字存在但位置错误</div>`;
         }
-        
         if (notExistPositions.length > 0) {
             feedbackHtml += `<div class="feedback-not-exist">❌ 第 ${notExistPositions.join('、')} 位数字完全错误</div>`;
         }
-
-        if (wrongPositions.length === 0 && notExistPositions.length === 0) {
-            // 理论上如果所有数字都正确且位置正确，这里会显示空
-            // 但根据规则，我们不告诉玩家完全正确，只显示一条中性消息
+        if (!feedbackHtml) {
+            // 既没"位置错"也没"完全错" → 大概率全对（成功路径在外层处理）。
             feedbackHtml = `<div style="color: #00ff99;">🔍 扫描完成，未发现异常信号</div>`;
         }
 

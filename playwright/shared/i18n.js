@@ -25,6 +25,52 @@
     function getSpeechLang() { return STATE.lang === 'en' ? 'en-US' : 'zh-CN'; }
 
     function isCJK(s) { return /[一-鿿]/.test(s); }
+    // 中文字符或中文标点（用于决定是否需要扫描该文本节点）
+    function hasCJKish(s) { return /[一-鿿。，、；：？！（）「」『』·“”‘’…]/.test(s); }
+
+    // 把中文标点替换成英文标点，并清理多余空格。仅在英文模式翻译完后调用。
+    function normalizeCjkPunct(text) {
+        if (text == null) return text;
+        let out = String(text);
+        // 处理中英文标点连写（先合并再转）：
+        // 例如 "。." / "。 ." 都意味着原文的句号 + 字典首字符的 "." → 只保留一个 "."
+        out = out
+            .replace(/。\s*([.,;:!?])/g, '$1')   // 。 后紧跟英文标点 → 丢弃 。
+            .replace(/([.,;:!?])\s*。/g, '$1')   // 英文标点 + 。 → 只保留前者
+            .replace(/，\s*([,;:!?])/g, '$1 ')   // ， 后紧跟英文标点 → 用英文标点
+            .replace(/([,;:!?])\s*，/g, '$1 ');  // 英文标点 + ， → 只保留前者
+        // 中文标点 → 英文标点（剩余的）
+        out = out
+            .replace(/。/g, '.')
+            .replace(/，/g, ', ')
+            .replace(/、/g, ', ')
+            .replace(/；/g, '; ')
+            .replace(/：/g, ': ')
+            .replace(/？/g, '?')
+            .replace(/！/g, '!')
+            .replace(/（/g, '(')
+            .replace(/）/g, ')')
+            .replace(/【/g, '[')
+            .replace(/】/g, ']')
+            .replace(/「/g, '"')
+            .replace(/」/g, '"')
+            .replace(/『/g, '"')
+            .replace(/』/g, '"')
+            .replace(/“|”/g, '"')
+            .replace(/‘|’/g, "'")
+            .replace(/·/g, ' - ')
+            .replace(/——/g, ' — ')
+            .replace(/…/g, '...');
+        // 清理重复空格 / 标点紧贴
+        out = out
+            .replace(/[ \t]{2,}/g, ' ')          // 多空格 → 单空格
+            .replace(/\s+([,.;:!?\)])/g, '$1')   // 标点前空格删
+            .replace(/([,;:!?])(?=[A-Za-z])/g, '$1 ')  // 逗号/分号/冒号/感叹/问号后跟字母无空格 → 加一个（不动 .）
+            .replace(/[ \t]+(?=\n)/g, '')         // 行尾空格
+            .replace(/\(\s+/g, '(')
+            .replace(/\s+\)/g, ')');
+        return out;
+    }
 
     function translateRemainingCJK(text) {
         // 在已经被模式替换过的英文字符串里，把仍然剩下的中文片段也替换掉。
@@ -38,10 +84,10 @@
                 out = out.split(k).join(STATE.dict[k]);
             }
         }
-        return out;
+        return normalizeCjkPunct(out);
     }
 
-    function lookup(text) {
+    function lookupRaw(text) {
         if (text == null) return null;
         // 完全匹配
         if (Object.prototype.hasOwnProperty.call(STATE.dict, text)) {
@@ -69,12 +115,22 @@
             const fallback = translateRemainingCJK(text);
             if (fallback !== text) return fallback;
         }
+        // 没翻译但是含中文标点也清理一下（比如 "。"、"，" 等）
+        if (/[。，、；：？！（）「」『』·“”‘’…]/.test(text)) {
+            return text; // normalize 在 lookup 里统一处理
+        }
         return null;
+    }
+
+    function lookup(text) {
+        const r = lookupRaw(text);
+        if (r == null) return null;
+        return normalizeCjkPunct(r);
     }
 
     function translateTextNode(node) {
         if (!node || node.nodeType !== 3) return;
-        if (!isCJK(node.textContent)) return;
+        if (!hasCJKish(node.textContent)) return;
         const t = lookup(node.textContent);
         if (t != null && t !== node.textContent) node.textContent = t;
     }
@@ -83,7 +139,7 @@
         if (!el || el.nodeType !== 1) return;
         ['placeholder', 'title', 'alt', 'aria-label', 'value'].forEach(function (attr) {
             const v = el.getAttribute && el.getAttribute(attr);
-            if (v && isCJK(v)) {
+            if (v && hasCJKish(v)) {
                 const t = lookup(v);
                 if (t != null && t !== v) el.setAttribute(attr, t);
             }
@@ -95,6 +151,7 @@
         if (STATE.lang === 'zh' || !root) return;
         // 文本节点
         const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+        const allTextNodes = [];
         const textNodes = [];
         let n;
         while ((n = walker.nextNode())) {
@@ -103,7 +160,8 @@
             if (!p) continue;
             const tag = p.nodeName;
             if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') continue;
-            if (isCJK(n.textContent)) textNodes.push(n);
+            allTextNodes.push(n);
+            if (hasCJKish(n.textContent)) textNodes.push(n);
         }
         textNodes.forEach(translateTextNode);
         // 属性
@@ -113,6 +171,33 @@
         // root 自己也要处理
         if (root.nodeType === 1) translateAttributes(root);
         if (root.nodeType === 3) translateTextNode(root);
+        // 相邻文本节点空格修复（处理 "theGalaxy" 这类 inline 元素拼接问题）
+        fixAdjacentSpacing(allTextNodes);
+    }
+
+    // 在相邻可见文本叶子之间补空格：A 末尾是字母 / 数字 / 英文标点，B 开头是字母时插空格。
+    function fixAdjacentSpacing(textNodes) {
+        if (!textNodes || textNodes.length < 2) return;
+        for (let i = 1; i < textNodes.length; i++) {
+            const prev = textNodes[i - 1];
+            const cur = textNodes[i];
+            if (!prev || !cur) continue;
+            const a = prev.textContent;
+            const b = cur.textContent;
+            if (!a || !b) continue;
+            // 如果两者都没有任何 ASCII 字母数字，跳过（纯中文 / 纯符号场景）
+            if (!/[A-Za-z0-9]/.test(a) || !/[A-Za-z0-9]/.test(b)) continue;
+            // a 末尾：字母数字、)、'、"、,、:、;、!、?、. 之后接字母 → 补空格
+            // 但如果 a 已经以空格结尾或 b 已经以空格开头，跳过
+            if (/[ \t\n\r ]$/.test(a)) continue;
+            if (/^[ \t\n\r ]/.test(b)) continue;
+            // a 必须以单词字符或英文常见标点结尾
+            if (!/[A-Za-z0-9,.;:!?\)\]'"]$/.test(a)) continue;
+            // b 必须以字母开头（避免数字-数字误拼，避免标点开头）
+            if (!/^[A-Za-z]/.test(b)) continue;
+            // 共同位于同一父链路径中（同一个 inline 流），简单判断：上层 block 元素相同
+            cur.textContent = ' ' + b;
+        }
     }
 
     function registerDict(d) {
@@ -300,6 +385,73 @@
             applyToTree(document.body);
         }
         startObserver();
+        installGlobalAudioGuard();
+        installSectionScrollTop();
+    }
+
+    // 缺音频文件不报错也不卡：监听 audio.onerror 静默
+    function installGlobalAudioGuard() {
+        document.addEventListener('error', function (e) {
+            const target = e.target;
+            if (target && (target.tagName === 'AUDIO' || target.tagName === 'SOURCE')) {
+                console.warn('[i18n] audio missing, suppressed:', target.src || (target.parentNode && target.parentNode.src));
+                e.stopPropagation();
+                if (typeof e.preventDefault === 'function') e.preventDefault();
+            }
+        }, true);
+        // 也帮 new Audio() 包一层
+        const Orig = window.Audio;
+        if (Orig && !Orig.__i18nWrapped) {
+            const Wrapped = function (src) {
+                const a = new Orig(src);
+                a.addEventListener('error', function () {
+                    console.warn('[i18n] dynamic audio missing:', a.src);
+                });
+                // 让 .play() 在文件不存在时静默
+                const origPlay = a.play.bind(a);
+                a.play = function () {
+                    try {
+                        const p = origPlay();
+                        if (p && typeof p.catch === 'function') p.catch(function (err) {
+                            console.warn('[i18n] audio.play() rejected:', err && err.message);
+                        });
+                        return p;
+                    } catch (err) {
+                        console.warn('[i18n] audio.play() threw:', err && err.message);
+                    }
+                };
+                return a;
+            };
+            Wrapped.__i18nWrapped = true;
+            try { window.Audio = Wrapped; } catch (e) { /* read-only env, ignore */ }
+        }
+    }
+
+    // 切换页面/section 时自动滚到顶部：
+    // 监听 .hidden 类的添加/移除，当某个 section 从隐藏变可见时滚顶
+    function installSectionScrollTop() {
+        const seenTransition = new WeakSet();
+        const obs = new MutationObserver(function (muts) {
+            muts.forEach(function (m) {
+                if (m.type !== 'attributes' || m.attributeName !== 'class') return;
+                const el = m.target;
+                if (!el || el.nodeType !== 1) return;
+                // 关注顶层 section（id 含 screen / stage / step / page，或类含 stage / screen / page）
+                const id = (el.id || '').toLowerCase();
+                const cls = (el.className && typeof el.className === 'string' ? el.className : '').toLowerCase();
+                const looksLikeSection = /screen|stage|step|page-/.test(id) || /\bstage\b|\bscreen\b/.test(cls);
+                if (!looksLikeSection) return;
+                // 只在变成可见时滚（旧的 className 不可知，简化：不在 hidden 里且之前可能在）
+                if (!el.classList.contains('hidden')) {
+                    if (!seenTransition.has(el)) {
+                        seenTransition.add(el);
+                        return; // 首次见到就跳过（避免页面刚加载时滚顶）
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        });
+        if (document.body) obs.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
     }
 
     if (document.readyState === 'loading') {

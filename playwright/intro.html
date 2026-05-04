@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星际通道已开启</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --space-bg: #00020a;
+            --neon-blue: #00f7ff;
+            --neon-purple: #bd00ff;
+            --text-color: #e0f7ff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; font-family: 'Share Tech Mono', monospace; overflow: hidden; background-color: var(--space-bg); color: var(--text-color); }
+        .space-background { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%); overflow: hidden; }
+        .stars-layer { position: absolute; top: 50%; left: 50%; height: 2px; width: 2px; background: white; border-radius: 100%; box-shadow: -400px 300px white, 320px -200px white, -200px -100px white, 500px 100px white, -150px 400px white, 200px 300px white, -300px -350px white, 450px -400px white, -50px 200px white, 100px -100px white, -400px -200px white, 300px 150px white; animation: zoom 15s linear infinite; }
+        .stars-layer:nth-child(2) { animation-duration: 25s; opacity: 0.7; box-shadow: -300px 200px white, 420px -100px white, -100px -300px white, 600px 200px white, -250px 300px white, 100px 400px white, -400px -250px white, 350px -300px white, 50px 100px white; }
+        @keyframes zoom { 0% { transform: scale(1); opacity: 0; } 10% { opacity: 1; } 100% { transform: scale(10); opacity: 0; } }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, transparent 0%, rgba(0, 2, 10, 0.8) 100%); z-index: 0; }
+        .container { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        .holo-box { background: rgba(0, 24, 48, 0.6); border: 2px solid var(--neon-blue); box-shadow: 0 0 20px rgba(0, 247, 255, 0.3), inset 0 0 20px rgba(0, 247, 255, 0.1); backdrop-filter: blur(8px); padding: 40px; border-radius: 10px; max-width: 800px; width: 90%; position: relative; }
+        .holo-box::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(transparent 0%, transparent 2px, rgba(0, 247, 255, 0.05) 3px); pointer-events: none; }
+        h1 { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-blue), 0 0 40px var(--neon-blue); animation: flicker 4s infinite alternate; }
+        .typewriter-text { font-size: 1.25rem; line-height: 1.8; min-height: 200px; margin-bottom: 30px; text-align: left; white-space: pre-wrap; font-weight: bold; color: #d0f0ff; }
+        .cursor { display: inline-block; width: 10px; height: 1.4rem; background-color: var(--neon-blue); margin-left: 5px; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
+        .cyborg-btn { font-family: 'Orbitron', sans-serif; background: transparent; border: 2px solid var(--neon-blue); color: var(--neon-blue); padding: 15px 40px; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 3px; cursor: pointer; position: relative; transition: all 0.3s ease; overflow: hidden; font-weight: 700; margin-top: 10px; }
+        .cyborg-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 247, 255, 0.4), transparent); transition: left 0.5s; }
+        .cyborg-btn:hover { background: var(--neon-blue); color: var(--space-bg); box-shadow: 0 0 30px rgba(0, 247, 255, 0.8); }
+        .cyborg-btn:hover::before { left: 100%; }
+        @keyframes flicker { 0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-blue), 0 0 40px var(--neon-blue); } 20%, 24%, 55% { text-shadow: none; opacity: 0.5; } }
+        @keyframes blink { from, to { opacity: 1; } 50% { opacity: 0; } }
+        @media (max-width: 768px) { h1 { font-size: 1.8rem; } .holo-box { padding: 25px; } .typewriter-text { font-size: 1rem; } }
+    </style>
+</head>
+<body>
+    <div class="space-background">
+        <div class="stars-layer"></div>
+        <div class="stars-layer"></div>
+        <div class="overlay"></div>
+    </div>
+
+    <!-- 语言切换器 -->
+    <div id="lang-switcher" style="position: fixed; top: 22px; right: 22px; z-index: 50;
+                                   display: inline-flex; padding: 4px;
+                                   border: 1.5px solid var(--neon-blue); border-radius: 999px;
+                                   background: rgba(0, 24, 48, 0.7);
+                                   box-shadow: 0 0 14px rgba(0, 247, 255, 0.35);
+                                   backdrop-filter: blur(6px); font-family: 'Orbitron', sans-serif;">
+        <button data-lang="zh" class="lang-pill"
+            style="padding: 6px 18px; border-radius: 999px; border: none; cursor: pointer;
+                   font-family: inherit; font-weight: 700; letter-spacing: 1px;
+                   background: transparent; color: var(--neon-blue); font-size: 0.85rem;">中文</button>
+        <button data-lang="en" class="lang-pill"
+            style="padding: 6px 18px; border-radius: 999px; border: none; cursor: pointer;
+                   font-family: inherit; font-weight: 700; letter-spacing: 1px;
+                   background: transparent; color: var(--neon-blue); font-size: 0.85rem;">English</button>
+    </div>
+
+    <main class="container">
+        <section class="holo-box">
+            <h1 id="title-text">星际通道已开启</h1>
+            <div class="text-container">
+                <p id="typed-text" class="typewriter-text"></p><span class="cursor"></span>
+            </div>
+            <button class="cyborg-btn" id="enter-btn" onclick="startJourney()">进入任务</button>
+        </section>
+    </main>
+
+    <script src="./shared/i18n.js"></script>
+    <script>
+        const COPY = {
+            zh: {
+                title: '星际通道已开启',
+                btn: '进入任务',
+                message: "欢迎来到外太空任务站，探索者。\n\n你现在正处在银河边缘的交汇点，这里没有学校铃声、没有作业，\n只有一系列等待你挑战的 星际脑力游戏。\n\n每个任务都会测试你不同的能力：判断、观察、策略、沟通……\n也是外星文明用来了解地球人的方式。\n\n别紧张，这些都是「好玩但有点挑战」的那种。\n\n准备出发了吗？\n\n👇 进入任务，看看你的极限在哪里。"
+            },
+            en: {
+                title: 'STAR PORTAL OPEN',
+                btn: 'ENTER MISSION',
+                message: "Welcome to the Outer Space Mission Station, Explorer.\n\nYou're now at the intersection of the galaxy's edge, where there are no school bells, no homework,\nonly a series of Galactic Brain Games waiting for you to take on.\n\nEach mission tests a different ability: judgment, observation, strategy, communication...\nIt's also how alien civilizations get to know us Earthlings.\n\nDon't worry — these are the \"fun but a bit challenging\" kind.\n\nReady to go?\n\n👇 Enter the mission and see where your limits are."
+            }
+        };
+
+        const speed = 60;
+        let i = 0;
+        let typingTimer = null;
+        let hasNavigated = false;
+        const targetElement = document.getElementById('typed-text');
+
+        function currentCopy() {
+            const lang = (window.I18N && window.I18N.getLang()) || 'zh';
+            return COPY[lang] || COPY.zh;
+        }
+
+        function applyStaticText() {
+            const c = currentCopy();
+            document.getElementById('title-text').textContent = c.title;
+            document.getElementById('enter-btn').textContent = c.btn;
+        }
+
+        function typeWriter() {
+            const message = currentCopy().message;
+            if (i < message.length) {
+                targetElement.innerHTML += message.charAt(i) === '\n' ? '<br>' : message.charAt(i);
+                i++;
+                typingTimer = setTimeout(typeWriter, speed);
+                return;
+            }
+            if (!hasNavigated) {
+                hasNavigated = true;
+                typingTimer = setTimeout(() => {
+                    window.location.href = 'home.html';
+                }, 1200);
+            }
+        }
+
+        function highlightActiveLang() {
+            const cur = (window.I18N && window.I18N.getLang()) || 'zh';
+            document.querySelectorAll('.lang-pill').forEach(btn => {
+                const isActive = btn.dataset.lang === cur;
+                btn.style.background = isActive ? 'var(--neon-blue)' : 'transparent';
+                btn.style.color = isActive ? 'var(--space-bg)' : 'var(--neon-blue)';
+                btn.style.boxShadow = isActive ? '0 0 12px rgba(0,247,255,0.6)' : 'none';
+            });
+        }
+
+        function switchLang(newLang) {
+            if (!window.I18N) return;
+            const cur = window.I18N.getLang();
+            if (cur === newLang) return;
+            window.I18N.setLang(newLang);
+            // 重置打字机：清空、重新计时
+            if (typingTimer) clearTimeout(typingTimer);
+            i = 0;
+            hasNavigated = false;
+            targetElement.innerHTML = '';
+            applyStaticText();
+            highlightActiveLang();
+            typingTimer = setTimeout(typeWriter, 400);
+        }
+
+        document.querySelectorAll('.lang-pill').forEach(btn => {
+            btn.addEventListener('click', () => switchLang(btn.dataset.lang));
+        });
+
+        window.onload = function () {
+            applyStaticText();
+            highlightActiveLang();
+            typingTimer = setTimeout(typeWriter, 800);
+        };
+
+        function startJourney() {
+            hasNavigated = true;
+            if (typingTimer) clearTimeout(typingTimer);
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>

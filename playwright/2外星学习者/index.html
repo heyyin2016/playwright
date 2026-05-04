@@ -18,43 +18,76 @@
         }
 
         body {
-            background-color: var(--bg-color);
+            background:
+                radial-gradient(ellipse at 18% 20%, rgba(57,255,20,0.16), transparent 40%),
+                radial-gradient(ellipse at 82% 80%, rgba(0,243,255,0.18), transparent 45%),
+                linear-gradient(160deg, #04120a 0%, #050505 60%, #02060a 100%);
+            background-attachment: fixed;
             color: var(--text-color);
             font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
             margin: 0;
             padding: 0;
-            height: 100vh;
-            /* 限制整个网页高度 */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            /* 防止背景滚动 */
+            overflow-y: auto;
+            position: relative;
+        }
+        /* 浮动几何装饰（4 种学习风格的剪影）*/
+        body::before {
+            content: '◢ ◯ ▱ ◭';
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            font-size: 4rem; opacity: 0.06; color: #39ff14;
+            letter-spacing: 26vw; line-height: 35vh;
+            padding: 12vh 8vw; word-spacing: 20vw;
+            white-space: pre-wrap;
+            animation: floatX 30s ease-in-out infinite alternate;
+        }
+        @keyframes floatX {
+            from { transform: translate(0,0); }
+            to   { transform: translate(20px,-30px); }
+        }
+        /* 顶部扫描线 */
+        body::after {
+            content: ''; position: fixed; left: 0; right: 0; top: 0;
+            height: 2px; background: linear-gradient(90deg, transparent, rgba(57,255,20,0.6), rgba(0,243,255,0.4), transparent);
+            box-shadow: 0 0 12px rgba(57,255,20,0.4);
+            pointer-events: none; z-index: 5;
+            animation: scanY 6s linear infinite;
+        }
+        @keyframes scanY {
+            0%   { transform: translateY(0); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
         }
 
-        /* 主容器优化：固定最大高度，内部滚动 */
+        /* 主容器：毛玻璃科技感 */
         .container {
             width: 95%;
-            max-width: 600px;
-            /* 稍微变窄一点更精致 */
+            max-width: 640px;
             max-height: 95vh;
-            /* 窗口高度不超过屏幕的95% */
-            background: var(--card-bg);
-            border: 2px solid var(--neon-green);
-            box-shadow: 0 0 20px var(--neon-dim);
-            border-radius: 15px;
-            padding: 20px;
-            /* 减小内边距 */
+            background: rgba(8, 16, 12, 0.55);
+            border: 1px solid rgba(57, 255, 20, 0.32);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 32px rgba(57,255,20,0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 28px;
+            padding: 28px 24px;
             position: relative;
             overflow-y: auto;
-            /* 内容多了显示滚动条 */
             display: flex;
             flex-direction: column;
-
-            /* 隐藏滚动条但保留功能 (兼容写法) */
+            z-index: 10;
             scrollbar-width: thin;
-            scrollbar-color: var(--neon-green) #111;
+            scrollbar-color: var(--neon-green) transparent;
+            animation: holoFadeIn 0.7s ease-out;
+        }
+        @keyframes holoFadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         /* Webkit滚动条样式 */
@@ -609,7 +642,12 @@
 
     <div class="container">
 
-        <div id="screen-intro" style="position: relative;">
+        <div id="screen-intro" style="position: relative; padding: 28px 22px;
+                  border-radius: 24px;
+                  background: linear-gradient(135deg, rgba(57,255,20,0.08), rgba(0,243,255,0.04)), rgba(8,16,12,0.85);
+                  border: 1px solid rgba(57,255,20,0.32);
+                  box-shadow: 0 18px 50px rgba(0,0,0,0.45), 0 0 30px rgba(57,255,20,0.12);
+                  backdrop-filter: blur(10px);">
             <button class="audio-btn" id="intro-audio-btn" onclick="toggleAudio('intro')" title="播放/暂停音频">
                 <svg class="sound-icon" viewBox="0 0 24 24">
                     <path
@@ -621,15 +659,22 @@
                     <div class="sound-wave"></div>
                 </div>
             </button>
-            <h1>🌌 外星学习实验室</h1>
-            <p style="text-align: center; color:#aaa; font-size: 0.9em; margin-bottom: 20px;">Alien Learning Lab</p>
-            <div
-                style="line-height: 1.6; color: #ccc; background: #1a1a1a; padding: 15px; border-radius: 10px; font-size: 0.95em;">
-                <p>你好，地球上的<b>"小小学习教练"</b>！👋</p>
-                <p>今天有 3 位外星朋友需要学新技能。</p>
-                <p>每一关，请选出你觉得<b>最有效</b>的教学方式。</p>
+            <h1 style="background: linear-gradient(90deg, #39ff14, #00f3ff);
+                       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                       text-align: center; font-size: 1.8em; margin: 0 0 6px;
+                       text-shadow: none;">🌌 外星学习实验室</h1>
+            <p style="text-align: center; color: #aac6a5; font-size: 0.9em; margin: 0 0 22px; letter-spacing: 1.5px;">Alien Learning Lab</p>
+
+            <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px 18px; margin-bottom: 14px; border-left: 3px solid #39ff14;">
+                <p style="margin: 0 0 8px;">👋 你好，地球上的 <b style="color:#39ff14;">"小小学习教练"</b>！</p>
+                <p style="margin: 0;">今天有 <b style="color:#39ff14;">3 位</b> 外星朋友需要学新技能。</p>
             </div>
-            <button class="btn" onclick="startGame()">🚀 开启传送门</button>
+            <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px 18px; margin-bottom: 22px; border-left: 3px solid #00f3ff;">
+                <p style="margin: 0;">🎯 每一关，请选出你觉得 <b style="color:#00f3ff;">最有效</b> 的教学方式。<br>
+                <span style="font-size:0.9em; color:#9be7ff;">（每题只能选一个）</span></p>
+            </div>
+
+            <button class="btn" onclick="startGame()" style="background: linear-gradient(135deg, #39ff14, #00f3ff); color:#041002; box-shadow: 0 8px 22px rgba(57,255,20,0.35); border: none;">🚀 开启传送门</button>
         </div>
 
         <div id="screen-game" class="hidden" style="position: relative;">
@@ -1249,7 +1294,20 @@
             loadMission(0);
         }
 
+        // 预加载所有 mission 图片（外星学习者一进游戏就触发）
+        let _alienImagesPreloaded = false;
+        function preloadAlienImages() {
+            if (_alienImagesPreloaded) return;
+            _alienImagesPreloaded = true;
+            try {
+                missions.forEach(m => (m.options || []).forEach(opt => {
+                    if (opt.img) { const img = new Image(); img.src = opt.img; }
+                }));
+            } catch (e) { /* ignore */ }
+        }
+
         function loadMission(index) {
+            preloadAlienImages();
             if (index >= missions.length) {
                 showResult();
                 return;
@@ -1272,9 +1330,11 @@
 
             // 更新内容
             document.getElementById('mission-title').innerHTML = data.title;
-            document.getElementById('mission-desc').innerHTML = data.desc;
+            // 题面下方追加"每题只能选一个"提示
+            const singleHint = '<div style="color:#9be7ff; font-size:0.85em; margin-top:6px;">（每题只能选一个 / Choose one option only）</div>';
+            document.getElementById('mission-desc').innerHTML = data.desc + singleHint;
 
-            // 生成选项卡片（图片在上，文字在下）
+            // 生成选项卡片（图片在上，文字在下；带 loading 占位）
             const container = document.getElementById('options-container');
             container.innerHTML = '';
 
@@ -1283,7 +1343,13 @@
                 card.className = 'option-card';
                 card.onclick = () => handleChoice(opt.type);
                 card.innerHTML = `
-                <img src="${opt.img}" alt="${opt.title}" class="option-img" onerror="this.style.display='none';">
+                <div class="option-img-wrap" style="position:relative; width:100%; min-height:80px; background: linear-gradient(135deg, rgba(57,255,20,0.06), rgba(57,255,20,0.02)); display:flex; align-items:center; justify-content:center;">
+                    <span class="img-loading" style="color:#39ff14; font-size:0.85em; opacity:0.7;">⏳</span>
+                    <img src="${opt.img}" alt="${opt.title}" class="option-img"
+                         style="opacity:0; transition: opacity 0.3s;"
+                         onload="this.style.opacity=1; const ph=this.parentNode.querySelector('.img-loading'); if(ph) ph.style.display='none';"
+                         onerror="this.style.display='none'; const ph=this.parentNode.querySelector('.img-loading'); if(ph) ph.textContent='🖼️';">
+                </div>
                 <div class="option-content">
                     <div class="opt-title">${opt.title}</div>
                     <div class="opt-desc">${opt.desc}</div>
@@ -1425,15 +1491,17 @@
                 "Kinesthetic": "你坚信<b>「做中学」</b>，喜欢动手演示和操作。<br>你的学生觉得跟着你一起动起来，学得最快！"
             };
 
+            // 内部仍然计算 finalResultLabel 用于云端保存，但不向学生展示初步结果
             if (maxScore < 2) {
-                document.getElementById('result-type').innerText = "🌟 全能型大师";
-                document.getElementById('result-details').innerHTML = "哇！你没有固定的套路，你会根据不同的任务灵活切换教学方法。<br>你是外星人眼中最完美的「全能教练」！";
                 finalResultLabel = "🌟 全能型大师";
             } else {
-                document.getElementById('result-type').innerText = resultTitles[bestType];
-                document.getElementById('result-details').innerHTML = resultDescs[bestType];
-                finalResultLabel = resultTitles[bestType];
+                finalResultLabel = resultTitles[bestType] || bestType;
             }
+            // 用通用的"已完成"提示替换原本的初步结果
+            const rt = document.getElementById('result-type');
+            const rd = document.getElementById('result-details');
+            if (rt) rt.innerText = "✅ 本关已完成！";
+            if (rd) rd.innerHTML = "你的探索数据已经收集完成。<br>请进入下一段星际旅程。";
 
             if (!hasAutoUploadedRecord) {
                 saveSessionRecordDocument(false);
@@ -1693,19 +1761,24 @@
                 };
 
                 speechRecognition.onresult = (event) => {
+                    // 英文模式下用空格分隔片段（中文不需要）
+                    const isEn = window.I18N && window.I18N.getSpeechLang() === 'en-US';
+                    const sep = isEn ? ' ' : '';
                     let finalText = '';
                     let interimText = '';
                     for (let i = event.resultIndex; i < event.results.length; i++) {
                         const resultText = event.results[i][0].transcript || '';
                         if (!resultText) continue;
+                        const piece = isEn ? resultText.trim() : resultText;
                         if (event.results[i].isFinal) {
-                            finalText += resultText;
+                            finalText += (finalText && isEn ? sep : '') + piece;
                         } else {
-                            interimText += resultText;
+                            interimText += (interimText && isEn ? sep : '') + piece;
                         }
                     }
                     if (finalText) {
-                        speechTranscriptRaw = `${speechTranscriptRaw}${finalText}`.trim();
+                        const joiner = isEn && speechTranscriptRaw ? ' ' : '';
+                        speechTranscriptRaw = `${speechTranscriptRaw}${joiner}${finalText}`.trim();
                     }
                     speechInterimTranscriptRaw = interimText.trim();
                     renderSpeechTranscript();

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎉 完成了这段星际旅程</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./shared/game-portal.css">
+    <script src="./shared/i18n.js"></script>
+    <script>
+        if (window.I18N) window.I18N.registerDict({
+            "🎉 完成了这段星际旅程": "🎉 You completed this interstellar journey",
+            "完成了这段星际旅程": "You completed this interstellar journey",
+            "你实在是太棒了！": "You're amazing!",
+            "8 段星际任务全部通关": "All 8 missions complete",
+            "你的所有探索数据已经安全保存到云端。": "All your exploration data has been safely saved to the cloud.",
+            "🚀 返回起始页": "🚀 Back to Home",
+            "📖 查看历史记录": "📖 View History"
+        });
+    </script>
+    <style>
+        :root {
+            --space-bg: #00020a;
+            --neon-blue: #00f7ff;
+            --neon-purple: #bd00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #ffe600;
+            --text-color: #e0f7ff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%; font-family: 'Share Tech Mono', monospace;
+            background-color: var(--space-bg); color: var(--text-color);
+            overflow: hidden;
+        }
+        .stars {
+            position: fixed; inset: 0; z-index: -1;
+            background:
+                radial-gradient(2px 2px at 20% 30%, white, transparent),
+                radial-gradient(1px 1px at 70% 60%, white, transparent),
+                radial-gradient(1.5px 1.5px at 40% 80%, white, transparent),
+                radial-gradient(1px 1px at 85% 25%, white, transparent),
+                radial-gradient(2px 2px at 50% 50%, white, transparent),
+                radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+        }
+        .firework { position: fixed; pointer-events: none; }
+        .container {
+            min-height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            padding: 20px; position: relative; z-index: 1;
+        }
+        .holo-box {
+            background: rgba(0, 24, 48, 0.7);
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 40px rgba(57, 255, 20, 0.45), inset 0 0 30px rgba(57, 255, 20, 0.1);
+            backdrop-filter: blur(8px);
+            padding: 50px 40px;
+            border-radius: 20px;
+            max-width: 720px;
+            width: 90%;
+        }
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.6rem; line-height: 1.2;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green), 0 0 25px var(--neon-green);
+            margin-bottom: 18px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--neon-green), 0 0 25px var(--neon-green); }
+            to   { text-shadow: 0 0 18px var(--neon-yellow), 0 0 36px var(--neon-green); }
+        }
+        .subtitle {
+            font-size: 1.4rem; color: var(--neon-yellow); margin-bottom: 24px;
+            font-weight: bold; letter-spacing: 1px;
+        }
+        .body-text {
+            font-size: 1.05rem; color: var(--text-color); margin-bottom: 28px; line-height: 1.7;
+        }
+        .badge {
+            display: inline-block; padding: 8px 22px;
+            border: 1px solid var(--neon-blue); border-radius: 999px;
+            color: var(--neon-blue); font-weight: 700;
+            margin-bottom: 18px; letter-spacing: 1px;
+            box-shadow: 0 0 14px rgba(0, 247, 255, 0.4);
+        }
+        .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+        .cyborg-btn {
+            font-family: 'Orbitron', sans-serif;
+            background: transparent; color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            padding: 14px 28px; font-size: 1rem;
+            border-radius: 999px; cursor: pointer; font-weight: 700;
+            letter-spacing: 1px; transition: all 0.3s ease;
+        }
+        .cyborg-btn:hover {
+            background: var(--neon-blue); color: var(--space-bg);
+            box-shadow: 0 0 22px rgba(0, 247, 255, 0.7);
+        }
+        @media (max-width: 640px) {
+            h1 { font-size: 1.9rem; }
+            .holo-box { padding: 30px 22px; }
+            .subtitle { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="container">
+        <div class="holo-box">
+            <span class="badge">8 段星际任务全部通关</span>
+            <h1>🎉 完成了这段星际旅程</h1>
+            <div class="subtitle">你实在是太棒了！</div>
+            <p class="body-text">你的所有探索数据已经安全保存到云端。</p>
+            <div class="actions">
+                <button class="cyborg-btn" onclick="location.href='home.html'">🚀 返回起始页</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

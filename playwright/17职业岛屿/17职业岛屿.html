@@ -21,20 +21,58 @@
         }
 
         body {
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: var(--bg-color);
-            background-image:
-                linear-gradient(rgba(0, 255, 157, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 157, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', system-ui, sans-serif;
+            background:
+                radial-gradient(ellipse at 18% 20%, rgba(0,255,157,0.20), transparent 42%),
+                radial-gradient(ellipse at 82% 80%, rgba(255,0,85,0.12), transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(0,255,157,0.06), transparent 60%),
+                linear-gradient(160deg, #04120a 0%, #050a08 55%, #02060a 100%);
+            background-attachment: fixed;
             margin: 0;
             padding: 30px 15px;
+            padding-bottom: 120px;
             color: var(--text-dark);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative;
+            overflow-x: hidden;
         }
+        /* 浮动神经网格装饰（仅装饰，不挡内容）*/
+        body::before {
+            content: '◤ ◢ ▱ ◯ ◭ ✦ ⬡';
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            font-size: 2rem; opacity: 0.10; color: #00ff9d;
+            letter-spacing: 22vw; line-height: 28vh;
+            padding: 8vh 6vw; word-spacing: 16vw;
+            white-space: pre-wrap;
+            animation: floatNeuro 30s ease-in-out infinite alternate;
+            text-shadow: 0 0 16px rgba(0, 255, 157, 0.5);
+        }
+        body::after {
+            content: ''; position: fixed; left: 0; right: 0; top: 0;
+            height: 2px; background: linear-gradient(90deg, transparent, rgba(0, 255, 157, 0.6), rgba(0, 204, 122, 0.4), transparent);
+            box-shadow: 0 0 14px rgba(0, 255, 157, 0.4);
+            pointer-events: none; z-index: 5;
+            animation: scanY 8s linear infinite;
+        }
+        @keyframes floatNeuro {
+            from { transform: translate(0,0) rotate(0deg); }
+            to   { transform: translate(20px,-30px) rotate(4deg); }
+        }
+        @keyframes scanY {
+            0%   { transform: translateY(0); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        @keyframes holoFadeIn {
+            0%   { opacity: 0; transform: translateY(16px) scale(0.985); filter: blur(6px); }
+            100% { opacity: 1; transform: translateY(0)    scale(1);     filter: blur(0); }
+        }
+        /* 让所有非首页内容压在装饰之上 */
+        body > * { position: relative; z-index: 2; }
 
         h1 {
             color: var(--primary);
@@ -141,18 +179,25 @@
             font-weight: bold;
         }
 
-        /* 介绍区域 */
+        /* 介绍区域：仅首页使用，玻璃毛风格 */
         .intro-box {
-            background: var(--card-bg);
+            background: linear-gradient(135deg, rgba(0,255,157,0.08), rgba(0,204,122,0.04)), rgba(8, 16, 12, 0.55);
             padding: 30px 60px 30px 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            box-shadow:
+                0 24px 60px rgba(0,0,0,0.55),
+                0 0 36px rgba(0,255,157,0.22),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+            border: 1px solid rgba(0,255,157,0.32);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             max-width: 900px;
             margin-bottom: 25px;
             line-height: 1.8;
             transition: all 0.5s;
             position: relative;
+            z-index: 2;
+            animation: holoFadeIn 0.7s ease-out;
         }
 
         .step-badge {
@@ -169,8 +214,8 @@
 
         .intro-title {
             font-weight: bold;
-            font-size: 1.6rem;
-            margin-bottom: 15px;
+            font-size: 1.95rem;
+            margin-bottom: 18px;
             color: var(--primary);
             text-align: center;
             line-height: 1.4;
@@ -178,27 +223,29 @@
 
         .intro-box p {
             color: var(--text-light);
-            margin: 10px 0;
+            margin: 12px 0;
             text-align: center;
+            font-size: 1.15rem;
+            line-height: 1.85;
         }
 
         .intro-box p:first-of-type {
-            font-size: 1.05rem;
-            margin-bottom: 15px;
+            font-size: 1.2rem;
+            margin-bottom: 18px;
         }
 
         .intro-hint {
             color: var(--primary) !important;
             font-weight: bold;
-            font-size: 1.1rem;
-            margin: 15px 0 !important;
+            font-size: 1.25rem;
+            margin: 18px 0 !important;
         }
 
         .intro-tip {
             color: var(--text-light) !important;
-            font-size: 0.85rem;
-            margin-top: 8px !important;
-            opacity: 0.8;
+            font-size: 1rem;
+            margin-top: 10px !important;
+            opacity: 0.85;
         }
 
         .portal-game-status {
@@ -1036,6 +1083,142 @@
 
 <body>
 
+    <!-- 介绍页（第一关，玩家点"开始游戏"后才进入岛屿选择）— 浅绿森林精灵风格 -->
+    <div id="islands-intro-page" style="position:fixed; inset:0; z-index:1000; overflow-y:auto;
+                background:
+                  radial-gradient(ellipse at 20% 10%, rgba(120,210,150,0.20) 0%, transparent 45%),
+                  radial-gradient(ellipse at 85% 85%, rgba(170,230,180,0.16) 0%, transparent 45%),
+                  radial-gradient(ellipse at 50% 50%, #0d2c1f 0%, #0a2018 50%, #04140a 100%);
+                display:flex; align-items:flex-start; justify-content:center; padding:24px;">
+
+        <div style="max-width:720px; width:100%; padding: 0; position:relative; isolation:isolate; margin:auto 0;">
+
+            <!-- 浅绿魔法光晕背景 -->
+            <div aria-hidden="true" style="position:absolute; inset:-20px; z-index:-1; pointer-events:none;
+                        background:
+                          radial-gradient(ellipse at 15% 8%, rgba(120,210,150,0.30) 0%, transparent 50%),
+                          radial-gradient(ellipse at 85% 25%, rgba(170,230,180,0.24) 0%, transparent 50%),
+                          radial-gradient(ellipse at 20% 80%, rgba(90,180,120,0.24) 0%, transparent 50%),
+                          radial-gradient(ellipse at 80% 95%, rgba(180,235,200,0.20) 0%, transparent 50%),
+                          linear-gradient(180deg, #0a2018 0%, #0d2c1f 50%, #06170f 100%);
+                        border-radius: 32px;
+                        box-shadow: 0 0 80px rgba(100,200,140,0.3);"></div>
+
+            <!-- 边缘藤蔓装饰 -->
+            <div aria-hidden="true" style="position:absolute; inset:0; z-index:-1; pointer-events:none; overflow:hidden; border-radius:32px;
+                        font-size:22px; opacity:0.6; line-height:1;">
+                <span style="position:absolute; top:14px;  left:10px;">🌿</span>
+                <span style="position:absolute; top:60px;  left:6px;">🌱</span>
+                <span style="position:absolute; top:170px; left:12px; font-size:18px; opacity:0.7;">✿</span>
+                <span style="position:absolute; top:300px; left:8px;  font-size:18px;">🍃</span>
+                <span style="position:absolute; top:440px; left:14px; font-size:18px;">🌿</span>
+                <span style="position:absolute; bottom:60px;  left:10px; font-size:20px;">🦋</span>
+                <span style="position:absolute; bottom:14px;  left:14px; font-size:18px;">🌱</span>
+
+                <span style="position:absolute; top:20px;  right:10px;">🌿</span>
+                <span style="position:absolute; top:80px;  right:8px;  font-size:18px;">🍃</span>
+                <span style="position:absolute; top:210px; right:12px; font-size:18px; opacity:0.7;">✿</span>
+                <span style="position:absolute; top:350px; right:6px;  font-size:18px;">🌱</span>
+                <span style="position:absolute; top:490px; right:10px; font-size:18px;">🌿</span>
+                <span style="position:absolute; bottom:90px;  right:12px; font-size:20px;">🦋</span>
+                <span style="position:absolute; bottom:18px;  right:8px;  font-size:18px;">🍃</span>
+            </div>
+
+            <!-- 顶部标题区 -->
+            <div style="padding: 28px 24px 10px; text-align:center; color:#e0f5e8;">
+
+                <!-- 顶部蝴蝶 -->
+                <div style="font-size:42px; line-height:1; margin-bottom:8px;
+                            filter: drop-shadow(0 0 14px rgba(170,230,180,0.7)) drop-shadow(0 0 26px rgba(120,210,150,0.5));">🦋</div>
+
+                <h2 style="background: linear-gradient(180deg, #e5fce8 0%, #a8e6b5 60%, #5ec373 100%);
+                           -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+                           font-size: 2.2rem; margin: 0; letter-spacing: 4px; font-weight: 800;
+                           filter: drop-shadow(0 0 20px rgba(168,230,181,0.5)); line-height: 1.2;">🚀 六岛奇航</h2>
+
+                <!-- 副标题：装饰横线包裹 -->
+                <div style="display:inline-flex; align-items:center; gap:10px; margin-top:10px;
+                            font-size:13px; color:#c0e8c5; letter-spacing:2px;">
+                    <span style="width:24px; height:1px; background:linear-gradient(90deg, transparent, rgba(180,230,200,0.7));"></span>
+                    Six-Island Voyage · A Cyber Mind Journey
+                    <span style="width:24px; height:1px; background:linear-gradient(90deg, rgba(180,230,200,0.7), transparent);"></span>
+                </div>
+            </div>
+
+            <!-- 介绍卡片 1 -->
+            <div style="margin: 16px 18px 14px; padding: 16px 20px;
+                        background: linear-gradient(180deg, rgba(20,55,35,0.55) 0%, rgba(15,40,25,0.5) 100%);
+                        border: 1px solid rgba(180,230,200,0.28);
+                        border-radius: 18px;
+                        box-shadow: 0 0 24px rgba(120,210,150,0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+                        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+                <div style="display:flex; gap:12px; align-items:flex-start;">
+                    <span style="font-size:20px; flex-shrink:0; filter: drop-shadow(0 0 8px rgba(170,230,180,0.6));">🦋</span>
+                    <p style="color:#d5f0dc; line-height:1.85; margin:0; font-size:14px;">
+                        这不只是一个游戏，更是一次对自己 <strong style="color:#b8ebc6;">内心底层代码</strong> 的探索。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 介绍卡片 2：6 个岛屿 + 选择规则 -->
+            <div style="margin: 0 18px 14px; padding: 16px 20px;
+                        background: linear-gradient(180deg, rgba(20,55,35,0.55) 0%, rgba(15,40,25,0.5) 100%);
+                        border: 1px solid rgba(180,230,200,0.28);
+                        border-radius: 18px;
+                        box-shadow: 0 0 24px rgba(120,210,150,0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+                        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+                <div style="display:flex; gap:12px; align-items:flex-start;">
+                    <span style="font-size:20px; flex-shrink:0; filter: drop-shadow(0 0 8px rgba(180,255,180,0.5));">🌿</span>
+                    <div style="flex:1;">
+                        <p style="color:#d5f0dc; line-height:1.85; margin: 0 0 8px; font-size:14px;">
+                            你将看到 <strong style="color:#ffd28c;">6 个数据岛屿</strong>。请你从中：
+                        </p>
+                        <p style="color:#d5f0dc; line-height:1.85; margin: 0; font-size:14px;">
+                            · <strong style="color:#b8ebc6;">挑选 3 个最想去的岛屿</strong>，按喜欢程度排前三<br>
+                            · 再选 <strong style="color:#ff9b8a;">1 个绝对不想去的岛屿（避雷区）</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 介绍卡片 3：操作提示 -->
+            <div style="margin: 0 18px 22px; padding: 14px 20px;
+                        background: linear-gradient(180deg, rgba(40,80,55,0.45) 0%, rgba(28,60,40,0.4) 100%);
+                        border: 1px solid rgba(180,230,200,0.22);
+                        border-radius: 18px;
+                        box-shadow: 0 0 18px rgba(120,210,150,0.14);
+                        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+                <div style="display:flex; gap:12px; align-items:flex-start;">
+                    <span style="font-size:18px; flex-shrink:0; filter: drop-shadow(0 0 6px rgba(200,240,210,0.5));">✨</span>
+                    <p style="color:#c5e8cf; line-height:1.7; margin: 0; font-size:13px;">
+                        💡 把岛屿卡片 <strong style="color:#b8ebc6;">拖拽</strong> 到下方对应的位置（第一选择 / 第二选择 / 第三选择 / 避雷区）。也可以直接点击岛屿卡片。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 开始按钮 -->
+            <div style="text-align:center; padding: 0 24px 32px;">
+                <button onclick="enterIslandSelection()"
+                        style="padding: 14px 42px; font-size: 1.1rem; font-weight: 700;
+                               border: none; border-radius: 999px; cursor: pointer;
+                               background: linear-gradient(135deg, #a8e6b5 0%, #4ec373 100%);
+                               color: #0a2018; letter-spacing: 2px;
+                               box-shadow: 0 8px 24px rgba(78,195,115,0.45), 0 0 30px rgba(170,230,180,0.3),
+                                           inset 0 1px 0 rgba(255,255,255,0.4);
+                               transition: transform 0.2s ease, box-shadow 0.2s ease;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(78,195,115,0.6), 0 0 36px rgba(170,230,180,0.4), inset 0 1px 0 rgba(255,255,255,0.4)';"
+                        onmouseout="this.style.transform=''; this.style.boxShadow='0 8px 24px rgba(78,195,115,0.45), 0 0 30px rgba(170,230,180,0.3), inset 0 1px 0 rgba(255,255,255,0.4)';">
+                    🚀 开始游戏
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 顶部 6 岛缩略图条（在选择页用） -->
+    <div id="islands-mini-strip" style="display:none; padding:10px 16px; background:rgba(0,255,157,0.04); border-bottom:1px solid rgba(0,255,157,0.18); margin-bottom:14px;">
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; max-width:980px; margin:0 auto;"></div>
+    </div>
+
     <h1>🚀 六岛奇航：赛博心灵之旅</h1>
 
     <!-- 重置按钮 -->
@@ -1068,7 +1251,7 @@
         <span class="step-badge" id="step-badge">第一步</span>
         <div class="intro-title" id="intro-title">欢迎来到心灵赛博空间！</div>
         <p id="intro-desc">这不只是一个游戏，更是一次对自己内心底层代码的探索。请阅读下方 6 个数据岛屿的描述，想象你获得了在其中一个岛屿进行数据接入的机会。</p>
-        <button class="audio-play-btn" id="audio-play-btn" onclick="toggleAudio()" title="播放/暂停音频">
+        <button class="audio-play-btn" id="audio-play-btn" onclick="toggleIslandIntroAudio()" title="播放/暂停 6 岛介绍音频">
             <svg class="sound-icon" viewBox="0 0 24 24">
                 <path
                     d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
@@ -1176,28 +1359,19 @@
 
     <!-- 结果弹窗 -->
     <div id="result-modal" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content" style="text-align: center;">
             <button class="modal-close" onclick="closeModal()">×</button>
-            <h2 class="result-title">你的心灵解码报告</h2>
-
-            <div class="code-box">
-                <div class="code-label">你的霍兰德代码</div>
-                <div class="code-value" id="res-code">---</div>
-            </div>
-
-            <div class="result-tabs">
-                <div class="tab-item active" onclick="switchTab('student')">🎓 我是中学生</div>
-                <div class="tab-item" onclick="switchTab('teacher')">👨‍🏫 我是老师</div>
-            </div>
-
-            <div id="content-student" class="analysis-block active"></div>
-            <div id="content-teacher" class="analysis-block"></div>
-
-            <div class="reject-section">
-                <h3 class="reject-title">🚫 关于你的避雷区</h3>
-                <div class="reject-content" id="content-reject"></div>
-            </div>
-            <div class="nav-buttons" style="margin-top: 25px;">
+            <div style="font-size:3em; margin-bottom:16px;">✅</div>
+            <h2 class="result-title" style="margin-bottom: 14px;">本关已完成！</h2>
+            <p style="color:#cdd; line-height:1.7; margin-bottom: 18px;">
+                你的探索数据已经收集完成。<br>请进入下一段星际旅程。
+            </p>
+            <!-- 隐藏的占位元素，保留供 JS 写入但不显示 -->
+            <div id="res-code" style="display:none;"></div>
+            <div id="content-student" style="display:none;"></div>
+            <div id="content-teacher" style="display:none;"></div>
+            <div id="content-reject" style="display:none;"></div>
+            <div class="nav-buttons" style="margin-top: 10px;">
                 <button class="btn-tool" type="button" onclick="saveFinalResultToCloud()">☁️ 保存到云端</button>
                 <button class="btn-tool" type="button" onclick="goToNextGame()">➡️ 前往下一个游戏</button>
                 <p id="cloud-save-status" class="portal-cloud-status" style="width:100%; margin-top:12px;"></p>
@@ -2426,7 +2600,47 @@
             window.GamePortal.renderGameStatus('#portal-game-status', { homeHref: '../home.html' });
         }
 
-        // 初始化
+        // 进入岛屿选择页：停掉介绍页正在播的音频 + 隐藏介绍页 + 渲染顶部缩略图条
+        function enterIslandSelection() {
+            // 停止 initGame 自动播的步骤音频，让用户在选择页保持安静
+            if (currentAudio) {
+                try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (e) {}
+            }
+            isPlaying = false;
+            const audioBtn = document.getElementById('audio-play-btn');
+            if (audioBtn) audioBtn.classList.remove('playing');
+            // 同时停掉岛屿介绍音频（如果在播）
+            if (typeof islandIntroAudio !== 'undefined' && islandIntroAudio) {
+                try { islandIntroAudio.pause(); islandIntroAudio.currentTime = 0; } catch (e) {}
+                isIslandIntroPlaying = false;
+            }
+            const intro = document.getElementById('islands-intro-page');
+            if (intro) intro.style.display = 'none';
+            renderIslandMiniStrip();
+        }
+
+        // 渲染 6 岛缩略图（小图）
+        function renderIslandMiniStrip() {
+            const strip = document.getElementById('islands-mini-strip');
+            if (!strip) return;
+            strip.style.display = 'block';
+            const inner = strip.querySelector('div');
+            if (!inner) return;
+            inner.innerHTML = '';
+            islands.forEach(island => {
+                const el = document.createElement('div');
+                el.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:4px; min-width:70px;';
+                el.innerHTML = `
+                    <img src="${images[island.id]}" alt="${island.title}"
+                         style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:1.5px solid var(--primary);"
+                         onerror="this.style.display='none'">
+                    <span style="font-size:0.72rem; color:var(--text-light); white-space:nowrap;">${island.title.split(' - ')[0] || island.title}</span>
+                `;
+                inner.appendChild(el);
+            });
+        }
+
+        // 初始化（介绍页打开时跑，但不显示游戏内容）
         initGame();
     </script>
 

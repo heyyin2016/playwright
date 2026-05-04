@@ -35,12 +35,12 @@ if (window.I18N) {
   "播放/暂停音频": "Play/Pause Audio",
   "🌌 外星学习实验室": "🌌 Alien Learning Lab",
   "你好，地球上的": "Hello,",
-  "\"小小学习教练\"": "\"Little Learning Coach\"",
+  "\"小小学习教练\"": "\"Learning Coach\"",
   "今天有 3 位外星朋友需要学新技能。": "Today, 3 alien friends need to learn new skills.",
   "每一关，请选出你觉得": "In each level, please choose the",
   "最有效": "most effective",
   "的教学方式。": "teaching method.",
-  "🚀 开启传送门": "🚀 Start Portal",
+  "🚀 开启传送门": "🚀 Open the Portal",
   "🤔 思考时刻": "🤔 Reflection Moment",
   "你为什么会选择用这个方式教外星人呢？": "Why did you choose this way to teach the alien?",
   "请输入你的想法...": "Enter your thoughts...",
@@ -148,7 +148,13 @@ if (window.I18N) {
   "- 语音转文字: ": "- Speech-to-text: ",
   "- 回答时间: ": "- Answer time: ",
   "- 教练风格结果: ": "- Coaching style result: ",
-  "- 生成时间: ": "- Generated: "
+  "- 生成时间: ": "- Generated: ",
+  "3 位": "3",
+  "今天有": "Today there are",
+  "外星朋友需要学新技能。": "alien friends who need to learn new skills.",
+  "（每题只能选一个）": "(Choose one option only)",
+  "🎯 每一关，请选出你觉得": "🎯 In each level, pick what you think is the",
+  "👋 你好，地球上的": "👋 Hello, little Earth"
 });
   window.I18N.registerPatterns([
     [new RegExp("^\u6559\u7ec3\u98ce\u683c\u7ed3\u679c\uff1a(.+)$"), "Coaching style result: $1"],

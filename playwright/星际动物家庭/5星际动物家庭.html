@@ -7,22 +7,48 @@
     <title>动物家庭探索</title>
     <link rel="stylesheet" href="../shared/game-portal.css">
     <style>
-        /* --- 核心风格 (黑 + 荧光绿) --- */
+        /* --- 卡通活泼风（替代原来的黑底霓虹绿）--- */
         :root {
-            --bg-color: #000000;
-            --neon-green: #39ff14;
-            --neon-dim: rgba(57, 255, 20, 0.15);
-            --text-glow: 0 0 5px rgba(57, 255, 20, 0.8);
-            --box-glow: 0 0 15px rgba(57, 255, 20, 0.4);
+            --bg-color: #fff7e6;
+            --neon-green: #ff7eb3;          /* 兼容老变量名：现在是粉玫瑰 */
+            --accent-orange: #ff8a4d;
+            --accent-pink: #ff6b9d;
+            --accent-yellow: #ffd56b;
+            --accent-mint: #6be3a3;
+            --accent-sky: #79c8ff;
+            --accent-lavender: #c4a8ff;
+            --neon-dim: rgba(255, 138, 77, 0.12);
+            --text-glow: 0 1px 0 rgba(255,255,255,0.6);
+            --box-glow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #5a3e36;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--neon-green);
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background:
+                radial-gradient(ellipse at 18% 20%, rgba(123, 200, 255, 0.45), transparent 40%),
+                radial-gradient(ellipse at 82% 10%, rgba(255, 213, 107, 0.55), transparent 42%),
+                radial-gradient(ellipse at 75% 88%, rgba(196, 168, 255, 0.4), transparent 45%),
+                radial-gradient(ellipse at 12% 90%, rgba(107, 227, 163, 0.4), transparent 42%),
+                linear-gradient(180deg, #fff8e6 0%, #fff0d8 60%, #ffe5c0 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Comic Sans MS', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             margin: 0;
             padding: 0;
             text-align: center;
+            min-height: 100vh;
+            position: relative;
+        }
+        /* 散落的卡通装饰 emoji（透明度低，不抢镜）*/
+        body::before {
+            content: '🌳 🍃 🌸 🌺 🦋 ✨ 🍀 ☁️ 🌈 🦜';
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            font-size: 2.3rem; opacity: 0.18;
+            letter-spacing: 12vw; line-height: 18vh;
+            padding: 6vh 4vw; word-spacing: 8vw;
+            white-space: pre-wrap;
+        }
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -87,30 +113,31 @@
             display: block;
         }
 
-        /* 按钮 */
+        /* 按钮（活泼粉橙渐变）*/
         .btn {
-            background: var(--neon-green);
-            color: black;
-            font-weight: bold;
+            background: linear-gradient(135deg, var(--accent-orange), var(--accent-pink));
+            color: white;
+            font-weight: 700;
             border: none;
             padding: 15px 40px;
-            font-size: 1.2em;
+            font-size: 1.15em;
             border-radius: 50px;
             cursor: pointer;
             margin: 20px auto;
-            box-shadow: var(--box-glow);
-            transition: 0.3s;
+            box-shadow: 0 8px 22px rgba(255, 107, 157, 0.35);
+            transition: 0.25s;
             flex-shrink: 0;
+            letter-spacing: 0.5px;
         }
 
         .btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 25px var(--neon-green);
+            transform: scale(1.04) translateY(-2px);
+            box-shadow: 0 12px 28px rgba(255, 107, 157, 0.5);
         }
 
         .btn:disabled {
-            background: #333;
-            color: #555;
+            background: #d8bfa6;
+            color: #fff8ee;
             box-shadow: none;
             cursor: not-allowed;
         }
@@ -162,92 +189,104 @@
         }
 
         .animal-card {
-            border: 1px solid #444;
-            background: #050505;
-            padding: 10px;
-            border-radius: 8px;
+            border: 2px solid #ffd180;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 12px 8px;
+            border-radius: 18px;
             cursor: pointer;
             transition: 0.2s;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         }
 
         .animal-card:hover {
-            border-color: var(--neon-green);
-            transform: translateY(-3px);
-            background: #111;
+            border-color: var(--accent-pink);
+            transform: translateY(-4px);
+            background: rgba(255, 240, 220, 0.95);
+            box-shadow: 0 10px 22px rgba(255, 107, 157, 0.18);
         }
 
-        /* 选中/标记样式 */
+        /* 选中 / 标记样式 */
         .animal-card.selected {
-            background: rgba(57, 255, 20, 0.2);
-            border: 2px solid var(--neon-green);
-            box-shadow: var(--box-glow);
+            background: linear-gradient(135deg, #ffe4ec, #fff4cf);
+            border: 3px solid var(--accent-pink);
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.18), 0 8px 22px rgba(255, 107, 157, 0.18);
+            transform: translateY(-2px);
         }
 
         .icon {
             font-size: 2.5em;
             display: block;
             margin-bottom: 5px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
         }
 
         .name {
             font-size: 0.9em;
-            color: #fff;
+            color: var(--text-main);
+            font-weight: 600;
         }
 
         /* 选人状态栏 */
         .selection-status {
-            font-size: 1.5em;
+            font-size: 1.4em;
             margin-bottom: 20px;
-            color: var(--neon-green);
-            border-bottom: 2px solid var(--neon-green);
-            padding-bottom: 10px;
-            width: 100%;
+            color: var(--text-main);
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 14px 22px;
+            border-radius: 999px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            border: 2px dashed var(--accent-orange);
+            width: auto;
             max-width: 800px;
         }
 
         /* 访谈界面 */
         .interview-box {
-            background: #111;
-            border: 1px solid var(--neon-green);
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid #ffd180;
             padding: 30px;
-            border-radius: 15px;
+            border-radius: 22px;
             width: 90%;
             max-width: 700px;
             margin-top: 20px;
             text-align: left;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
         }
 
         .interview-q {
-            font-size: 1.4em;
+            font-size: 1.3em;
             margin-bottom: 20px;
-            line-height: 1.6;
-            color: #fff;
+            line-height: 1.65;
+            color: var(--text-main);
         }
 
         .highlight {
-            color: var(--neon-green);
+            color: var(--accent-pink);
             font-weight: bold;
             padding: 0 5px;
-            border-bottom: 1px dashed var(--neon-green);
+            border-bottom: 2px wavy var(--accent-orange);
         }
 
         textarea {
             width: 100%;
             height: 100px;
-            background: #000;
-            border: 1px solid #444;
-            color: white;
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid #ffd180;
+            color: var(--text-main);
             padding: 10px;
-            font-size: 1.1em;
-            border-radius: 5px;
+            font-size: 1.05em;
+            border-radius: 12px;
             margin-bottom: 10px;
             box-sizing: border-box;
+            font-family: inherit;
         }
 
         textarea:focus {
             outline: none;
-            border-color: var(--neon-green);
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.15);
         }
 
         /* 录音控制区域 */
@@ -257,9 +296,9 @@
             gap: 10px;
             margin-bottom: 20px;
             padding: 10px;
-            background: rgba(57, 255, 20, 0.05);
-            border-radius: 8px;
-            border: 1px solid #333;
+            background: rgba(255, 213, 107, 0.18);
+            border-radius: 14px;
+            border: 1.5px dashed #ffd180;
         }
 
         .record-btn {
@@ -606,10 +645,11 @@
         <h1>🔭 动物观察室</h1>
         <div
             style="background: #111; padding: 15px; border-radius: 10px; border: 1px dashed #444; margin-bottom: 10px;">
-            <p style="font-size: 1.2em; margin: 0; color: #fff;">
-                请在下面找一找：<br>
-                1. 哪些动物<b>性子很慢</b>？<br>
-                2. 哪些动物看起来<b>很善良</b>？<br>
+            <p style="font-size: 1.2em; margin: 0; color: #fff; line-height: 1.7;">
+                有的动物 <b>性子很慢</b> ，有的动物 <b>性子很善良</b> 。<br>
+                现在请你在下面的动物里：<br>
+                1. 选一个 <b>性子慢</b> 的动物<br>
+                2. 选一个 <b>善良</b> 的动物<br>
                 <span style="font-size:0.8em; color:#888;">(你可以点击卡片标记它们，也可以直接看一看)</span>
             </p>
         </div>
@@ -618,7 +658,7 @@
     </div>
 
     <div id="stage2" class="stage">
-        <h1>📐 家庭建立</h1>
+        <h1>🌟 选一个像你的动物</h1>
         <button class="audio-btn" id="stage2-audio-btn" onclick="toggleAudio('stage2')" title="播放/暂停音频">
             <svg class="sound-icon" viewBox="0 0 24 24">
                 <path
@@ -630,10 +670,27 @@
                 <div class="sound-wave"></div>
             </div>
         </button>
-        <div class="story-container" id="storyBox">
+        <!-- Phase A: 先选"像你的动物" -->
+        <div id="stage2PhaseSelf">
+            <div style="background:#111; padding:18px; border-radius:12px; border:1px dashed #444; max-width:760px; width:90%; margin:0 auto 18px;">
+                <p style="color:#fff; font-size:1.15em; line-height:1.7; margin:0;">
+                    在动物里，你觉得 <strong>哪一只最像自己</strong> ？<br>
+                    点击下面的动物来选择。
+                </p>
+            </div>
+            <div class="zoo-grid" id="selfPickGrid"></div>
         </div>
-        <div class="space-hint" id="storyHint">按 <span class="key-icon">空格 Space</span> 继续</div>
-        <button class="btn" id="startSelectBtn" style="display:none;" onclick="nextStage(3)">开始选择动物 >></button>
+        <!-- Phase B: 选好了"你"，再选家庭里还有谁 -->
+        <div id="stage2PhaseRoster" style="display:none;">
+            <div style="background: rgba(255,255,255,0.7); padding:18px; border-radius:18px; max-width:760px; width:90%; margin:0 auto 18px; box-shadow: 0 8px 22px rgba(0,0,0,0.06);">
+                <p style="color:#3d2a1c; font-size:1.1em; line-height:1.75; margin:0;">
+                    你选了 <span id="selfPickedLabel" style="color:#ff6b9d; font-weight:bold;"></span> 当作"你"。<br>
+                    我们要组建一个 <strong>动物家庭</strong> ，这个家庭里的 <strong>角色</strong> ，来选一选吧～（可以多选）
+                </p>
+            </div>
+            <div id="familyRolePicker" style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; max-width:760px; margin:0 auto 18px;"></div>
+            <button class="btn" id="confirmFamilyBtn" onclick="confirmFamilyRoster()" disabled style="opacity:0.5; cursor:not-allowed;">确认家庭成员，下一步 >></button>
+        </div>
     </div>
 
     <div id="stage3" class="stage">
@@ -811,19 +868,25 @@
             { icon: '🐊', name: '鳄鱼' }, { icon: '🐍', name: '蛇' }
         ];
 
-        // --- 2. 故事脚本（修改后） ---
-        const storyLines = [
-            { text: "在这个游戏里，我们要建立一个动物家庭。", action: null },
-            { text: "我会选择一个动物作为爸爸，一个动物作为妈妈。", action: null },
-            { text: "爸爸妈妈相亲相爱之后有了一个动物宝宝，就好像你们家里一样，有爸爸、妈妈，还有你。", action: null },
-            { text: "现在请你选择一个动物作为爸爸。", action: "prepare_select_dad" },
+        // --- 2. 家庭角色选项（动物风：用爪印 + 配色，不再用人头表情）---
+        const FAMILY_ROLES = [
+            { id: 'dad',            label: '爸爸', icon: '🐾', accent: '#ff9a3c', accentBg: 'rgba(255,154,60,0.18)' },
+            { id: 'mom',            label: '妈妈', icon: '🐾', accent: '#ff70a0', accentBg: 'rgba(255,112,160,0.18)' },
+            { id: 'big_brother',    label: '哥哥', icon: '🐾', accent: '#5cb6ff', accentBg: 'rgba(92,182,255,0.18)' },
+            { id: 'big_sister',     label: '姐姐', icon: '🐾', accent: '#bd84ff', accentBg: 'rgba(189,132,255,0.18)' },
+            { id: 'little_brother', label: '弟弟', icon: '🐾', accent: '#5cffc1', accentBg: 'rgba(92,255,193,0.18)' },
+            { id: 'little_sister',  label: '妹妹', icon: '🐾', accent: '#e91e63', accentBg: 'rgba(233,30,99,0.18)' }
         ];
 
-        // --- 状态变量 ---
+        // 用户在 stage 2 选的家庭成员 id 列表（保持点击顺序）
+        let familyRoster = [];
+        // 选完每个角色对应什么动物的步骤
+        let rosterPickIndex = 0;
+        // 旧的两个变量（保留用于兼容性）
         let currentStoryIndex = -1;
         let currentStageId = 1;
-        let selections = { dad: null, mom: null, child: null };
-        let selectionStep = 0; // 0=dad, 1=mom, 2=child
+        let selections = { dad: null, mom: null, child: null, roster: {} }; // roster: {role_id: animal}
+        let selectionStep = 0;
         let questionIndex = 0;
         let questions = [];
         let interviewAnswers = [];
@@ -884,16 +947,22 @@
             currentStageId = n;
 
             if (n === 2) {
-                // 进入故事模式
-                currentStoryIndex = -1;
-                document.getElementById('storyBox').innerHTML = "";
-                setTimeout(() => {
-                    toggleAudio('stage2');
-                }, 250);
-                advanceStory();
+                // 第一步：先选"像你的动物"
+                document.getElementById('stage2PhaseSelf').style.display = '';
+                document.getElementById('stage2PhaseRoster').style.display = 'none';
+                renderSelfPickGrid();
+                setTimeout(() => { toggleAudio('stage2'); }, 250);
             } else if (n === 3) {
-                // 自动播放选择音频
-                updateSelectionAudio();
+                // 进入"为每个家庭角色（除了你）挑一个动物"流程
+                rosterPickIndex = 0;
+                // 排除已经选好动物的 'self'
+                familyRoster = (selections.rosterIds || []).filter(id => id !== 'self');
+                if (familyRoster.length === 0) {
+                    // 没选爸/妈/兄弟姐妹，跳过 stage3 直接到访谈
+                    nextStage(4);
+                    return;
+                }
+                showRosterAnimalPicker();
             } else if (n === 4) {
                 // 进入访谈模式，初始化问题
                 initQuestions();
@@ -901,57 +970,293 @@
             }
         }
 
-        // --- 故事推进逻辑 ---
-        function handleKeyPress(e) {
-            if (currentStageId === 2 && e.code === 'Space') {
-                e.preventDefault();
-                advanceStory();
+        // === Stage 2 Phase A：先选"像你的动物" ===
+        function renderSelfPickGrid() {
+            const grid = document.getElementById('selfPickGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            animals.forEach(ani => {
+                const div = document.createElement('div');
+                div.className = 'animal-card';
+                div.innerHTML = `<span class="icon">${ani.icon}</span><div class="name">${ani.name}</div>`;
+                div.onclick = () => onSelfAnimalPicked(ani);
+                grid.appendChild(div);
+            });
+        }
+
+        function onSelfAnimalPicked(animal) {
+            // 把"你"对应的动物存入 roster
+            selections.roster = selections.roster || {};
+            selections.roster.self = { ...animal, _role: 'self' };
+            // "你"自动加入 rosterIds（在最末尾）
+            selections.rosterIds = selections.rosterIds || [];
+            if (!selections.rosterIds.includes('self')) selections.rosterIds.push('self');
+            // 更新展示
+            const lbl = document.getElementById('selfPickedLabel');
+            if (lbl) lbl.textContent = `${animal.icon} ${animal.name}`;
+            // 切到 Phase B（多选其他家庭成员）
+            document.getElementById('stage2PhaseSelf').style.display = 'none';
+            document.getElementById('stage2PhaseRoster').style.display = '';
+            renderFamilyRolePicker();
+            // 滚顶
+            try { window.scrollTo({ top: 0 }); } catch(e) {}
+        }
+
+        // === Stage 2 Phase B：多选除自己以外的家庭成员（动物风格活泼卡片）===
+        function renderFamilyRolePicker() {
+            const wrap = document.getElementById('familyRolePicker');
+            if (!wrap) return;
+            wrap.innerHTML = '';
+            selections.rosterIds = selections.rosterIds || [];
+            FAMILY_ROLES.forEach(role => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'role-pick-btn';
+                btn.dataset.id = role.id;
+                const selected = selections.rosterIds.includes(role.id);
+                btn.style.cssText = `
+                    display:flex; flex-direction:column; align-items:center; gap:6px;
+                    padding:18px 12px; width: 110px; height: 124px;
+                    border-radius: 22px; border: 3px solid ${role.accent};
+                    background: ${selected ? role.accent : role.accentBg};
+                    color: ${selected ? '#0c1a12' : role.accent};
+                    cursor: pointer; font-size: 1.05em; font-weight: 700;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.25), inset 0 0 14px rgba(255,255,255,0.05);
+                    transform: ${selected ? 'translateY(-2px)' : 'none'};
+                    transition: all 0.18s ease;
+                `;
+                btn.innerHTML = `
+                    <span style="font-size: 2.2em; line-height: 1; filter: drop-shadow(0 0 6px ${role.accent}80);">${role.icon}</span>
+                    <span style="letter-spacing: 1px;">${role.label}</span>
+                `;
+                btn.addEventListener('mouseenter', () => { if (!selections.rosterIds.includes(role.id)) btn.style.transform = 'scale(1.05)'; });
+                btn.addEventListener('mouseleave', () => { if (!selections.rosterIds.includes(role.id)) btn.style.transform = 'none'; });
+                btn.onclick = () => toggleFamilyRole(role.id, btn);
+                wrap.appendChild(btn);
+            });
+        }
+
+        function toggleFamilyRole(id, btn) {
+            const idx = selections.rosterIds.indexOf(id);
+            const role = FAMILY_ROLES.find(r => r.id === id);
+            if (idx === -1) {
+                selections.rosterIds.push(id);
+                btn.style.background = role.accent;
+                btn.style.color = '#0c1a12';
+                btn.style.transform = 'translateY(-2px)';
+            } else {
+                selections.rosterIds.splice(idx, 1);
+                btn.style.background = role.accentBg;
+                btn.style.color = role.accent;
+                btn.style.transform = 'none';
+            }
+            // 至少选一个才能继续
+            const ok = selections.rosterIds.length > 0;
+            const cb = document.getElementById('confirmFamilyBtn');
+            if (cb) {
+                cb.disabled = !ok;
+                cb.style.opacity = ok ? '1' : '0.5';
+                cb.style.cursor = ok ? 'pointer' : 'not-allowed';
             }
         }
+
+        function confirmFamilyRoster() {
+            if (!selections.rosterIds || selections.rosterIds.length === 0) return;
+            nextStage(3);
+        }
+
+        // === Stage 3: 为每个家庭角色选一个动物 ===
+        function showRosterAnimalPicker() {
+            if (rosterPickIndex >= familyRoster.length) {
+                // 所有角色都选完了，先弹"全家福"再进访谈
+                selections.dad = selections.roster.dad || null;
+                selections.mom = selections.roster.mom || null;
+                selections.child = selections.roster.self || null;
+                showFamilyPhoto();
+                return;
+            }
+            const roleId = familyRoster[rosterPickIndex];
+            const role = FAMILY_ROLES.find(r => r.id === roleId);
+            updateSelectionPrompt(`请选择动物${role.label}`);
+            // 替代旧的"按 selectionStep 播放音频"
+            const audioMap = { dad: 'dad', mom: 'mom', self: 'child' };
+            const at = audioMap[roleId];
+            if (at) playRosterAudio(at);
+        }
+
+        // 显示家庭合照：把所有选中动物排在一起
+        function showFamilyPhoto() {
+            // 如果已经存在就移除
+            const old = document.getElementById('family-photo-overlay');
+            if (old) old.remove();
+
+            // 全家福顺序：爸爸 → 妈妈 → 哥哥 → 姐姐 → 弟弟 → 妹妹 → 你
+            const order = ['dad', 'mom', 'big_brother', 'big_sister', 'little_brother', 'little_sister', 'self'];
+            const r = selections.roster || {};
+            const memberDivs = order
+                .filter(rid => r[rid])
+                .map(rid => {
+                    const role = FAMILY_ROLES.find(x => x.id === rid) || { label: rid === 'self' ? '你' : rid };
+                    const a = r[rid];
+                    return `
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;
+                                    padding:14px 10px 12px; min-width:96px;
+                                    background: rgba(255,255,255,0.85); border-radius: 18px;
+                                    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+                                    border: 2px solid #ffd180;">
+                            <span style="font-size: 3em; line-height:1;">${a.icon}</span>
+                            <span style="color:#5a3e36; font-weight:700;">${role.label}</span>
+                            <span style="color:#a07c66; font-size: 0.85em;">${a.name}</span>
+                        </div>
+                    `;
+                })
+                .join('');
+
+            const overlay = document.createElement('div');
+            overlay.id = 'family-photo-overlay';
+            overlay.style.cssText = `
+                position: fixed; inset: 0; z-index: 800;
+                display: flex; align-items: center; justify-content: center;
+                padding: 20px; box-sizing: border-box;
+                background: rgba(20, 8, 0, 0.55);
+            `;
+            overlay.innerHTML = `
+                <div style="
+                    max-width: 860px; width: 100%;
+                    padding: 36px 30px 28px;
+                    border-radius: 28px;
+                    background: linear-gradient(135deg, #fff8e6, #ffe4c8 70%, #ffd6a8);
+                    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+                    text-align:center;
+                    border: 4px solid #ffb88a;
+                    position: relative;">
+                    <div style="position:absolute; top:14px; left:50%; transform:translateX(-50%);
+                                background: #ff8a4d; color:white; padding: 4px 14px; border-radius: 999px;
+                                font-size: 0.85em; font-weight:700; letter-spacing:1px;">📸 FAMILY PHOTO</div>
+                    <h2 style="color:#5a3e36; margin: 14px 0 10px; font-size: 1.6em;">🖼️ 这就是你的动物家庭！</h2>
+                    <p style="color:#7a5a4a; line-height:1.6; margin: 0 0 22px;">看看你建立的小家，每一只都很特别 💕</p>
+                    <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-bottom: 24px;">
+                        ${memberDivs}
+                    </div>
+                    <button onclick="closeFamilyPhoto()"
+                        style="padding:14px 36px; border:none; border-radius: 999px;
+                               background: linear-gradient(135deg, #ff8a4d, #ff6b9d);
+                               color: white; font-weight: 700; font-size: 1.05em; cursor: pointer;
+                               box-shadow: 0 8px 22px rgba(255,138,77,0.4);">
+                        📋 开始家庭访谈
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        function closeFamilyPhoto() {
+            const o = document.getElementById('family-photo-overlay');
+            if (o) o.remove();
+            nextStage(4);
+        }
+
+        function playRosterAudio(audioType) {
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+            const audioFile = audioFiles[audioType];
+            if (!audioFile) return;
+            currentAudio = new Audio(audioFile);
+            currentAudioType = 'stage3';
+            const btn = document.getElementById('stage3-audio-btn');
+            currentAudio.addEventListener('ended', function () { if (btn) btn.classList.remove('playing'); });
+            currentAudio.play();
+            if (btn) btn.classList.add('playing');
+        }
+
+        // 兼容旧 keyPress 监听（无操作）
+        function handleKeyPress(e) { /* deprecated */ }
 
         function advanceStory() {
             currentStoryIndex++;
 
             if (currentStoryIndex < storyLines.length) {
                 const lineData = storyLines[currentStoryIndex];
+                const p = document.createElement('p');
+                p.className = 'story-line visible';
+                p.innerHTML = lineData.text;
+                document.getElementById('storyBox').appendChild(p);
 
                 if (lineData.action === "prepare_select_dad") {
-                    const p = document.createElement('p');
-                    p.className = 'story-line visible';
-                    p.innerHTML = lineData.text;
-                    document.getElementById('storyBox').appendChild(p);
-                    document.getElementById('storyHint').style.display = 'none';
+                    const hint = document.getElementById('storyHint');
+                    if (hint) hint.style.display = 'none';
                     document.getElementById('startSelectBtn').style.display = 'inline-block';
                 } else {
-                    const p = document.createElement('p');
-                    p.className = 'story-line visible';
-                    p.innerHTML = lineData.text;
-                    document.getElementById('storyBox').appendChild(p);
                     const container = document.getElementById('stage2');
                     container.scrollTop = container.scrollHeight;
+                    // 自动推进下一句，按阅读速度（约 1 行 / 2.4 秒）
+                    setTimeout(advanceStory, 2400);
                 }
             }
         }
 
-        // --- 选择逻辑（修改后） ---
+        // --- 选择逻辑（按家庭花名册逐个选动物） ---
         function confirmSelection(animal) {
-            if (selectionStep === 0) {
-                // 选择爸爸
-                selections.dad = animal;
-                selectionStep++;
-                updateSelectionPrompt("请选择一个动物妈妈");
+            // 当前正在选哪个角色
+            if (rosterPickIndex >= familyRoster.length) return;
+            const roleId = familyRoster[rosterPickIndex];
+            selections.roster[roleId] = { ...animal, _role: roleId };
+            rosterPickIndex++;
+            // 下一个角色 / 全部完成
+            showRosterAnimalPicker();
+        }
+
+        // 显示兄弟姐妹多选 UI
+        function showSiblingSelector() {
+            const selectGrid = document.getElementById('selectGrid');
+            const prompt = document.getElementById('selectionPrompt');
+            // 暂时隐藏动物网格，显示一个"家里还有谁"的多选区域
+            selectGrid.style.display = 'none';
+            updateSelectionPrompt("家里除了爸爸妈妈，还有谁？(可多选 0~4 个)");
+
+            const wrap = document.createElement('div');
+            wrap.id = 'sibling-selector';
+            wrap.style.cssText = 'display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin: 20px 0;';
+            const opts = [
+                { id: 'sister_big', icon: '🐾', label: '动物姐姐' },
+                { id: 'sister_small', icon: '🐾', label: '动物妹妹' },
+                { id: 'brother_big', icon: '🐾', label: '动物哥哥' },
+                { id: 'brother_small', icon: '🐾', label: '动物弟弟' }
+            ];
+            selections.siblings = [];
+            opts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'sibling-btn';
+                btn.style.cssText = 'padding:14px 22px; border-radius:14px; border:2px solid var(--neon-green); background:transparent; color:var(--neon-green); cursor:pointer; font-size:1.05em; font-weight:600;';
+                btn.innerHTML = `${opt.icon} ${opt.label}`;
+                btn.onclick = () => {
+                    const idx = selections.siblings.findIndex(s => s.id === opt.id);
+                    if (idx === -1) {
+                        selections.siblings.push(opt);
+                        btn.style.background = 'var(--neon-green)';
+                        btn.style.color = 'var(--card-bg)';
+                    } else {
+                        selections.siblings.splice(idx, 1);
+                        btn.style.background = 'transparent';
+                        btn.style.color = 'var(--neon-green)';
+                    }
+                };
+                wrap.appendChild(btn);
+            });
+            const doneBtn = document.createElement('button');
+            doneBtn.className = 'btn';
+            doneBtn.textContent = "下一步：选你自己 >>";
+            doneBtn.style.marginTop = '14px';
+            doneBtn.onclick = () => {
+                wrap.remove();
+                doneBtn.remove();
+                selectGrid.style.display = '';
+                selectionStep = 3;
+                updateSelectionPrompt("请选择一个动物作为你（动物宝宝）");
                 updateSelectionAudio();
-            } else if (selectionStep === 1) {
-                // 选择妈妈
-                selections.mom = animal;
-                selectionStep++;
-                updateSelectionPrompt("请选择一个特性很像动物宝宝的动物");
-                updateSelectionAudio();
-            } else if (selectionStep === 2) {
-                // 选择宝宝
-                selections.child = animal;
-                nextStage(4); // 直接进入访谈
-            }
+            };
+            const stage3 = document.getElementById('stage3');
+            stage3.appendChild(wrap);
+            stage3.appendChild(doneBtn);
         }
 
         function updateSelectionPrompt(text) {
@@ -970,8 +1275,12 @@
                 currentAudio.currentTime = 0;
             }
 
-            // 根据选择步骤播放对应音频
-            let audioType = selectionStep === 0 ? 'dad' : (selectionStep === 1 ? 'mom' : 'child');
+            // 根据选择步骤播放对应音频（step 2 是兄妹选择，不播音频）
+            let audioType;
+            if (selectionStep === 0) audioType = 'dad';
+            else if (selectionStep === 1) audioType = 'mom';
+            else if (selectionStep === 3) audioType = 'child';
+            else return;  // step 2 = siblings, 跳过音频
 
             // 更新按钮ID映射
             currentAudioType = 'stage3';
@@ -991,46 +1300,63 @@
             if (btn) btn.classList.add('playing');
         }
 
-        // --- 访谈逻辑 (重写：按照您的新要求) ---
+        // --- 访谈逻辑（爸/妈 + 兄妹用同样的"是什么样的+缺点"模板；保留互动题；不问自己）---
         function initQuestions() {
-            const d = selections.dad;
-            const m = selections.mom;
-            const c = selections.child;
+            const r = selections.roster || {};
+            const d = r.dad;
+            const m = r.mom;
+            const me = r.self;
+            const list = [];
 
-            questions = [
-                // 1. 妈妈特点
-                {
-                    q: `你选了 <span class="highlight">${m.icon} ${m.name}</span>。<br>这是一个什么样的妈妈？`,
-                    placeholder: "这是一个..."
-                },
-                {
-                    q: `她有什么特点呢？还有呢？`,
-                    placeholder: "特点是..."
-                },
-                // 2. 爸爸特点
-                {
-                    q: `你选了 <span class="highlight">${d.icon} ${d.name}</span>。<br>这是一个什么样的爸爸呢？`,
-                    placeholder: "这是一个..."
-                },
-                {
-                    q: `他有什么特点呢？还有呢？`,
-                    placeholder: "特点是..."
-                },
-                // 3. 互动与喜好
-                {
-                    q: `平常 <span class="highlight">${c.name}宝宝</span> 喜欢和爸爸妈妈在一起做什么呢？<br>经常做吗？`,
+            // 父母模板生成器
+            function makeParentLikeQuestions(animal, roleLabel, hePronoun, characterPlaceholder, weakPlaceholder) {
+                list.push({
+                    q: `你选了 <span class="highlight">${animal.icon} ${animal.name}</span> 当${roleLabel}。<br>这是一个什么样的${roleLabel}？${hePronoun}有什么特点呢？`,
+                    placeholder: characterPlaceholder
+                });
+                list.push({
+                    q: `你觉得这位 <span class="highlight">${animal.icon} ${animal.name}</span> ${roleLabel}，有什么缺点吗？`,
+                    placeholder: weakPlaceholder
+                });
+            }
+
+            // 妈妈
+            if (m) makeParentLikeQuestions(m, '妈妈', '她', '这是一个...', '她可能...');
+            // 爸爸
+            if (d) makeParentLikeQuestions(d, '爸爸', '他', '这是一个...', '他可能...');
+
+            // 兄妹（每个用父母模板）
+            const sibList = [
+                { id: 'big_brother',    label: '哥哥', he: '他' },
+                { id: 'big_sister',     label: '姐姐', he: '她' },
+                { id: 'little_brother', label: '弟弟', he: '他' },
+                { id: 'little_sister',  label: '妹妹', he: '她' }
+            ];
+            sibList.forEach(s => {
+                const a = r[s.id];
+                if (a) makeParentLikeQuestions(a, s.label, s.he, '这是一个...', s.he + '可能...');
+            });
+
+            // 互动题（保留 — 只要家里至少有一个其他人 + 你自己）
+            const otherIds = ['dad', 'mom', 'big_brother', 'big_sister', 'little_brother', 'little_sister'];
+            const hasOther = otherIds.some(id => r[id]);
+            if (me && hasOther) {
+                const youName = me.name || '你';
+                list.push({
+                    q: `平常 <span class="highlight">${youName}宝宝</span> 喜欢和家人在一起做什么呢？经常做吗？`,
                     placeholder: "喜欢做..."
-                },
-                {
+                });
+                list.push({
                     q: `他们做的时候是什么样的呢？`,
                     placeholder: "当时..."
-                },
-                // 4. 冲突/不开心
-                {
-                    q: `不知道有什么事情，是动物爸爸妈妈做过的，让 <span class="highlight">${c.name}宝宝</span> 觉得不开心的吗？`,
+                });
+                list.push({
+                    q: `有什么事情，是家人做过的，让 <span class="highlight">${youName}宝宝</span> 觉得不开心的呢？`,
                     placeholder: "有一次..."
-                }
-            ];
+                });
+            }
+
+            questions = list;
             questionIndex = 0;
             interviewAnswers = new Array(questions.length).fill('');
         }
@@ -1546,9 +1872,11 @@
             lines.push('最终测试结果: 动物家庭访谈已完成');
             lines.push('');
             lines.push('家庭选择结果:');
-            lines.push(`爸爸: ${selections.dad ? `${selections.dad.icon} ${selections.dad.name}` : '未选择'}`);
-            lines.push(`妈妈: ${selections.mom ? `${selections.mom.icon} ${selections.mom.name}` : '未选择'}`);
-            lines.push(`宝宝: ${selections.child ? `${selections.child.icon} ${selections.child.name}` : '未选择'}`);
+            const r = selections.roster || {};
+            FAMILY_ROLES.forEach(role => {
+                const a = r[role.id];
+                if (a) lines.push(`${role.label}: ${a.icon} ${a.name}`);
+            });
             lines.push('');
             lines.push('访谈输入内容:');
 
@@ -1563,11 +1891,20 @@
         }
 
         function buildAnimalFamilyDetailJson() {
+            const roster = {};
+            const r = selections.roster || {};
+            Object.keys(r).forEach(rid => {
+                const a = r[rid];
+                roster[rid] = a ? { name: a.name, icon: a.icon } : null;
+            });
             return {
                 selections: {
-                    dad: selections.dad ? { name: selections.dad.name, icon: selections.dad.icon } : null,
-                    mom: selections.mom ? { name: selections.mom.name, icon: selections.mom.icon } : null,
-                    child: selections.child ? { name: selections.child.name, icon: selections.child.icon } : null
+                    rosterIds: selections.rosterIds || [],
+                    roster: roster,
+                    // 向后兼容字段
+                    dad: r.dad ? { name: r.dad.name, icon: r.dad.icon } : null,
+                    mom: r.mom ? { name: r.mom.name, icon: r.mom.icon } : null,
+                    child: r.self ? { name: r.self.name, icon: r.self.icon } : null
                 },
                 questions: questions.map((item, idx) => ({
                     question: stripHtml(item.q),

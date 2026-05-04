@@ -3,147 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>星际通道已开启</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>外星通讯频道开启 / Alien Channel Open</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --space-bg: #00020a;
             --neon-blue: #00f7ff;
             --neon-purple: #bd00ff;
+            --neon-green: #39ff14;
+            --neon-yellow: #ffe600;
+            --neon-pink: #ff5de9;
             --text-color: #e0f7ff;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; font-family: 'Share Tech Mono', monospace; overflow: hidden; background-color: var(--space-bg); color: var(--text-color); }
-        .space-background { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%); overflow: hidden; }
-        .stars-layer { position: absolute; top: 50%; left: 50%; height: 2px; width: 2px; background: white; border-radius: 100%; box-shadow: -400px 300px white, 320px -200px white, -200px -100px white, 500px 100px white, -150px 400px white, 200px 300px white, -300px -350px white, 450px -400px white, -50px 200px white, 100px -100px white, -400px -200px white, 300px 150px white; animation: zoom 15s linear infinite; }
-        .stars-layer:nth-child(2) { animation-duration: 25s; opacity: 0.7; box-shadow: -300px 200px white, 420px -100px white, -100px -300px white, 600px 200px white, -250px 300px white, 100px 400px white, -400px -250px white, 350px -300px white, 50px 100px white; }
-        @keyframes zoom { 0% { transform: scale(1); opacity: 0; } 10% { opacity: 1; } 100% { transform: scale(10); opacity: 0; } }
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, transparent 0%, rgba(0, 2, 10, 0.8) 100%); z-index: 0; }
-        .container { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
-        .holo-box { background: rgba(0, 24, 48, 0.6); border: 2px solid var(--neon-blue); box-shadow: 0 0 20px rgba(0, 247, 255, 0.3), inset 0 0 20px rgba(0, 247, 255, 0.1); backdrop-filter: blur(8px); padding: 40px; border-radius: 10px; max-width: 800px; width: 90%; position: relative; }
-        .holo-box::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(transparent 0%, transparent 2px, rgba(0, 247, 255, 0.05) 3px); pointer-events: none; }
-        h1 { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-blue), 0 0 40px var(--neon-blue); animation: flicker 4s infinite alternate; }
-        .typewriter-text { font-size: 1.25rem; line-height: 1.8; min-height: 200px; margin-bottom: 30px; text-align: left; white-space: pre-wrap; font-weight: bold; color: #d0f0ff; }
-        .cursor { display: inline-block; width: 10px; height: 1.4rem; background-color: var(--neon-blue); margin-left: 5px; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
-        .cyborg-btn { font-family: 'Orbitron', sans-serif; background: transparent; border: 2px solid var(--neon-blue); color: var(--neon-blue); padding: 15px 40px; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 3px; cursor: pointer; position: relative; transition: all 0.3s ease; overflow: hidden; font-weight: 700; margin-top: 10px; }
-        .cyborg-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 247, 255, 0.4), transparent); transition: left 0.5s; }
-        .cyborg-btn:hover { background: var(--neon-blue); color: var(--space-bg); box-shadow: 0 0 30px rgba(0, 247, 255, 0.8); }
-        .cyborg-btn:hover::before { left: 100%; }
-        @keyframes flicker { 0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-blue), 0 0 40px var(--neon-blue); } 20%, 24%, 55% { text-shadow: none; opacity: 0.5; } }
-        @keyframes blink { from, to { opacity: 1; } 50% { opacity: 0; } }
-        @media (max-width: 768px) { h1 { font-size: 1.8rem; } .holo-box { padding: 25px; } .typewriter-text { font-size: 1rem; } }
-
-        /* 语言切换 */
-        .lang-bar { position: fixed; top: 18px; right: 22px; z-index: 100; display: flex; gap: 8px; font-family: 'Orbitron', sans-serif; }
-        .lang-btn {
-            padding: 8px 16px; font-size: 0.95rem; letter-spacing: 1px; border-radius: 999px;
-            border: 1px solid var(--neon-blue); background: transparent; color: var(--neon-blue);
-            cursor: pointer; transition: all .25s ease; font-weight: 700;
+        html, body { height: 100%; font-family: 'Share Tech Mono', monospace; color: var(--text-color); background: var(--space-bg); overflow: hidden; }
+        /* 星际风云背景 */
+        .space-bg {
+            position: fixed; inset: 0; z-index: -2;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(189, 0, 255, 0.25), transparent 45%),
+                radial-gradient(ellipse at 70% 80%, rgba(0, 247, 255, 0.22), transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 93, 233, 0.12), transparent 60%),
+                linear-gradient(160deg, #050218 0%, #08001a 50%, #02000a 100%);
         }
-        .lang-btn:hover { background: rgba(0, 247, 255, 0.15); }
-        .lang-btn.active { background: var(--neon-blue); color: var(--space-bg); box-shadow: 0 0 14px rgba(0, 247, 255, 0.6); }
+        .nebula {
+            position: fixed; inset: 0; z-index: -1;
+            background:
+                radial-gradient(2px 2px at 14% 22%, white, transparent),
+                radial-gradient(1px 1px at 28% 65%, white, transparent),
+                radial-gradient(1.5px 1.5px at 47% 18%, #fff, transparent),
+                radial-gradient(1px 1px at 78% 32%, white, transparent),
+                radial-gradient(2px 2px at 62% 70%, white, transparent),
+                radial-gradient(1px 1px at 92% 88%, white, transparent),
+                radial-gradient(1.5px 1.5px at 38% 92%, white, transparent);
+            opacity: 0.85;
+            animation: drift 60s linear infinite;
+        }
+        @keyframes drift {
+            0% { transform: translate(0,0); }
+            100% { transform: translate(-30px,-50px); }
+        }
+        /* 星云漩涡装饰 */
+        .swirl {
+            position: fixed; left: 50%; top: 50%; width: 1200px; height: 1200px;
+            transform: translate(-50%, -50%);
+            background: conic-gradient(from 90deg, transparent 0deg, rgba(0,247,255,0.06) 60deg, transparent 120deg, rgba(189,0,255,0.06) 180deg, transparent 240deg, rgba(255,93,233,0.05) 300deg, transparent 360deg);
+            border-radius: 50%; z-index: -1; animation: spin 80s linear infinite; pointer-events: none;
+        }
+        @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+        .container {
+            position: relative; z-index: 1;
+            min-height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 20px; text-align: center;
+        }
+        .signal-tag {
+            font-family: 'Orbitron', sans-serif; font-size: 0.85rem;
+            letter-spacing: 4px; color: var(--neon-yellow); margin-bottom: 14px;
+            text-shadow: 0 0 8px var(--neon-yellow);
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.7rem, 4vw, 2.8rem);
+            line-height: 1.25;
+            color: var(--neon-green); text-shadow: 0 0 14px var(--neon-green), 0 0 32px var(--neon-green);
+            margin-bottom: 20px;
+            max-width: 880px;
+        }
+        .holo-box {
+            background: rgba(0, 16, 32, 0.65);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 40px rgba(0, 247, 255, 0.35), inset 0 0 24px rgba(0, 247, 255, 0.1);
+            backdrop-filter: blur(8px);
+            padding: 32px 28px; border-radius: 20px;
+            max-width: 760px; width: 90%;
+        }
+        .lang-block {
+            margin-bottom: 14px; padding: 14px 18px;
+            background: rgba(255,255,255,0.04); border-radius: 14px;
+            border-left: 3px solid var(--neon-blue);
+            text-align: left; line-height: 1.65;
+        }
+        .lang-block.en { border-left-color: var(--neon-pink); }
+        .lang-tag {
+            display: inline-block; font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem; letter-spacing: 2px; padding: 3px 10px;
+            border-radius: 999px; margin-bottom: 8px;
+            background: rgba(0,247,255,0.15); color: var(--neon-blue);
+        }
+        .lang-block.en .lang-tag { background: rgba(255,93,233,0.15); color: var(--neon-pink); }
+        .lang-buttons {
+            margin-top: 26px; display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;
+        }
+        .lang-btn {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.05rem; font-weight: 700; letter-spacing: 2px;
+            padding: 16px 36px; border-radius: 999px;
+            background: transparent; color: var(--neon-blue);
+            border: 2px solid var(--neon-blue); cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .lang-btn:hover { background: rgba(0,247,255,0.12); transform: translateY(-2px); }
+        .lang-btn.selected {
+            background: var(--neon-blue); color: var(--space-bg);
+            box-shadow: 0 0 22px rgba(0,247,255,0.6);
+        }
+        .confirm-btn {
+            margin-top: 26px; opacity: 0.4; pointer-events: none;
+            font-family: 'Orbitron', sans-serif; font-size: 1.05rem; font-weight: 700;
+            letter-spacing: 3px; padding: 16px 44px; border-radius: 999px;
+            background: var(--neon-green); color: var(--space-bg);
+            border: none; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(57,255,20,0.4);
+        }
+        .confirm-btn.enabled { opacity: 1; pointer-events: auto; animation: pulse 2s ease-in-out infinite; }
+        .confirm-btn.enabled:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(57,255,20,0.8); }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 20px rgba(57,255,20,0.4); } 50% { box-shadow: 0 0 36px rgba(57,255,20,0.8); } }
     </style>
 </head>
 <body>
-    <div class="space-background">
-        <div class="stars-layer"></div>
-        <div class="stars-layer"></div>
-        <div class="overlay"></div>
+    <div class="space-bg"></div>
+    <div class="swirl"></div>
+    <div class="nebula"></div>
+
+    <!-- 测评介绍 + 家长资料：右上角，按你的顺序 -->
+    <div style="position:fixed; right:22px; top:18px; z-index:80; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; max-width: calc(100vw - 44px);">
+        <a href="./introduction.html"
+           style="padding:9px 18px; border-radius:999px;
+                  background: linear-gradient(135deg,#1a4ea0,#2e6cc9); color:#ffffff;
+                  font-family:'Orbitron',sans-serif; font-weight:700; letter-spacing:1px;
+                  text-decoration:none; box-shadow:0 0 14px rgba(46,108,201,0.5); font-size:0.9rem;">
+            📖 测评介绍
+        </a>
+        <a href="./parent.html"
+           style="padding:9px 18px; border-radius:999px;
+                  background: linear-gradient(135deg,#ffe600,#ffb347); color:#241500;
+                  font-family:'Orbitron',sans-serif; font-weight:700; letter-spacing:1px;
+                  text-decoration:none; box-shadow:0 0 14px rgba(255,230,0,0.45); font-size:0.9rem;">
+            👨‍👩‍👧 家长资料
+        </a>
     </div>
 
-    <div class="lang-bar">
-        <button type="button" class="lang-btn" data-lang-btn="zh" onclick="pickLang('zh')">中文</button>
-        <button type="button" class="lang-btn" data-lang-btn="en" onclick="pickLang('en')">English</button>
-    </div>
+    <div class="container">
+        <div class="holo-box">
+            <div class="signal-tag">📡 INCOMING TRANSMISSION</div>
+            <h1>外星通讯频道已开启<br>Alien Channel Online</h1>
 
-    <main class="container">
-        <section class="holo-box">
-            <h1 id="title-text">星际通道已开启</h1>
-            <div class="text-container">
-                <p id="typed-text" class="typewriter-text"></p><span class="cursor"></span>
+            <div class="lang-block">
+                <span class="lang-tag">中文</span>
+                <p>外星文明请求与你建立沟通——请选择你想使用的人类语言。</p>
             </div>
-            <button class="cyborg-btn" id="enter-btn" onclick="startJourney()">进入任务</button>
-        </section>
-    </main>
+            <div class="lang-block en">
+                <span class="lang-tag">English</span>
+                <p>The aliens are requesting to connect with you — please pick the human language you want to speak.</p>
+            </div>
+
+            <div class="lang-buttons">
+                <button class="lang-btn" data-lang="zh">中文</button>
+                <button class="lang-btn" data-lang="en">English</button>
+            </div>
+
+            <button id="confirm-btn" class="confirm-btn">确认 / Confirm</button>
+
+            <!-- 预加载进度条（确认后才显示）-->
+            <div id="preload-box" style="margin-top:22px; display:none;">
+                <p id="preload-msg" style="color: var(--neon-yellow); font-family:'Orbitron'; letter-spacing:1px; font-size:0.95rem;">正在预加载游戏资源...</p>
+                <div style="margin-top:10px; height:10px; background: rgba(0,247,255,0.15); border-radius: 999px; overflow: hidden;">
+                    <div id="preload-fill" style="width:0%; height:100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-green)); transition: width 0.18s ease;"></div>
+                </div>
+                <p id="preload-detail" style="margin-top:8px; color:#9be7ff; font-size:0.8rem; opacity: 0.85;"></p>
+            </div>
+        </div>
+    </div>
 
     <script src="./shared/i18n.js"></script>
     <script>
-        const COPY = {
-            zh: {
-                title: '星际通道已开启',
-                btn: '进入任务',
-                message: "欢迎来到外太空任务站，探索者。\n\n你现在正处在银河边缘的交汇点，这里没有学校铃声、没有作业，\n只有一系列等待你挑战的 星际脑力游戏。\n\n每个任务都会测试你不同的能力：判断、观察、策略、沟通……\n也是外星文明用来了解地球人的方式。\n\n别紧张，这些都是「好玩但有点挑战」的那种。\n\n准备出发了吗？\n\n👇 进入任务，看看你的极限在哪里。"
-            },
-            en: {
-                title: 'STAR PORTAL OPEN',
-                btn: 'ENTER MISSION',
-                message: "Welcome to the Outer Space Mission Station, Explorer.\n\nYou're now at the intersection of the galaxy's edge, where there are no school bells, no homework,\nonly a series of Galactic Brain Games waiting for you to take on.\n\nEach mission tests a different ability: judgment, observation, strategy, communication...\nIt's also how alien civilizations get to know us Earthlings.\n\nDon't worry — these are the \"fun but a bit challenging\" kind.\n\nReady to go?\n\n👇 Enter the mission and see where your limits are."
-            }
-        };
+        let chosenLang = null;
+        const confirmBtn = document.getElementById('confirm-btn');
 
-        const speed = 60;
-        let i = 0;
-        let typingTimer = null;
-        let hasNavigated = false;
-        const targetElement = document.getElementById('typed-text');
-
-        function currentCopy() {
-            const lang = (window.I18N && window.I18N.getLang()) || 'zh';
-            return COPY[lang] || COPY.zh;
-        }
-
-        function highlightActiveLang() {
-            const lang = (window.I18N && window.I18N.getLang()) || 'zh';
-            document.querySelectorAll('[data-lang-btn]').forEach(function (b) {
-                if (b.getAttribute('data-lang-btn') === lang) b.classList.add('active');
-                else b.classList.remove('active');
+        // 初始化：把已经存在的语言选择高亮（如果用户之前选过）
+        const savedLang = (window.I18N && window.I18N.getLang()) || 'zh';
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                chosenLang = btn.getAttribute('data-lang');
+                confirmBtn.classList.add('enabled');
             });
-        }
+            // 默认选上之前存的语言
+            if (btn.getAttribute('data-lang') === savedLang) {
+                btn.click();
+            }
+        });
 
-        function applyStaticText() {
-            const c = currentCopy();
-            document.getElementById('title-text').textContent = c.title;
-            document.getElementById('enter-btn').textContent = c.btn;
-        }
+        confirmBtn.addEventListener('click', async () => {
+            if (!chosenLang) return;
+            if (window.I18N) window.I18N.setLang(chosenLang);
+            // 隐藏语言按钮和确认按钮，显示进度
+            document.querySelectorAll('.lang-btn').forEach(b => b.disabled = true);
+            confirmBtn.style.display = 'none';
+            document.getElementById('preload-box').style.display = 'block';
+            try {
+                await preloadAllAssets();
+            } catch (e) {
+                console.warn('preload error:', e);
+            }
+            // 标记预加载完成
+            try { sessionStorage.setItem('assetsPreloaded', '1'); } catch(e) {}
+            // 跳转
+            window.location.href = './intro.html';
+        });
 
-        function pickLang(lang) {
-            if (window.I18N) window.I18N.setLang(lang);
-            highlightActiveLang();
-            applyStaticText();
-            // 重启打字机
-            if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
-            hasNavigated = false;
-            i = 0;
-            targetElement.innerHTML = '';
-            typingTimer = setTimeout(typeWriter, 200);
-        }
+        async function preloadAllAssets() {
+            const fillEl = document.getElementById('preload-fill');
+            const msgEl = document.getElementById('preload-msg');
+            const detailEl = document.getElementById('preload-detail');
 
-        function typeWriter() {
-            const message = currentCopy().message;
-            if (i < message.length) {
-                targetElement.innerHTML += message.charAt(i) === '\n' ? '<br>' : message.charAt(i);
-                i++;
-                typingTimer = setTimeout(typeWriter, speed);
+            let list = [];
+            try {
+                const res = await fetch('./shared/preload-list.json', { cache: 'force-cache' });
+                list = await res.json();
+            } catch (e) {
+                console.warn('preload list missing:', e);
+                msgEl.textContent = '资源清单读取失败，跳过预加载';
                 return;
             }
-            if (!hasNavigated) {
-                hasNavigated = true;
-                typingTimer = setTimeout(() => {
-                    window.location.href = 'home.html';
-                }, 1200);
+
+            const total = list.length;
+            let done = 0;
+            const concurrency = 6;
+            let idx = 0;
+
+            function update(url, ok) {
+                done++;
+                const pct = Math.round((done / total) * 100);
+                fillEl.style.width = pct + '%';
+                msgEl.textContent = `正在预加载资源... ${pct}%`;
+                detailEl.textContent = (ok ? '✓ ' : '✗ ') + url + '  (' + done + ' / ' + total + ')';
             }
-        }
 
-        window.onload = function () {
-            highlightActiveLang();
-            applyStaticText();
-            typingTimer = setTimeout(typeWriter, 800);
-        };
+            function loadOne(url) {
+                return new Promise((resolve) => {
+                    // 用 fetch 拉取（被浏览器缓存），这样后续 <audio> / <img> 加载时直接命中缓存
+                    fetch(url, { cache: 'force-cache' })
+                        .then(r => {
+                            if (!r.ok) throw new Error('http ' + r.status);
+                            return r.blob();
+                        })
+                        .then(() => { update(url, true); resolve(true); })
+                        .catch(() => { update(url, false); resolve(false); });
+                });
+            }
 
-        function startJourney() {
-            hasNavigated = true;
-            if (typingTimer) clearTimeout(typingTimer);
-            window.location.href = 'home.html';
+            const workers = Array.from({ length: concurrency }).map(async () => {
+                while (idx < list.length) {
+                    const my = idx++;
+                    await loadOne(list[my]);
+                }
+            });
+            await Promise.all(workers);
+            msgEl.textContent = '✅ 所有资源已加载完成，正在进入...';
         }
     </script>
 </body>
